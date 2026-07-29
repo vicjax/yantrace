@@ -11,10 +11,14 @@ export default class EnglishStrategy {
         this._visibilityHandler = null;
         this._pageObserver = null;
         this._documentClickHandler = null;
-        this._containerClickHandler = null;
+        this._windowBlurHandler = null;
+        this._windowFocusHandler = null;
         this._isActive = false;
     }
 
+    /**
+     * 初始化（绑定键盘事件）
+     */
     init() {
         if (this._isActive) return;
         this._isActive = true;
@@ -49,7 +53,29 @@ export default class EnglishStrategy {
         };
         document.addEventListener('keydown', this._keydownHandler);
 
-        // ===== 点击外部 → 暂停 =====
+        // ===== 窗口失焦 → 暂停（类似中文的 focusout） =====
+        this._windowBlurHandler = () => {
+            this.engine._stopTimer();
+        };
+        window.addEventListener('blur', this._windowBlurHandler);
+
+        // ===== 窗口聚焦 → 无操作，等待按键恢复（类似中文的 focus） =====
+        this._windowFocusHandler = () => {
+            // 只记录状态，不恢复计时
+            // 计时由 keydown → recordKeypress() → _startTimer() 恢复
+        };
+        window.addEventListener('focus', this._windowFocusHandler);
+
+        // ===== 页面隐藏（切标签页/最小化）→ 暂停 =====
+        this._visibilityHandler = () => {
+            if (document.hidden) {
+                this.engine._stopTimer();
+            }
+            // 页面恢复时不恢复计时，等待按键
+        };
+        document.addEventListener('visibilitychange', this._visibilityHandler);
+
+        // ===== 点击文章区外部 → 暂停 =====
         this._documentClickHandler = (e) => {
             const container = this.engine.textBox;
             if (!container) return;
@@ -57,38 +83,18 @@ export default class EnglishStrategy {
             // 点击在文章区内部 → 不处理
             if (container.contains(e.target)) return;
 
-            // 点击在工具栏（下拉框、按钮等）→ 也暂停（和中文逻辑一致）
-            // 中文点击下拉框会触发 focusout → 暂停
+            // 点击外部 → 暂停
             this.engine._stopTimer();
         };
         document.addEventListener('click', this._documentClickHandler);
 
-        // ===== 点击文章区 → 仅聚焦（不恢复计时） =====
-        // 恢复计时由 keydown → recordKeypress() → _startTimer() 触发
-        this._containerClickHandler = () => {
-            // 无操作，只用于占位
-            // 确保点击文章区不会触发暂停（被 documentClick 排除）
-        };
-        const container = this.engine.textBox;
-        if (container) {
-            container.addEventListener('click', this._containerClickHandler);
-        }
-
-        // ===== 页面可见性变化 =====
-        this._visibilityHandler = () => {
-            if (document.hidden) {
-                this.engine._stopTimer();
-            } else {
-                if (!this.engine.isFinished && this.engine.startTime) {
-                    this.engine._startTimer();
-                }
-            }
-        };
-        document.addEventListener('visibilitychange', this._visibilityHandler);
-
+        // ===== 页面切换自动销毁 =====
         this._setupPageObserver();
     }
 
+    /**
+     * 监听页面切换，自动销毁
+     */
     _setupPageObserver() {
         const page = document.getElementById('page-practice-en');
         if (!page) return;
@@ -102,36 +108,47 @@ export default class EnglishStrategy {
         this._pageObserver = observer;
     }
 
+    /**
+     * 聚焦（英文无输入框，保持接口一致）
+     */
     focus() {
         // 无操作
     }
 
+    /**
+     * 更新位置（英文无输入框，保持接口一致）
+     */
     updatePosition() {
         // 无操作
     }
 
+    /**
+     * 销毁（移除事件监听）
+     */
     destroy() {
         if (this._keydownHandler) {
             document.removeEventListener('keydown', this._keydownHandler);
             this._keydownHandler = null;
         }
 
-        if (this._documentClickHandler) {
-            document.removeEventListener('click', this._documentClickHandler);
-            this._documentClickHandler = null;
+        if (this._windowBlurHandler) {
+            window.removeEventListener('blur', this._windowBlurHandler);
+            this._windowBlurHandler = null;
         }
 
-        if (this._containerClickHandler) {
-            const container = this.engine.textBox;
-            if (container) {
-                container.removeEventListener('click', this._containerClickHandler);
-            }
-            this._containerClickHandler = null;
+        if (this._windowFocusHandler) {
+            window.removeEventListener('focus', this._windowFocusHandler);
+            this._windowFocusHandler = null;
         }
 
         if (this._visibilityHandler) {
             document.removeEventListener('visibilitychange', this._visibilityHandler);
             this._visibilityHandler = null;
+        }
+
+        if (this._documentClickHandler) {
+            document.removeEventListener('click', this._documentClickHandler);
+            this._documentClickHandler = null;
         }
 
         if (this._pageObserver) {
