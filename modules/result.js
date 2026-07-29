@@ -4,11 +4,10 @@
  * 
  * 统计指标说明：
  *   速度：CPM/WPM、净速度、KPM
- *   正确率：实际正确率、原始正确率、改正率
+ *   正确率：实际正确率
  *   效率：KSPC、退格率
  *   基础：正确/错误/改正/退格/用时
  */
-
 
 class ResultManager {
     constructor(options = {}) {
@@ -28,18 +27,13 @@ class ResultManager {
         this.copyBtn = document.getElementById('resultCopyBtn');
         this.homeBtn = document.getElementById('resultHomeBtn');
 
-        // 当前结果数据
-        this._currentStats = null;
-        this._currentMode = null;
-
-        // 绑定事件
         this._bindEvents();
     }
 
-    /**
-     * 绑定事件
-     * @private
-     */
+    // ============================================
+    // 事件绑定
+    // ============================================
+
     _bindEvents() {
         this.restartBtn.addEventListener('click', () => {
             this.hide();
@@ -63,33 +57,34 @@ class ResultManager {
         });
     }
 
+    // ============================================
+    // 弹窗控制
+    // ============================================
+
     /**
      * 显示结果弹窗
-     * @param {Object} stats - 统计数据（来自 practice.js 的 _getStats）
+     * @param {Object} stats - 统计数据
      * @param {string} mode - 'practice-cn' 或 'practice-en'
      * @param {string} articleTitle - 文章标题
      */
     show(stats, mode, articleTitle = '') {
         if (!stats) return;
 
-        this._currentStats = stats;
-        this._currentMode = mode;
-
         const isChinese = mode === 'practice-cn';
 
         // 保存历史记录
         this._saveHistory(stats, mode, articleTitle);
 
-        // 设置标题
+        // 标题
         this.title.textContent = isChinese ? '🎉 中文练习完成！' : '🎉 English Practice Complete!';
 
-        // 设置主速度显示：速度 / 净速度
+        // 主速度：速度 / 净速度
         const speed = isChinese ? stats.cpm : stats.wpm;
         const netSpeed = isChinese ? stats.netCpm : stats.netWpm;
         this.mainNumber.textContent = `${speed} / ${netSpeed}`;
         this.mainLabel.textContent = isChinese ? 'CPM / 净CPM' : 'WPM / 净WPM';
 
-        // 构建统计网格（9项）
+        // 统计网格
         const items = this._buildGridItems(stats, isChinese);
         this.grid.innerHTML = items.map(item =>
             `<div class="item">
@@ -98,9 +93,7 @@ class ResultManager {
             </div>`
         ).join('');
 
-        // 显示弹窗
         this.overlay.classList.add('show');
-
         console.log(`📊 结果弹窗已显示: ${isChinese ? '中文' : '英文'}练习`);
     }
 
@@ -111,13 +104,10 @@ class ResultManager {
         this.overlay.classList.remove('show');
     }
 
-    /**
-     * 保存历史记录
-     * @param {Object} stats - 统计数据
-     * @param {string} mode - 模式
-     * @param {string} articleTitle - 文章标题
-     * @private
-     */
+    // ============================================
+    // 历史记录
+    // ============================================
+
     _saveHistory(stats, mode, articleTitle) {
         if (!this.historyService || !this.userService) return;
 
@@ -150,9 +140,7 @@ class ResultManager {
                 backspaces: stats.backspaces || 0,
                 keystrokes: stats.keystrokes || 0,
                 elapsed: stats.elapsed || 0,
-                rawAccuracy: stats.rawAccuracy || 0,
                 actualAccuracy: stats.actualAccuracy || 0,
-                fixRate: stats.fixRate || 0,
                 cpm: stats.cpm || 0,
                 wpm: stats.wpm || 0,
                 kpm: stats.kpm || 0,
@@ -172,71 +160,53 @@ class ResultManager {
     }
 
     /**
-     * 构建统计网格项（9项 + 净速度）
-     * 布局：3列 × 4行
+     * 构建统计网格项
+     * 布局：3列 × 3行
      *   Row1: 速度 | 净速度 | KPM
-     *   Row2: 实际正确率 | 原始正确率 | 改正率
-     *   Row3: 退格率 | KSPC | 用时
-     *   Row4: ✅正确 | ❌错误 | 🔄改正
-     * @param {Object} stats - 统计数据
-     * @param {boolean} isChinese - 是否中文模式
-     * @returns {Array} 网格项数组
-     * @private
+     *   Row2: 实际正确率 | 退格率 | 用时
+     *   Row3: KSPC | ✅正确 | ❌错误
      */
     _buildGridItems(stats, isChinese) {
-        const items = [
+        return [
             // 第一行：速度指标
-            { num: isChinese ? stats.cpm : stats.wpm, 
-              label: isChinese ? 'CPM' : 'WPM', 
+            { num: isChinese ? stats.cpm : stats.wpm,
+              label: isChinese ? 'CPM' : 'WPM',
               color: '#60a5fa' },
-            { num: isChinese ? stats.netCpm : stats.netWpm, 
-              label: isChinese ? '净CPM' : '净WPM', 
+            { num: isChinese ? stats.netCpm : stats.netWpm,
+              label: isChinese ? '净CPM' : '净WPM',
               color: '#34d399' },
-            { num: stats.kpm || 0, 
-              label: 'KPM', 
+            { num: stats.kpm || 0,
+              label: 'KPM',
               color: '#f59e0b' },
 
-            // 第二行：正确率相关
-            { num: (stats.actualAccuracy || 0) + '%', 
-              label: '实际正确率', 
+            // 第二行：质量指标
+            { num: (stats.actualAccuracy || 0) + '%',
+              label: '正确率',
               color: '#34d399' },
-            { num: (stats.rawAccuracy || 0) + '%', 
-              label: '原始正确率', 
-              color: '#818cf8' },
-            { num: (stats.fixRate || 0) + '%', 
-              label: '改正率', 
-              color: '#fbbf24' },
-
-            // 第三行：效率指标
-            { num: (stats.backspaceRate || 0) + '%', 
-              label: '退格率', 
+            { num: (stats.backspaceRate || 0) + '%',
+              label: '退格率',
               color: '#f59e0b' },
-            { num: stats.kspc || 0, 
-              label: 'KSPC', 
+            { num: (stats.elapsed || 0) + 's',
+              label: '用时',
+              color: '#f87171' },
+
+            // 第三行：效率 + 原始数据
+            { num: stats.kspc || 0,
+              label: 'KSPC',
               color: '#a78bfa' },
-            { num: (stats.elapsed || 0) + 's', 
-              label: '用时', 
-              color: '#f87171' },
-
-            // 第四行：原始数据
-            { num: stats.correct || 0, 
-              label: '✅ 正确', 
+            { num: stats.correct || 0,
+              label: '✅ 正确',
               color: '#34d399' },
-            { num: stats.errors || 0, 
-              label: '❌ 错误', 
-              color: '#f87171' },
-            { num: stats.fixed || 0, 
-              label: '🔄 改正', 
-              color: '#fbbf24' }
+            { num: stats.errors || 0,
+              label: '❌ 错误',
+              color: '#f87171' }
         ];
-
-        return items;
     }
 
-    /**
-     * 复制结果到剪贴板
-     * @private
-     */
+    // ============================================
+    // 复制结果
+    // ============================================
+
     _copyResult() {
         const items = this.grid.querySelectorAll('.item');
         let text = '📊 打字统计结果\n';
@@ -266,10 +236,10 @@ class ResultManager {
         });
     }
 
-    /**
-     * 渲染历史记录列表
-     * @param {string} userId - 用户 ID
-     */
+    // ============================================
+    // 历史记录列表
+    // ============================================
+
     renderHistory(userId) {
         const container = document.getElementById('historyList');
         if (!container) return;
@@ -302,7 +272,6 @@ class ResultManager {
                     <span>准确率 <span class="num">${r.stats.actualAccuracy}%</span></span>
                     <span>✅ <span class="num">${r.stats.correct}</span></span>
                     <span>❌ <span class="num">${r.stats.errors}</span></span>
-                    <span>🔄 <span class="num">${r.stats.fixed}</span></span>
                 </span>
             </div>
         `).join('');

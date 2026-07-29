@@ -32,10 +32,12 @@ export default class PracticeEngine {
         this.articleService = options.articleService || null;
         this.onComplete = options.onComplete || null;
 
+        // DOM 引用
         this.textBox = document.getElementById('cnTextBox');
         this.selector = document.getElementById('cnArticleSelect');
         this.resetBtn = document.getElementById('cnResetBtn');
 
+        // 统计元素
         this.stats = {
             cpm: document.getElementById('cnCpm'),
             kpm: document.getElementById('cnKpm'),
@@ -52,6 +54,7 @@ export default class PracticeEngine {
             progressText: document.getElementById('cnProgressText')
         };
 
+        // 核心状态
         this.chars = [];
         this.totalChars = 0;
         this.correct = 0;
@@ -66,22 +69,27 @@ export default class PracticeEngine {
         this.currentArticleTitle = '';
         this.currentCharIndex = 0;
 
+        // 峰值速度
         this._peakCpm = 0;
         this._peakWpm = 0;
         this._lastSampleTime = 0;
 
+        // 策略
         this.strategy = null;
+
+        // 窗口 resize 防抖
         this._resizeHandler = null;
 
+        // 统计定时器
         this._statsTimer = null;
         this._timerStartTime = null;
         this._timerSeconds = 0;
         this._instantCorrect = 0;
         this._instantStartTime = null;
 
-        // ===== 计时器控制 =====
-        this._timerPaused = false;        // 计时器是否暂停（失焦时）
-        this._timerAccumulated = 0;       // 已累计计时秒数（失焦时保存）
+        // 计时器控制（失焦暂停/聚焦继续）
+        this._timerPaused = false;
+        this._timerAccumulated = 0;
 
         this._bindUIEvents();
         this._bindResizeEvent();
@@ -91,6 +99,10 @@ export default class PracticeEngine {
         }
     }
 
+    // ============================================
+    // 生命周期方法
+    // ============================================
+
     enter(pageId) {
         const type = pageId === 'practice-cn' ? 'chinese' : 'english';
         this.loadFirstArticle(type);
@@ -99,6 +111,10 @@ export default class PracticeEngine {
     leave(pageId) {
         this.clearStrategy();
     }
+
+    // ============================================
+    // 公共方法
+    // ============================================
 
     loadArticleList(type) {
         if (!this.articleService) return;
@@ -125,19 +141,19 @@ export default class PracticeEngine {
         const article = this.articleService.getById(articleId);
         if (!article) return;
 
+        // 清理旧策略和定时器
         if (this.strategy) {
             this.strategy.destroy();
             this.strategy = null;
         }
-
         if (this._statsTimer) {
             clearInterval(this._statsTimer);
             this._statsTimer = null;
         }
 
         this._switchStrategy(type);
-
         this._resetState();
+
         this.currentMode = type;
         this.currentArticleId = articleId;
         this.currentArticleTitle = article.title;
@@ -151,10 +167,10 @@ export default class PracticeEngine {
         this.totalChars = this.chars.length;
 
         this._renderArticle();
-        this._updateStats();
-
+        this._updateProgressOnly();
         this._updateTimerDisplay(0);
 
+        // 中文模式：创建浮动输入框
         if (this.strategy && this.currentMode === 'chinese') {
             this.textBox.offsetHeight;
             requestAnimationFrame(() => {
@@ -233,13 +249,10 @@ export default class PracticeEngine {
     }
 
     _updateCurrentChar(index) {
-        // 移除所有 current
-        const allChars = this.textBox?.querySelectorAll('.char.current');
-        if (allChars) {
-            allChars.forEach(el => el.classList.remove('current'));
-        }
+        this.textBox?.querySelectorAll('.char.current').forEach(el => {
+            el.classList.remove('current');
+        });
 
-        // 添加新的 current
         const charEl = this.textBox?.querySelector(`.char[data-index="${index}"]`);
         if (charEl) {
             charEl.classList.add('current');
@@ -272,19 +285,14 @@ export default class PracticeEngine {
     // ============================================
 
     /**
- * 启动计时器
- * 首次击键时从 0 开始，失焦后重新击键时从暂停处继续
- */
+     * 启动计时器（首次击键或恢复计时）
+     */
     _startTimer() {
-        // 如果定时器已在运行，不重复启动
         if (this._statsTimer) return;
 
-        // 判断是首次启动还是恢复计时
         if (this._timerAccumulated === 0) {
-            // 首次启动：从当前时间开始
             this.startTime = Date.now();
         } else {
-            // 恢复计时：从暂停处继续
             this.startTime = Date.now() - this._timerAccumulated * 1000;
         }
 
@@ -293,30 +301,25 @@ export default class PracticeEngine {
     }
 
     /**
-     * 停止计时器（失焦时调用）
-     * 保存当前累计时间，清除定时器
+     * 停止计时器（失焦时调用，保存累计时间）
      */
     _stopTimer() {
         if (!this._statsTimer) return;
 
-        // 计算当前已累计时间
         if (this.startTime) {
             this._timerAccumulated = (Date.now() - this.startTime) / 1000;
         }
 
-        // 清除定时器
         clearInterval(this._statsTimer);
         this._statsTimer = null;
         this._timerPaused = true;
 
-        // 更新计时器显示为暂停时的时间
         this._updateTimerDisplay(Math.floor(this._timerAccumulated));
     }
 
     /**
- * 记录击键（物理按键，与输入法无关）
- * 由策略层（中文/英文）的 keydown 调用
- */
+     * 记录击键（物理按键，由策略层调用）
+     */
     recordKeypress() {
         this.keystrokes++;
         this._startTimer();
@@ -324,17 +327,17 @@ export default class PracticeEngine {
     }
 
     /**
-     * 记录退格按键（物理按键，与输入法无关）
-     * 由策略层（中文/英文）的 keydown 调用
+     * 记录退格（物理按键，由策略层调用）
      */
     recordBackspace() {
-        console.log('recordBackspace 调用, 当前backspaces:', this.backspaces);
-        console.log('recordBackspace 调用栈:', new Error().stack);
         this.backspaces++;
         this.keystrokes++;
         this._updateProgressOnly();
     }
 
+    /**
+     * 处理字符输入（由策略层调用）
+     */
     _handleCharInput(char) {
         if (this.isFinished) return;
         if (this.totalChars === 0) return;
@@ -345,7 +348,6 @@ export default class PracticeEngine {
         const isMatch = char === item.char;
 
         const currentStatus = item.status;
-        // 判断是否曾经错误或曾经改正（退格后 keepColor 保留了颜色）
         const wasError = item.keepColor === STATUS.ERROR;
         const wasFixed = item.keepColor === STATUS.FIXED;
 
@@ -353,26 +355,20 @@ export default class PracticeEngine {
         let correctChange = 0, errorsChange = 0, fixedChange = 0;
 
         if (isMatch) {
-            // ===== 输入正确 =====
             if (currentStatus === STATUS.PENDING && (wasError || wasFixed)) {
-                // 退格后重新输对（曾经错误或曾经改正）→ 黄色
                 newStatus = STATUS.FIXED;
                 fixedChange = 1;
             } else if (currentStatus === STATUS.PENDING) {
-                // 第一次输对 → 绿色
                 newStatus = STATUS.CORRECT;
                 correctChange = 1;
             } else if (currentStatus === STATUS.ERROR) {
-                // 当前还是红色，输对 → 黄色
                 newStatus = STATUS.FIXED;
                 errorsChange = -1;
                 fixedChange = 1;
             } else {
-                // 已经是绿色或黄色 → 保持不变
                 newStatus = currentStatus;
             }
         } else {
-            // ===== 输入错误 =====
             if (currentStatus === STATUS.PENDING) {
                 newStatus = STATUS.ERROR;
                 errorsChange = 1;
@@ -393,7 +389,6 @@ export default class PracticeEngine {
         this.errors += errorsChange;
         this.fixed += fixedChange;
 
-        // 清除保留颜色
         item.keepColor = null;
         item.status = newStatus;
 
@@ -404,7 +399,9 @@ export default class PracticeEngine {
         this._updateProgressOnly();
         this._samplePeakSpeed();
         this._updateFloatingInputPosition();
+        this._scrollToCurrentChar();
 
+        // 检查是否完成
         if (this.currentCharIndex >= this.totalChars) {
             this.isFinished = true;
             if (this._statsTimer) {
@@ -418,6 +415,9 @@ export default class PracticeEngine {
         }
     }
 
+    /**
+     * 处理退格（颜色保留，计数减掉对应状态）
+     */
     _handleBackspace() {
         if (this.isFinished) return;
         if (this.currentCharIndex === 0) return;
@@ -444,6 +444,30 @@ export default class PracticeEngine {
         this._renderArticle();
         this._updateProgressOnly();
         this._updateFloatingInputPosition();
+        this._scrollToCurrentChar();
+    }
+
+    /**
+     * 滚动到当前字符位置（容器 20% 处，输入框不被遮挡）
+     */
+    _scrollToCurrentChar() {
+        if (!this.textBox || this.isFinished) return;
+
+        const charEl = this.textBox.querySelector(`.char[data-index="${this.currentCharIndex}"]`);
+        if (!charEl) return;
+
+        const containerRect = this.textBox.getBoundingClientRect();
+        const charRect = charEl.getBoundingClientRect();
+
+        const distanceToBottom = containerRect.bottom - charRect.bottom;
+
+        // 字符即将被输入框盖住时触发滚动
+        if (distanceToBottom < 80) {
+            const targetOffset = containerRect.height * 0.2;
+            const currentOffset = charRect.top - containerRect.top;
+            const scrollDelta = currentOffset - targetOffset;
+            this.textBox.scrollTop += scrollDelta;
+        }
     }
 
     _updateFloatingInputPosition() {
@@ -453,7 +477,7 @@ export default class PracticeEngine {
     }
 
     // ============================================
-    // 统计定时器方法
+    // 统计方法
     // ============================================
 
     _startStatsTimer() {
@@ -482,51 +506,40 @@ export default class PracticeEngine {
 
     _refreshStatsDisplay() {
         const stats = this._calcStats();
-        console.log('刷新统计 - backspaces:', stats.backspaces, 'backspaceRate:', stats.backspaceRate);
         const isChinese = this.currentMode === 'chinese';
         const processed = stats.correct + stats.errors + stats.fixed;
         const fixRate = processed === 0 ? 0 : Math.round((stats.fixed / processed) * 100);
 
-        // 速度
         if (this.stats.cpm) {
             this.stats.cpm.textContent = isChinese ? stats.cpm : stats.wpm;
         }
-        // 击键
         if (this.stats.kpm) {
             this.stats.kpm.textContent = stats.kpm;
         }
-        // 效率
         if (this.stats.kspc) {
             this.stats.kspc.textContent = stats.kspc;
         }
-        // 准确率
         if (this.stats.accuracy) {
             this.stats.accuracy.textContent = stats.actualAccuracy;
         }
-        // 退格次数
         if (this.stats.backspaceCount) {
             this.stats.backspaceCount.textContent = stats.backspaces;
         }
-        // 退格率
         if (this.stats.backspaceRate) {
             this.stats.backspaceRate.textContent = stats.backspaceRate;
         }
-        // 改正数（只增不减）
         if (this.stats.fixed) {
             this.stats.fixed.textContent = stats.fixed;
         }
-        // 改正率
         if (this.stats.fixRate) {
             this.stats.fixRate.textContent = fixRate;
         }
-        // 已输入字数 / 总字数
         if (this.stats.progressChars) {
             this.stats.progressChars.textContent = stats.processed;
         }
         if (this.stats.totalChars) {
             this.stats.totalChars.textContent = stats.totalChars;
         }
-        // 用时
         if (this.stats.timer) {
             this.stats.timer.textContent = formatTime(stats.elapsed);
         }
@@ -552,20 +565,13 @@ export default class PracticeEngine {
         }
     }
 
-    _updateStats() {
-        this._updateProgressOnly();
-    }
-
     _calcStats() {
-        // ===== 用时计算：考虑暂停状态 =====
+        // 用时计算（考虑暂停）
         let elapsed = 0;
         if (this._timerPaused) {
-            // 暂停状态：使用累计时间
             elapsed = this._timerAccumulated;
         } else if (this.startTime) {
-            // 运行状态：实时计算
             elapsed = (Date.now() - this.startTime) / 1000;
-            // 如果累计时间大于0，说明是恢复计时，累加
             if (this._timerAccumulated > 0) {
                 elapsed += this._timerAccumulated;
             }
@@ -575,9 +581,6 @@ export default class PracticeEngine {
 
         const totalCorrect = this.correct + this.fixed;
         const actualAccuracy = processed === 0 ? 100 : Math.round((totalCorrect / processed) * 100);
-        const rawAccuracy = processed === 0 ? 100 : Math.round((this.correct / processed) * 100);
-        const fixRate = processed === 0 ? 0 : Math.round((this.fixed / processed) * 100);
-        const errorRate = processed === 0 ? 0 : Math.round((this.errors / processed) * 100);
 
         const cpm = minutes > 0 ? Math.round(totalCorrect / minutes) : 0;
         const wpm = minutes > 0 ? Math.round((totalCorrect / 5) / minutes) : 0;
@@ -585,7 +588,6 @@ export default class PracticeEngine {
         const netCpm = Math.round(cpm * (actualAccuracy / 100));
         const netWpm = Math.round(wpm * (actualAccuracy / 100));
 
-        // 退格率 = 退格次数 / 总击键数 × 100%
         const backspaceRate = this.keystrokes > 0 ? Math.round((this.backspaces / this.keystrokes) * 100) : 0;
         const kspc = totalCorrect > 0 ? parseFloat((this.keystrokes / totalCorrect).toFixed(2)) : 0;
         const progress = this.totalChars === 0 ? 0 : Math.round((processed / this.totalChars) * 100);
@@ -614,10 +616,7 @@ export default class PracticeEngine {
             totalChars: this.totalChars,
             processed: processed,
             isFinished: this.isFinished,
-            rawAccuracy: rawAccuracy,
             actualAccuracy: actualAccuracy,
-            fixRate: fixRate,
-            errorRate: errorRate,
             cpm: cpm,
             wpm: wpm,
             kpm: kpm,
@@ -696,17 +695,6 @@ export default class PracticeEngine {
         this._timerStartTime = null;
         this._instantCorrect = 0;
         this._instantStartTime = null;
-
-        if (this._statsTimer) {
-            clearInterval(this._statsTimer);
-            this._statsTimer = null;
-        }
-        this._updateTimerDisplay(0);
-
-        this._timerSeconds = 0;
-        this._timerStartTime = null;
-        this._instantCorrect = 0;
-        this._instantStartTime = null;
         this._timerPaused = false;
         this._timerAccumulated = 0;
 
@@ -714,15 +702,13 @@ export default class PracticeEngine {
             clearInterval(this._statsTimer);
             this._statsTimer = null;
         }
-
-        // ===== 新增：重置统计栏显示 =====
+        this._updateTimerDisplay(0);
         this._resetStatsDisplay();
     }
 
     /**
- * 重置统计栏所有显示为 0
- * 在加载文章、切换文章、重置时调用
- */
+     * 重置统计栏所有显示为 0
+     */
     _resetStatsDisplay() {
         if (this.stats.cpm) this.stats.cpm.textContent = '0';
         if (this.stats.kpm) this.stats.kpm.textContent = '0';

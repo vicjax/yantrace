@@ -23,12 +23,12 @@ body {
 #app {
     width: 100%;
     max-width: 820px;
+    min-height: 500px;
     background: #1a1a2e;
     border-radius: 24px;
     padding: 28px 32px 36px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
 }
-
 
 /* ============================================
    顶部栏
@@ -71,15 +71,17 @@ body {
 
 
 /* ============================================
-   页面切换（所有页面默认隐藏）
+   页面切换
    ============================================ */
 .page {
     display: none;
     animation: fadeIn 0.25s ease;
+    min-height: 380px;
 }
 
 .page.active {
-    display: block;
+    display: flex;
+    flex-direction: column;
 }
 
 @keyframes fadeIn {
@@ -87,7 +89,6 @@ body {
         opacity: 0;
         transform: translateY(6px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
@@ -262,13 +263,14 @@ body {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px 16px;
+    justify-content: space-evenly;
+    gap: 4px 8px;
     background: #12121f;
-    padding: 6px 16px;
+    padding: 4px 10px;
     border-radius: 30px;
-    margin-bottom: 14px;
+    margin-bottom: 8px;
     border: 1px solid #2a2a40;
-    font-size: 13px;
+    font-size: 12px;
     color: #8888aa;
 }
 
@@ -282,8 +284,9 @@ body {
 .stats-bar b {
     color: #e0e0e0;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 13px;
 }
+
 
 /* ============================================
    进度条（独立一行）
@@ -328,28 +331,6 @@ body {
 
 .status-saved {
     color: #34d399;
-}
-
-/* 响应式 */
-@media (max-width: 600px) {
-    .stats-bar {
-        font-size: 11px;
-        gap: 4px 10px;
-        padding: 4px 10px;
-    }
-
-    .stats-bar b {
-        font-size: 12px;
-    }
-
-    .progress-container {
-        min-width: 60px;
-    }
-
-    .progress-text {
-        font-size: 10px;
-        min-width: 28px;
-    }
 }
 
 
@@ -404,7 +385,6 @@ body {
         opacity: 0.6;
         transform: scale(0.98);
     }
-
     100% {
         opacity: 1;
         transform: scale(1.02);
@@ -415,26 +395,6 @@ body {
     color: #4a4a6a;
     text-align: center;
     font-size: 18px;
-}
-
-
-/* ============================================
-   进度条
-   ============================================ */
-.progress-bar {
-    width: 100%;
-    height: 6px;
-    background: #2a2a42;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, #a78bfa, #60a5fa);
-    border-radius: 10px;
-    transition: width 0.2s ease;
 }
 
 
@@ -837,32 +797,8 @@ body {
 
 
 /* ============================================
-   隐藏输入框（中文练习专用）
-   ============================================ */
-.hidden-input {
-    position: fixed;
-    background: transparent;
-    border: none;
-    color: transparent;
-    padding: 0;
-    outline: none;
-    caret-color: #4f46e5;
-    z-index: 9999;
-    pointer-events: none;
-    opacity: 0;
-    width: 1px;
-    height: 1px;
-}
-
-
-/* ============================================
    浮动输入框（中文打字专用）
    ============================================ */
-
-/* ============================================
-   浮动输入框（中文打字专用）
-   ============================================ */
-
 .floating-input {
     position: fixed;
     background: transparent !important;
@@ -877,13 +813,11 @@ body {
     pointer-events: auto;
     min-width: 20px;
     font-size: 20px;
-    /* 比正文 22px 小 2 号 */
     line-height: 1.2;
     box-shadow: none !important;
     -webkit-appearance: none;
     appearance: none;
     border-radius: 0;
-    /* 高度由 line-height + padding 决定，不设固定 height */
 }
 
 .floating-input:focus {
@@ -926,7 +860,12 @@ body {
    ============================================ */
 @media (max-width: 600px) {
     #app {
+        min-height: auto;
         padding: 16px;
+    }
+
+    .page {
+        min-height: auto;
     }
 
     .home-grid {
@@ -968,9 +907,22 @@ body {
     }
 
     .stats-bar {
+        font-size: 11px;
+        gap: 4px 10px;
+        padding: 4px 10px;
+    }
+
+    .stats-bar b {
         font-size: 12px;
-        padding: 8px 12px;
-        gap: 4px 12px;
+    }
+
+    .progress-container {
+        min-width: 60px;
+    }
+
+    .progress-text {
+        font-size: 10px;
+        min-width: 28px;
     }
 
     .result-card {
@@ -1020,7 +972,6 @@ body {
         gap: 6px;
         flex-wrap: wrap;
     }
-
 }
 
 @media (max-width: 400px) {

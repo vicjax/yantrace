@@ -16,6 +16,9 @@ export default class ChineseStrategy {
         this._pageObserver = null;
     }
 
+    /**
+     * 初始化策略（绑定事件）
+     */
     init() {
         if (this._isActive) return;
         this._isActive = true;
@@ -25,10 +28,12 @@ export default class ChineseStrategy {
         container.addEventListener('scroll', this._handleScroll.bind(this));
 
         this._setupPageObserver();
-
         document.addEventListener('visibilitychange', this._handleVisibilityChange.bind(this));
     }
 
+    /**
+     * 监听页面切换，自动销毁输入框
+     */
     _setupPageObserver() {
         const page = document.getElementById('page-practice-cn');
         if (!page) return;
@@ -42,15 +47,18 @@ export default class ChineseStrategy {
         this._pageObserver = observer;
     }
 
+    /**
+     * 点击文章区 → 聚焦输入框
+     */
     _handleContainerClick(e) {
         if (!this.inputEl) return;
         if (this.engine.isFinished) return;
-
-        this.inputEl.style.opacity = '1';
-        this.inputEl.placeholder = '';
         this.inputEl.focus();
     }
 
+    /**
+     * 滚动时更新输入框位置
+     */
     _handleScroll() {
         if (this.inputEl) {
             requestAnimationFrame(() => {
@@ -59,10 +67,16 @@ export default class ChineseStrategy {
         }
     }
 
+    /**
+     * 创建输入框（由 PracticeEngine 调用）
+     */
     createInput() {
         this._createInput();
     }
 
+    /**
+     * 创建输入框并绑定事件
+     */
     _createInput() {
         if (this._isCreating) return;
         if (this.inputEl) return;
@@ -82,7 +96,6 @@ export default class ChineseStrategy {
 
         // 强制回流后定位
         this.engine.textBox.offsetHeight;
-
         requestAnimationFrame(() => {
             this.updatePosition();
             this.inputEl.focus();
@@ -92,6 +105,9 @@ export default class ChineseStrategy {
         this._isCreating = false;
     }
 
+    /**
+     * 销毁输入框
+     */
     _destroyInput() {
         if (!this.inputEl) return;
 
@@ -111,6 +127,9 @@ export default class ChineseStrategy {
         this._compositionProcessed = false;
     }
 
+    /**
+     * 当前字符高亮效果（加深阴影）
+     */
     _highlightCurrentChar(show) {
         const container = this.engine.textBox;
         const charEl = container?.querySelector('.char.current');
@@ -126,6 +145,9 @@ export default class ChineseStrategy {
         }
     }
 
+    /**
+     * 绑定输入事件（composition + input + keydown + focus + focusout）
+     */
     _bindInputEvents() {
         if (!this.inputEl) return;
 
@@ -133,7 +155,7 @@ export default class ChineseStrategy {
             compositionStart: () => {
                 this._isComposing = true;
                 this._compositionProcessed = false;
-                // 组合输入开始时启动计时器（中文输入法下首次按键）
+                // 组合输入开始时启动计时器
                 this.engine._startTimer();
             },
 
@@ -167,18 +189,26 @@ export default class ChineseStrategy {
                 }
             },
 
+            /**
+             * 输入框获得焦点时清除 placeholder
+             */
+            focus: () => {
+                if (this.inputEl) {
+                    this.inputEl.placeholder = '';
+                    this.inputEl.style.opacity = '1';
+                }
+            },
+
             keydown: (e) => {
-                
-                 console.log('keydown 触发, key:', e.key, 'isBackspace:', e.key === 'Backspace' || e.code === 'Backspace');
                 const isPrintable = e.code && e.code.startsWith('Key') || e.code && e.code.startsWith('Digit');
                 const isBackspace = e.key === 'Backspace' || e.code === 'Backspace';
 
-                // ===== 可打印字符（拼音字母/数字）=====
+                // 可打印字符（拼音字母/数字）→ 记录击键
                 if (isPrintable && !e.ctrlKey && !e.metaKey && !e.altKey) {
                     this.engine.recordKeypress();
                 }
 
-                // ===== 退格处理 =====
+                // 退格处理
                 if (isBackspace) {
                     e.preventDefault();
                     this.engine.recordBackspace();
@@ -188,9 +218,24 @@ export default class ChineseStrategy {
                     this.updatePosition();
                     return;
                 }
-                // ...
+
+                // 组合输入中，不处理其他按键
+                if (this._isComposing) return;
+
+                // Enter / Escape
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    return;
+                }
+                if (e.key === 'Escape') {
+                    this.inputEl.value = '';
+                    return;
+                }
             },
 
+            /**
+             * 输入框失焦时暂停计时，变暗提示
+             */
             focusout: (e) => {
                 const relatedTarget = e.relatedTarget;
                 if (relatedTarget === this.inputEl) return;
@@ -200,7 +245,6 @@ export default class ChineseStrategy {
                     return;
                 }
 
-                // ===== 新增：失焦时停止计时（暂停） =====
                 this.engine._stopTimer();
 
                 if (this.inputEl) {
@@ -215,10 +259,14 @@ export default class ChineseStrategy {
         this.inputEl.addEventListener('compositionstart', handlers.compositionStart);
         this.inputEl.addEventListener('compositionend', handlers.compositionEnd);
         this.inputEl.addEventListener('input', handlers.input);
+        this.inputEl.addEventListener('focus', handlers.focus);
         this.inputEl.addEventListener('keydown', handlers.keydown);
         this.inputEl.addEventListener('focusout', handlers.focusout);
     }
 
+    /**
+     * 更新输入框位置到当前字符下方
+     */
     updatePosition() {
         if (!this.inputEl) return;
 
@@ -231,16 +279,14 @@ export default class ChineseStrategy {
         const containerWidth = containerRect.width;
         const remainingWidth = containerWidth - pos.x - 4;
 
-        const left = containerRect.left + pos.x;
-        // 上边框紧贴字符底部：pos.y 就是字符底部位置
-        const top = containerRect.top + pos.y;
-
-        this.inputEl.style.left = left + 'px';
-        this.inputEl.style.top = top + 'px';
+        this.inputEl.style.left = (containerRect.left + pos.x) + 'px';
+        this.inputEl.style.top = (containerRect.top + pos.y) + 'px';
         this.inputEl.style.width = Math.max(remainingWidth, 20) + 'px';
-        // 高度由 CSS 控制，不设置固定高度
     }
 
+    /**
+     * 主动聚焦
+     */
     focus() {
         if (this.inputEl) {
             this.inputEl.focus();
@@ -249,6 +295,9 @@ export default class ChineseStrategy {
         }
     }
 
+    /**
+     * 页面可见性变化时销毁输入框
+     */
     _handleVisibilityChange() {
         const page = document.getElementById('page-practice-cn');
         if (page && !page.classList.contains('active')) {
@@ -256,6 +305,9 @@ export default class ChineseStrategy {
         }
     }
 
+    /**
+     * 完全销毁策略
+     */
     destroy() {
         this._destroyInput();
 

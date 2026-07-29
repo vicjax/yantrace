@@ -12,45 +12,47 @@ export default class EnglishStrategy {
     }
 
     /**
-     * 初始化（绑定事件）
+     * 初始化（绑定键盘事件）
      */
     init() {
         if (this._isActive) return;
         this._isActive = true;
 
-       this._keydownHandler = (e) => {
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
+        this._keydownHandler = (e) => {
+            // 忽略控制键组合
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
 
-    // ===== 可打印字符 =====
-    if (e.key.length === 1) {
-        e.preventDefault();
-        this.engine.recordKeypress();
-        this.engine._handleCharInput(e.key);
-        return;
-    }
+            // 可打印字符 → 记录击键 + 处理字符
+            if (e.key.length === 1) {
+                e.preventDefault();
+                this.engine.recordKeypress();
+                this.engine._handleCharInput(e.key);
+                return;
+            }
 
-    // ===== 退格处理 =====
-    if (e.key === 'Backspace') {
-        e.preventDefault();
-        this.engine.recordBackspace();
-        this.engine._handleBackspace();
-        return;
-    }
+            // 退格处理
+            if (e.key === 'Backspace') {
+                e.preventDefault();
+                this.engine.recordBackspace();
+                this.engine._handleBackspace();
+                return;
+            }
 
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        return;
-    }
-};
+            // Enter 阻止默认行为
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                return;
+            }
+        };
 
         document.addEventListener('keydown', this._keydownHandler);
     }
 
     /**
-     * 聚焦（英文不需要输入框，但保持接口一致）
+     * 聚焦（英文无输入框，保持接口一致）
      */
     focus() {
-        // 无操作，直接监听 document
+        // 无操作
     }
 
     /**

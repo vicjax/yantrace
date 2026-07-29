@@ -7,17 +7,14 @@
 // 模块导入
 // ============================================
 
-// 工具
 import Storage from './utils/storage.js';
 import * as Helpers from './utils/helpers.js';
 
-// 服务层
 import ArticleService from './services/article.js';
 import UserService from './services/user.js';
 import HistoryService from './services/history.js';
 import SettingsService from './services/settings.js';
 
-// 功能模块
 import Navigator from './modules/navigator.js';
 import PracticeEngine from './modules/practice/index.js';
 import InputEngine from './modules/input.js';
@@ -42,9 +39,6 @@ class App {
         this.inputEngine = null;
         this.resultManager = null;
 
-        // DOM 引用
-        this.hiddenInput = null;
-
         // 状态
         this.currentUser = null;
         this.isInitialized = false;
@@ -58,22 +52,12 @@ class App {
 
         console.log('🖊️ 砚迹（YanTrace）启动中...');
 
-        // 1. 初始化存储
         this._initStorage();
-
-        // 2. 初始化服务层
         this._initServices();
-
-        // 3. 初始化功能模块
         this._initModules();
-
-        // 4. 初始化默认数据
         this._initDefaultData();
-
-        // 5. 设置事件绑定
         this._bindEvents();
 
-        // 6. 显示首页
         this.navigator.goTo('home');
 
         this.isInitialized = true;
@@ -81,7 +65,7 @@ class App {
     }
 
     /**
-     * 初始化存储（确保 localStorage 可用）
+     * 初始化存储
      */
     _initStorage() {
         if (!Storage.isAvailable()) {
@@ -99,7 +83,6 @@ class App {
         this.userService = new UserService();
         this.historyService = new HistoryService();
         this.settingsService = new SettingsService();
-
         console.log('📚 服务层初始化完成');
     }
 
@@ -107,64 +90,55 @@ class App {
      * 初始化功能模块
      */
     _initModules() {
-        // 导航
         this.navigator = new Navigator({
             onPageChange: (pageId) => this._onPageChange(pageId)
         });
 
-        // 打字引擎
         this.practiceEngine = new PracticeEngine({
             articleService: this.articleService,
             onComplete: (stats) => this._onPracticeComplete(stats)
         });
 
-        // 录入引擎
         this.inputEngine = new InputEngine({
             articleService: this.articleService,
             userService: this.userService,
             historyService: this.historyService
         });
 
-        // 结果管理器
         this.resultManager = new ResultManager({
             historyService: this.historyService,
             userService: this.userService,
             onRestart: () => this._onResultRestart()
         });
 
-        // 隐藏输入框（中文练习用）
-        this.hiddenInput = document.getElementById('hiddenInput');
-
         console.log('🧩 功能模块初始化完成');
     }
 
     /**
-     * 初始化默认数据（首次启动）
+     * 初始化默认数据
      */
     _initDefaultData() {
-        // 1. 初始化用户
+        // 默认用户
         const users = this.userService.getAll();
         if (users.length === 0) {
             this.userService.create('砚客');
             console.log('👤 创建默认用户：砚客');
         }
 
-        // 2. 初始化文章
+        // 默认文章
         const articles = this.articleService.getAll();
         if (articles.length === 0) {
             this.articleService.loadAll();
             console.log('📄 加载内置文章');
         }
 
-        // 3. 设置当前用户
+        // 当前用户
         this.currentUser = this.userService.getCurrent();
         if (!this.currentUser) {
             this.currentUser = this.userService.getFirst();
         }
 
-        // 4. 更新 UI
         this._updateUserDisplay();
-
         console.log('📦 默认数据初始化完成');
     }
 
@@ -172,7 +146,7 @@ class App {
      * 绑定全局事件
      */
     _bindEvents() {
-        // 首页四大模块按钮
+        // 首页四大模块
         document.querySelectorAll('.home-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const target = btn.dataset.target;
@@ -182,7 +156,7 @@ class App {
             });
         });
 
-        // 首页底部三个功能按钮
+        // 首页底部三个功能
         document.querySelectorAll('.footer-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const target = btn.dataset.target;
@@ -202,7 +176,7 @@ class App {
             });
         });
 
-        // 用户名点击修改昵称
+        // 修改昵称
         const userNameEl = document.getElementById('userName');
         if (userNameEl) {
             userNameEl.addEventListener('click', () => {
@@ -210,31 +184,22 @@ class App {
             });
         }
 
-        // 设置保存按钮
+        // 保存设置
         document.getElementById('settingsSaveBtn').addEventListener('click', () => {
             this._saveSettings();
         });
     }
 
     // ============================================
-    // 页面生命周期管理
+    // 页面生命周期
     // ============================================
 
-    /**
-     * 页面切换回调（由 Navigator 触发）
-     */
     _onPageChange(pageId) {
-        // 1. 离开当前页面
         const currentPage = this.navigator?.currentPage || '';
         this._leavePage(currentPage);
-
-        // 2. 进入目标页面
         this._enterPage(pageId);
     }
 
-    /**
-     * 离开页面：清理资源
-     */
     _leavePage(pageId) {
         if (pageId === 'practice-cn' || pageId === 'practice-en') {
             this.practiceEngine?.leave(pageId);
@@ -244,9 +209,6 @@ class App {
         }
     }
 
-    /**
-     * 进入页面：初始化
-     */
     _enterPage(pageId) {
         if (pageId === 'practice-cn' || pageId === 'practice-en') {
             this.practiceEngine?.enter(pageId);
@@ -265,18 +227,12 @@ class App {
         }
     }
 
-    /**
-     * 练习完成回调
-     */
     _onPracticeComplete(stats) {
         const currentPage = this.navigator?.getCurrentPage?.() || 'practice-cn';
         const articleTitle = this.practiceEngine?.currentArticleTitle || '';
         this.resultManager.show(stats, currentPage, articleTitle);
     }
 
-    /**
-     * 结果弹窗重启回调
-     */
     _onResultRestart() {
         const currentPage = this.navigator.getCurrentPage();
         if (currentPage === 'practice-cn' || currentPage === 'practice-en') {
@@ -286,7 +242,7 @@ class App {
     }
 
     // ============================================
-    // 设置相关
+    // 设置
     // ============================================
 
     _loadSettings() {
@@ -300,7 +256,7 @@ class App {
 
     _applySettings(settings) {
         const fontSize = settings.fontSize || 22;
-        document.querySelectorAll('.text-box, .cn-text-row, .cn-input-row, .input-display')
+        document.querySelectorAll('.text-box, .input-display, .floating-input')
             .forEach(el => el.style.fontSize = fontSize + 'px');
 
         const isLight = settings.theme === 'light';
@@ -320,7 +276,7 @@ class App {
     }
 
     // ============================================
-    // 用户相关
+    // 用户
     // ============================================
 
     _updateUserDisplay() {
@@ -417,13 +373,12 @@ class App {
 
 
 // ============================================
-// 启动应用
+// 启动
 // ============================================
 
 const app = new App();
 app.init();
 
-// 暴露到全局方便调试
 window.app = app;
 
 console.log('🖊️ 砚迹（YanTrace）已加载');

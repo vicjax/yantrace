@@ -17,7 +17,7 @@ class InputEngine {
         this.userService = options.userService || null;
         this.historyService = options.historyService || null;
 
-        // DOM 引用
+        // DOM 引用（中文录入）
         this.cn = {
             selector: document.getElementById('cnInputSelect'),
             newBtn: document.getElementById('cnInputNewBtn'),
@@ -37,6 +37,7 @@ class InputEngine {
             }
         };
 
+        // DOM 引用（英文录入）
         this.en = {
             selector: document.getElementById('enInputSelect'),
             newBtn: document.getElementById('enInputNewBtn'),
@@ -67,13 +68,12 @@ class InputEngine {
         this.backspaces = 0;
         this._isCnComposing = false;
         this._isEnComposing = false;
-        this._isSaved = false;
 
         this._bindEvents();
     }
 
     // ============================================
-    // 生命周期方法（由 app.js 调用）
+    // 生命周期方法
     // ============================================
 
     enter(pageId) {
@@ -85,11 +85,12 @@ class InputEngine {
         // 录入页面不需要清理，页面隐藏即可
     }
 
-    /**
-     * 绑定所有事件
-     * @private
-     */
+    // ============================================
+    // 事件绑定
+    // ============================================
+
     _bindEvents() {
+        // 选择器变化
         this.cn.selector.addEventListener('change', () => {
             this._onSelectorChange('chinese');
         });
@@ -97,6 +98,7 @@ class InputEngine {
             this._onSelectorChange('english');
         });
 
+        // 按钮事件
         this.cn.newBtn.addEventListener('click', () => {
             this._createNew('chinese');
         });
@@ -118,21 +120,16 @@ class InputEngine {
             this._reset('english');
         });
 
+        // 输入事件
         this._bindInputEvents('chinese', this.cn.display, this.cn.stats);
         this._bindInputEvents('english', this.en.display, this.en.stats);
     }
 
-    /**
-     * 绑定录入区域的输入事件
-     * @param {string} type - 'chinese' | 'english'
-     * @param {HTMLElement} display - contenteditable 元素
-     * @param {Object} stats - 统计元素引用
-     * @private
-     */
     _bindInputEvents(type, display, stats) {
         const isChinese = type === 'chinese';
         const composingKey = isChinese ? '_isCnComposing' : '_isEnComposing';
 
+        // 组合输入控制
         display.addEventListener('compositionstart', () => {
             this[composingKey] = true;
         });
@@ -142,39 +139,43 @@ class InputEngine {
             this._recalcStats(type);
         });
 
+        // 输入事件：重算字符数
         display.addEventListener('input', () => {
             if (this[composingKey]) return;
             this._recalcStats(type);
         });
 
+        // 键盘事件：记录击键和退格
         display.addEventListener('keydown', (e) => {
             if (this[composingKey]) return;
 
-            // ===== 新增：首次按键时启动计时器 =====
-            if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            const isPrintable = e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey;
+
+            // 首次按键 → 启动计时器
+            if (isPrintable) {
                 if (!this.startTime) {
                     this.startTime = Date.now();
                 }
+                this.keystrokes++;
             }
 
+            // 退格处理
             if (e.key === 'Backspace') {
                 this.backspaces++;
                 this.keystrokes++;
-            } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-                this.keystrokes++;
             }
 
+            // 更新统计显示
             requestAnimationFrame(() => {
                 this._updateStats(type);
             });
         });
     }
 
-    /**
-     * 重新计算统计（基于当前录入内容）
-     * @param {string} type - 'chinese' | 'english'
-     * @private
-     */
+    // ============================================
+    // 统计方法
+    // ============================================
+
     _recalcStats(type) {
         const el = type === 'chinese' ? this.cn : this.en;
         const display = el.display;
@@ -183,10 +184,39 @@ class InputEngine {
         this._updateStats(type);
     }
 
-    /**
-     * 加载文章列表
-     * @param {string} type - 'chinese' | 'english'
-     */
+    _updateStats(type) {
+        const stats = calcInputStats({
+            charCount: this.charCount,
+            keystrokes: this.keystrokes,
+            backspaces: this.backspaces,
+            startTime: this.startTime,
+            currentMode: type
+        });
+
+        const el = type === 'chinese' ? this.cn : this.en;
+        const s = el.stats;
+
+        if (s.main) s.main.textContent = stats.speed;
+        if (s.kpm) s.kpm.textContent = stats.kpm;
+        if (s.kspc) s.kspc.textContent = stats.kspc;
+        if (s.backspaceRate) s.backspaceRate.textContent = stats.backspaceRate;
+        if (s.timer) s.timer.textContent = formatTime(stats.elapsed);
+        if (s.count) s.count.textContent = stats.charCount;
+    }
+
+    _setStatus(type, text, color) {
+        const el = type === 'chinese' ? this.cn : this.en;
+        const statusEl = el.stats.status;
+        if (statusEl) {
+            statusEl.textContent = text;
+            statusEl.style.color = color;
+        }
+    }
+
+    // ============================================
+    // 文章管理
+    // ============================================
+
     loadArticleList(type) {
         if (!this.articleService) return;
 
@@ -210,11 +240,6 @@ class InputEngine {
         this._onSelectorChange(type);
     }
 
-    /**
-     * 选择器变化处理
-     * @param {string} type - 'chinese' | 'english'
-     * @private
-     */
     _onSelectorChange(type) {
         const selector = type === 'chinese' ? this.cn.selector : this.en.selector;
         const value = selector.value;
@@ -226,17 +251,11 @@ class InputEngine {
         }
     }
 
-    /**
-     * 创建新文章
-     * @param {string} type - 'chinese' | 'english'
-     * @private
-     */
     _createNew(type) {
         this.currentType = type;
         this.currentArticleId = null;
         this.currentArticleTitle = '';
         this.isNew = true;
-        this._isSaved = false;
         this.startTime = null;
         this.charCount = 0;
         this.keystrokes = 0;
@@ -253,12 +272,6 @@ class InputEngine {
         this._setStatus(type, '新建文章', '#f59e0b');
     }
 
-    /**
-     * 加载已有文章
-     * @param {string} type - 'chinese' | 'english'
-     * @param {string} articleId - 文章 ID
-     * @private
-     */
     _loadExisting(type, articleId) {
         if (!this.articleService) return;
 
@@ -269,7 +282,6 @@ class InputEngine {
         this.currentArticleId = articleId;
         this.currentArticleTitle = article.title;
         this.isNew = false;
-        this._isSaved = false;
         this.startTime = null;
         this.charCount = 0;
         this.keystrokes = 0;
@@ -286,11 +298,10 @@ class InputEngine {
         this._setStatus(type, '已加载，可追加', '#34d399');
     }
 
-    /**
-     * 保存文章
-     * @param {string} type - 'chinese' | 'english'
-     * @private
-     */
+    // ============================================
+    // 保存与重置
+    // ============================================
+
     _save(type) {
         const el = type === 'chinese' ? this.cn : this.en;
         const display = el.display;
@@ -325,11 +336,8 @@ class InputEngine {
                 this.loadArticleList(type);
                 el.selector.value = savedArticle.id;
 
-                this._isSaved = true;
                 this._updateStats(type);
                 this._setStatus(type, '✅ 已保存（新建）', '#34d399');
-
-                // 保存录入历史
                 this._saveInputHistory(type, savedArticle.title, '新建');
             }
         } else {
@@ -338,18 +346,15 @@ class InputEngine {
                 el.existingText.textContent = savedArticle.content;
                 el.display.textContent = '';
 
-                this._isSaved = true;
                 this._updateStats(type);
                 this._setStatus(type, '✅ 已保存（追加）', '#34d399');
-
-                // 保存录入历史
                 this._saveInputHistory(type, this.currentArticleTitle, '追加');
             } else {
                 this._setStatus(type, '❌ 保存失败', '#f87171');
             }
         }
 
-        // 重置统计（保存后归零）
+        // 保存后重置统计
         if (savedArticle) {
             this.startTime = null;
             this.charCount = 0;
@@ -359,13 +364,6 @@ class InputEngine {
         }
     }
 
-    /**
-     * 保存录入历史
-     * @param {string} type - 'chinese' | 'english'
-     * @param {string} articleTitle - 文章标题
-     * @param {string} action - '新建' 或 '追加'
-     * @private
-     */
     _saveInputHistory(type, articleTitle, action) {
         if (!this.historyService || !this.userService) return;
 
@@ -411,11 +409,6 @@ class InputEngine {
         }
     }
 
-    /**
-     * 重置录入区
-     * @param {string} type - 'chinese' | 'english'
-     * @private
-     */
     _reset(type) {
         const el = type === 'chinese' ? this.cn : this.en;
         el.display.textContent = '';
@@ -430,50 +423,6 @@ class InputEngine {
         el.display.focus();
     }
 
-    /**
-     * 更新统计显示
-     * @param {string} type - 'chinese' | 'english'
-     * @private
-     */
-    _updateStats(type) {
-        const stats = calcInputStats({
-            charCount: this.charCount,
-            keystrokes: this.keystrokes,
-            backspaces: this.backspaces,
-            startTime: this.startTime,
-            currentMode: type
-        });
-
-        const el = type === 'chinese' ? this.cn : this.en;
-        const statsEl = el.stats;
-
-        if (statsEl.main) statsEl.main.textContent = stats.speed;
-        if (statsEl.kpm) statsEl.kpm.textContent = stats.kpm;
-        if (statsEl.kspc) statsEl.kspc.textContent = stats.kspc;
-        if (statsEl.backspaceRate) statsEl.backspaceRate.textContent = stats.backspaceRate;
-        if (statsEl.timer) statsEl.timer.textContent = formatTime(stats.elapsed);
-        if (statsEl.count) statsEl.count.textContent = stats.charCount;
-    }
-
-    /**
-     * 更新状态显示
-     * @param {string} type - 'chinese' | 'english'
-     * @param {string} text - 状态文本
-     * @param {string} color - 颜色
-     * @private
-     */
-    _setStatus(type, text, color) {
-        const el = type === 'chinese' ? this.cn : this.en;
-        const statusEl = el.stats.status;
-        if (statusEl) {
-            statusEl.textContent = text;
-            statusEl.style.color = color;
-        }
-    }
-
-    /**
-     * 清理事件绑定
-     */
     destroy() {
         // 无需额外清理
     }
