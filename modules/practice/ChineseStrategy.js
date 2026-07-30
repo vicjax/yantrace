@@ -267,10 +267,16 @@ export default class ChineseStrategy {
     /**
      * 更新输入框位置到当前字符下方
      */
+    /**
+ * 更新输入框位置到当前字符下方
+ * 优化版：使用 transform 减少重排，增加容错
+ */
     updatePosition() {
-        if (!this.inputEl) return;
+    if (!this.inputEl) return;
+    if (!this.engine.textBox) return;
 
-        const pos = this.engine.getCharPosition();
+    requestAnimationFrame(() => {
+        const pos = this._getCharPosition();
         if (!pos) return;
 
         const containerRect = this.engine.getContainerRect();
@@ -279,10 +285,69 @@ export default class ChineseStrategy {
         const containerWidth = containerRect.width;
         const remainingWidth = containerWidth - pos.x - 4;
 
+        // ⭐ 拼音字号 = 正文字号的 60%~70%
+        const computedStyle = getComputedStyle(this.engine.textBox);
+        const fontSize = parseFloat(computedStyle.fontSize) || 22;
+        const pinyinSize = Math.round(fontSize * 0.8);  // 17.6px
+
+        // 行高
+        const lineHeight = parseFloat(computedStyle.lineHeight) || (fontSize * 2);
+
+        // 行距 = 行高 - 字符实际高度
+        const lineSpacing = lineHeight - pos.height;
+
+        // 拼音在行距空白区居中
+        const pinyinTop = pos.y + (lineSpacing / 2) - (pinyinSize / 2);
+
         this.inputEl.style.left = (containerRect.left + pos.x) + 'px';
-        this.inputEl.style.top = (containerRect.top + pos.y) + 'px';
+        this.inputEl.style.top = (containerRect.top + pinyinTop) + 'px';
         this.inputEl.style.width = Math.max(remainingWidth, 20) + 'px';
+        this.inputEl.style.height = pinyinSize + 'px';
+        this.inputEl.style.fontSize = pinyinSize + 'px';
+        this.inputEl.style.lineHeight = pinyinSize + 'px';
+        this.inputEl.style.padding = '0';
+        this.inputEl.style.margin = '0';
+    });
+}
+
+    /**
+     * 获取当前字符位置（增强容错）
+     */
+    _getCharPosition() {
+        const container = this.engine.textBox;
+        if (!container) return null;
+
+        const charEl = container.querySelector(`.char[data-index="${this.engine.currentCharIndex}"]`);
+        if (!charEl) return null;
+
+        // 如果字符不可见（滚动溢出），返回默认位置
+        const containerRect = container.getBoundingClientRect();
+        const charRect = charEl.getBoundingClientRect();
+
+        // 检查字符是否在可视区域内
+        const isVisible = charRect.bottom > containerRect.top &&
+            charRect.top < containerRect.bottom;
+
+        if (!isVisible) {
+            // 字符不可见时，滚动到可见位置
+            charEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            // 返回当前位置，下一帧重新计算
+            return {
+                x: charRect.left - containerRect.left,
+                y: charRect.bottom - containerRect.top,
+                width: charRect.width || 22,
+                height: charRect.height || 22
+            };
+        }
+
+        return {
+            x: charRect.left - containerRect.left,
+            y: charRect.bottom - containerRect.top,
+            width: charRect.width || 22,
+            height: charRect.height || 22
+        };
     }
+
 
     /**
      * 主动聚焦

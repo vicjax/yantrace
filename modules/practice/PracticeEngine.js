@@ -38,32 +38,7 @@ export default class PracticeEngine {
         this.resetBtn = null;
 
         // 统计元素（双页面）
-        this.stats = {
-            cn: {
-                cpm: document.getElementById('cnCpm'),
-                kpm: document.getElementById('cnKpm'),
-                kspc: document.getElementById('cnKspc'),
-                accuracy: document.getElementById('cnAccuracy'),
-                progressChars: document.getElementById('cnProgressChars'),
-                totalChars: document.getElementById('cnTotalChars'),
-                timer: document.getElementById('cnTimer'),
-                peakSpeed: document.getElementById('cnPeakSpeed'),
-                progressFill: document.getElementById('cnProgressFill'),
-                progressText: document.getElementById('cnProgressText')
-            },
-            en: {
-                wpm: document.getElementById('enWpm'),
-                kpm: document.getElementById('enKpm'),
-                kspc: document.getElementById('enKspc'),
-                accuracy: document.getElementById('enAccuracy'),
-                progressChars: document.getElementById('enProgressChars'),
-                totalChars: document.getElementById('enTotalChars'),
-                timer: document.getElementById('enTimer'),
-                peakSpeed: document.getElementById('enPeakSpeed'),
-                progressFill: document.getElementById('enProgressFill'),
-                progressText: document.getElementById('enProgressText')
-            }
-        };
+        this.stats = { cn: null, en: null };
 
         // 核心状态
         this.chars = [];
@@ -128,10 +103,38 @@ export default class PracticeEngine {
             this.textBox = document.getElementById('cnTextBox');
             this.selector = document.getElementById('cnArticleSelect');
             this.resetBtn = document.getElementById('cnResetBtn');
+
+            // ⭐ 初始化中文统计元素
+            this.stats.cn = {
+                cpm: document.getElementById('cnCpm'),
+                kpm: document.getElementById('cnKpm'),
+                kspc: document.getElementById('cnKspc'),
+                accuracy: document.getElementById('cnAccuracy'),
+                progressChars: document.getElementById('cnProgressChars'),
+                totalChars: document.getElementById('cnTotalChars'),
+                timer: document.getElementById('cnTimer'),
+                peakSpeed: document.getElementById('cnPeakSpeed'),
+                progressFill: document.getElementById('cnProgressFill'),
+                progressText: document.getElementById('cnProgressText')
+            };
         } else if (pageId === 'practice-en') {
             this.textBox = document.getElementById('enTextBox');
             this.selector = document.getElementById('enArticleSelect');
             this.resetBtn = document.getElementById('enResetBtn');
+
+            // ⭐ 初始化英文统计元素
+            this.stats.en = {
+                wpm: document.getElementById('enWpm'),
+                kpm: document.getElementById('enKpm'),
+                kspc: document.getElementById('enKspc'),
+                accuracy: document.getElementById('enAccuracy'),
+                progressChars: document.getElementById('enProgressChars'),
+                totalChars: document.getElementById('enTotalChars'),
+                timer: document.getElementById('enTimer'),
+                peakSpeed: document.getElementById('enPeakSpeed'),
+                progressFill: document.getElementById('enProgressFill'),
+                progressText: document.getElementById('enProgressText')
+            };
         }
         this._bindUIEvents();
     }
@@ -463,6 +466,9 @@ export default class PracticeEngine {
         this._scrollToCurrentChar();
     }
 
+    /**
+ * 滚动到当前字符位置（优化版）
+ */
     _scrollToCurrentChar() {
         if (!this.textBox || this.isFinished) return;
 
@@ -472,9 +478,12 @@ export default class PracticeEngine {
         const containerRect = this.textBox.getBoundingClientRect();
         const charRect = charEl.getBoundingClientRect();
 
+        // 计算字符底部到容器底部的距离
         const distanceToBottom = containerRect.bottom - charRect.bottom;
 
-        if (distanceToBottom < 80) {
+        // 如果字符即将被输入框遮挡（距离底部 < 100px），触发滚动
+        if (distanceToBottom < 100) {
+            // 滚动目标：让字符出现在容器顶部下方 20% 位置
             const targetOffset = containerRect.height * 0.2;
             const currentOffset = charRect.top - containerRect.top;
             const scrollDelta = currentOffset - targetOffset;
@@ -698,29 +707,34 @@ export default class PracticeEngine {
     }
 
     _resetStatsDisplay() {
-        // 重置中文统计
         const cn = this.stats.cn;
-        if (cn.cpm) cn.cpm.textContent = '0';
-        if (cn.kpm) cn.kpm.textContent = '0';
-        if (cn.kspc) cn.kspc.textContent = '0';
-        if (cn.accuracy) cn.accuracy.textContent = '100';
-        if (cn.progressChars) cn.progressChars.textContent = '0';
-        if (cn.totalChars) cn.totalChars.textContent = '0';
-        if (cn.peakSpeed) cn.peakSpeed.textContent = '0';
-        if (cn.progressFill) cn.progressFill.style.width = '0%';
-        if (cn.progressText) cn.progressText.textContent = '0%';
+        const en = this.stats.en;
+
+        // 重置中文统计
+        if (cn) {
+            if (cn.cpm) cn.cpm.textContent = '0';
+            if (cn.kpm) cn.kpm.textContent = '0';
+            if (cn.kspc) cn.kspc.textContent = '0';
+            if (cn.accuracy) cn.accuracy.textContent = '100';
+            if (cn.progressChars) cn.progressChars.textContent = '0';
+            if (cn.totalChars) cn.totalChars.textContent = '0';
+            if (cn.peakSpeed) cn.peakSpeed.textContent = '0';
+            if (cn.progressFill) cn.progressFill.style.width = '0%';
+            if (cn.progressText) cn.progressText.textContent = '0%';
+        }
 
         // 重置英文统计
-        const en = this.stats.en;
-        if (en.wpm) en.wpm.textContent = '0';
-        if (en.kpm) en.kpm.textContent = '0';
-        if (en.kspc) en.kspc.textContent = '0';
-        if (en.accuracy) en.accuracy.textContent = '100';
-        if (en.progressChars) en.progressChars.textContent = '0';
-        if (en.totalChars) en.totalChars.textContent = '0';
-        if (en.peakSpeed) en.peakSpeed.textContent = '0';
-        if (en.progressFill) en.progressFill.style.width = '0%';
-        if (en.progressText) en.progressText.textContent = '0%';
+        if (en) {
+            if (en.wpm) en.wpm.textContent = '0';
+            if (en.kpm) en.kpm.textContent = '0';
+            if (en.kspc) en.kspc.textContent = '0';
+            if (en.accuracy) en.accuracy.textContent = '100';
+            if (en.progressChars) en.progressChars.textContent = '0';
+            if (en.totalChars) en.totalChars.textContent = '0';
+            if (en.peakSpeed) en.peakSpeed.textContent = '0';
+            if (en.progressFill) en.progressFill.style.width = '0%';
+            if (en.progressText) en.progressText.textContent = '0%';
+        }
     }
 
     // ============================================
@@ -773,5 +787,18 @@ export default class PracticeEngine {
     _escapeHtml(str) {
         const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
         return String(str).replace(/[&<>"']/g, m => map[m] || m);
+    }
+
+    /**
+     * 刷新页面（设置变化时调用）
+     * @param {string} type - 'chinese' 或 'english'
+     */
+    refresh(type) {
+        // 重新加载当前文章
+        if (this.currentArticleId) {
+            this.loadArticle(type, this.currentArticleId);
+        } else {
+            this.loadFirstArticle(type);
+        }
     }
 }

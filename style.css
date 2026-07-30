@@ -23,12 +23,13 @@ body {
 #app {
     width: 100%;
     max-width: 820px;
-    min-height: 500px;
+    min-height: 650px;
     background: #1a1a2e;
     border-radius: 24px;
     padding: 28px 32px 36px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
 }
+
 
 /* ============================================
    顶部栏
@@ -71,17 +72,12 @@ body {
 
 
 /* ============================================
-   页面切换
+   页面容器
    ============================================ */
-.page {
-    display: none;
-    animation: fadeIn 0.25s ease;
-    min-height: 380px;
-}
-
-.page.active {
+.page-container {
     display: flex;
     flex-direction: column;
+    animation: fadeIn 0.25s ease;
 }
 
 @keyframes fadeIn {
@@ -89,7 +85,6 @@ body {
         opacity: 0;
         transform: translateY(6px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
@@ -137,30 +132,97 @@ body {
     font-weight: 500;
 }
 
-.home-footer {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-    padding-top: 20px;
-    border-top: 1px solid #2a2a40;
+/* ----- 首页分区 ----- */
+.home-section {
+    margin-bottom: 28px;
 }
 
-.footer-btn {
+.home-section:last-child {
+    margin-bottom: 0;
+}
+
+.home-section-title {
+    font-size: 13px;
+    color: #666688;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+    padding-left: 4px;
+}
+
+/* ----- 练习区按钮（大） ----- */
+.home-section-practice .home-btn {
+    padding: 48px 20px;
+    font-size: 18px;
+    border-width: 2px;
+    transition: transform 0.2s;
+}
+
+.home-section-practice .home-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(79, 70, 229, 0.25);
+}
+
+.home-section-practice .home-btn .home-btn-icon {
+    font-size: 52px;
+}
+
+.home-section-practice .home-btn .home-btn-label {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.home-section-practice .home-btn .home-btn-desc {
+    display: block;
+    font-size: 13px;
+    color: #666688;
+    margin-top: 4px;
+    font-weight: 400;
+}
+
+/* ----- 管理区按钮（小） ----- */
+.home-section-management .home-grid {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.home-section-management .home-btn {
+    flex: 1;
+    min-width: 80px;
+    padding: 12px 16px;
     background: transparent;
     border: 1px solid #2a2a40;
     border-radius: 10px;
-    padding: 10px 20px;
     cursor: pointer;
-    color: #8888aa;
-    font-size: 14px;
     transition: 0.2s;
+    color: #8888aa;
     font-family: inherit;
+    text-align: center;
 }
 
-.footer-btn:hover {
+.home-section-management .home-btn:hover {
     background: #1a1a30;
     border-color: #4f46e5;
     color: #e0e0e0;
+}
+
+.home-section-management .home-btn .home-btn-icon {
+    display: block;
+    font-size: 20px;
+    margin-bottom: 2px;
+}
+
+.home-section-management .home-btn .home-btn-label {
+    font-size: 12px;
+}
+
+.home-section-management .home-section-title {
+    font-size: 12px;
+    color: #444466;
+    letter-spacing: 1px;
+    border-top: 1px solid #2a2a40;
+    padding-top: 20px;
+    margin-top: 8px;
 }
 
 
@@ -258,7 +320,7 @@ body {
 
 
 /* ============================================
-   统计栏 - 紧凑单行
+   统计栏
    ============================================ */
 .stats-bar {
     display: flex;
@@ -290,7 +352,7 @@ body {
 
 
 /* ============================================
-   进度条（独立一行）
+   进度条
    ============================================ */
 .progress-container {
     display: flex;
@@ -325,7 +387,6 @@ body {
     font-variant-numeric: tabular-nums;
 }
 
-/* 状态颜色 */
 .status-unsaved {
     color: #f59e0b;
 }
@@ -336,29 +397,36 @@ body {
 
 
 /* ============================================
-   文章展示区（练习模式）
+   文章展示区（练习模式）- 优化版
    ============================================ */
 .text-box {
     background: #0e0e1a;
     border-radius: 16px;
-    padding: 24px 28px;
-    min-height: 160px;
     border: 1px solid #28283e;
-    font-size: 22px;
-    line-height: 2.3;
-    letter-spacing: 0.5px;
-    margin-bottom: 12px;
-    overflow: auto;
-    max-height: 400px;
+    padding: 22px 28px;
+    margin-bottom: 22px;
+    overflow-y: auto;
     user-select: none;
-    word-break: break-word;
     white-space: pre-wrap;
+    word-break: break-word;
+    font-size: var(--font-size, 22px);
+    line-height: var(--line-height, 2);
+    letter-spacing: 0.5px;
+    flex: 1;
+    /* 确保字符换行稳定 */
+    display: block;
 }
 
 .text-box .char {
-    transition: 0.1s;
+    display: inline-block;
+    min-width: 0.5em;
+    text-align: center;
     border-radius: 3px;
     padding: 0 1px;
+    transition: 0.1s;
+    /* 为输入框定位提供稳定参考 */
+    position: relative;
+    vertical-align: top; 
 }
 
 .text-box .char.correct {
@@ -373,9 +441,14 @@ body {
 .text-box .char.current {
     background: #4f46e5;
     color: #ffffff;
-    padding: 0px 3px;
+    padding: 1px 0px;
     border-radius: 4px;
     animation: pulse 1s ease-in-out infinite alternate;
+    /* 当前字符特殊处理：作为定位锚点 */
+    position: relative;
+    z-index: 2; 
+    line-height: 1;
+    vertical-align: baseline;  /* ⭐ 基线对齐 */
 }
 
 .text-box .char.fixed {
@@ -388,17 +461,10 @@ body {
         opacity: 0.6;
         transform: scale(0.98);
     }
-
     100% {
         opacity: 1;
         transform: scale(1.02);
     }
-}
-
-.text-box .placeholder {
-    color: #4a4a6a;
-    text-align: center;
-    font-size: 18px;
 }
 
 
@@ -807,21 +873,27 @@ body {
     position: fixed;
     background: transparent !important;
     border: none !important;
+    outline: none !important;
     color: #e0e0e0;
     font-family: 'Segoe UI', 'PingFang SC', monospace;
+    font-size: var(--pinyin-size, 18px);
+    line-height: var(--pinyin-size, 18px);
+    height: var(--pinyin-size, 18px);
     text-align: left;
-    outline: none !important;
-    padding: 0 2px;
+    padding: 0;
+    margin: 0;
     caret-color: #4f46e5;
     z-index: 100;
     pointer-events: auto;
-    min-width: 20px;
-    font-size: 20px;
-    line-height: 1.2;
+    min-width: 10px;
     box-shadow: none !important;
     -webkit-appearance: none;
     appearance: none;
     border-radius: 0;
+    box-sizing: content-box;
+    letter-spacing: 0;
+    text-indent: 0;
+    overflow: visible;
 }
 
 .floating-input:focus {
@@ -860,25 +932,57 @@ body {
 
 
 /* ============================================
-   响应式
+   响应式（只改布局，不改文字大小）
    ============================================ */
-@media (max-width: 600px) {
+
+/* ----- 平板端 ----- */
+@media (max-width: 820px) {
     #app {
-        min-height: auto;
-        padding: 16px;
+        padding: 20px 24px 28px;
     }
 
-    .page {
+    .text-box {
+        padding: 18px 24px;
+        margin-bottom: 18px;
+    }
+
+    .home-btn {
+        padding: 28px 16px;
+    }
+
+    .home-btn-icon {
+        font-size: 36px;
+    }
+}
+
+/* ----- 移动端 ----- */
+@media (max-width: 600px) {
+    #app {
+        padding: 16px 16px 20px;
+        border-radius: 16px;
         min-height: auto;
+    }
+
+    .page-container {
+        min-height: auto;
+    }
+
+    .topbar {
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+    }
+
+    .logo {
+        font-size: 18px;
     }
 
     .home-grid {
-        grid-template-columns: 1fr 1fr;
         gap: 10px;
     }
 
     .home-btn {
         padding: 20px 12px;
+        border-radius: 12px;
     }
 
     .home-btn-icon {
@@ -887,6 +991,31 @@ body {
 
     .home-btn-label {
         font-size: 14px;
+    }
+
+    .home-section-practice .home-btn {
+        padding: 32px 16px;
+    }
+
+    .home-section-practice .home-btn .home-btn-icon {
+        font-size: 38px;
+    }
+
+    .home-section-practice .home-btn .home-btn-label {
+        font-size: 16px;
+    }
+
+    .home-section-management .home-btn {
+        padding: 10px 12px;
+        min-width: 60px;
+    }
+
+    .home-section-management .home-btn .home-btn-icon {
+        font-size: 16px;
+    }
+
+    .home-section-management .home-btn .home-btn-label {
+        font-size: 11px;
     }
 
     .mode-header {
@@ -904,16 +1033,16 @@ body {
     }
 
     .text-box {
-        font-size: 18px;
-        padding: 16px;
-        line-height: 2.4;
-        max-height: 300px;
+        padding: 14px 18px;
+        margin-bottom: 14px;
+        border-radius: 12px;
     }
 
     .stats-bar {
         font-size: 11px;
-        gap: 4px 10px;
-        padding: 4px 10px;
+        gap: 4px 6px;
+        padding: 4px 8px;
+        border-radius: 20px;
     }
 
     .stats-bar b {
@@ -921,7 +1050,7 @@ body {
     }
 
     .progress-container {
-        min-width: 60px;
+        gap: 8px;
     }
 
     .progress-text {
@@ -954,16 +1083,6 @@ body {
         font-size: 16px;
     }
 
-    .home-footer {
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-
-    .footer-btn {
-        font-size: 12px;
-        padding: 6px 14px;
-    }
-
     .history-item {
         font-size: 12px;
     }
@@ -976,10 +1095,24 @@ body {
         gap: 6px;
         flex-wrap: wrap;
     }
+
+    .settings-group {
+        padding: 10px 12px;
+    }
+
+    .settings-group input[type="number"] {
+        font-size: 13px;
+    }
 }
 
+/* ----- 小屏手机 ----- */
 @media (max-width: 400px) {
     .home-grid {
         grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .home-section-management .home-grid {
+        grid-template-columns: 1fr 1fr;
     }
 }
