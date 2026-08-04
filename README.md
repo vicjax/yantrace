@@ -2,7 +2,7 @@
 
 > 本地运行、开箱即用的打字练习软件
 
-[![version](https://img.shields.io/badge/version-v1.3.0-blue)]()
+[![version](https://img.shields.io/badge/version-v0.4.0-blue)]()
 [![language](https://img.shields.io/badge/language-JavaScript-yellow)]()
 [![license](https://img.shields.io/badge/license-MIT-green)]()
 
