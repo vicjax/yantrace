@@ -1,14 +1,17 @@
 /**
  * HistoryView - 历史记录视图
- * 职责：纯 DOM 渲染，不包含业务逻辑
  */
 export default class HistoryView {
     constructor(options = {}) {
         this.onExport = options.onExport || null;
         this.onClear = options.onClear || null;
+        this.dataDisplay = options.dataDisplay;
 
         this.container = null;
         this.records = [];
+        this.listEl = null;
+        this.exportBtn = null;
+        this.clearBtn = null;
     }
 
     render(container) {
@@ -16,6 +19,7 @@ export default class HistoryView {
         container.innerHTML = this._getHtml();
         this._cacheElements();
         this._bindEvents();
+        this._renderList();
     }
 
     updateList(records) {
@@ -55,7 +59,7 @@ export default class HistoryView {
 
     _bindEvents() {
         // 返回按钮
-        this.container.querySelectorAll('.back-btn').forEach(btn => {
+        this.container.querySelectorAll('.back-btn').forEach((btn) => {
             btn.addEventListener('click', () => {
                 const target = btn.dataset.target;
                 if (target && window.app?.navigator) {
@@ -85,34 +89,53 @@ export default class HistoryView {
             return;
         }
 
-        this.listEl.innerHTML = this.records.map(record => {
-            const modeMap = {
-                'practice-cn': '中文练习',
-                'practice-en': '英文练习',
-                'input-cn': '中文录入',
-                'input-en': '英文录入'
-            };
-            const modeLabel = modeMap[record.mode] || record.mode || '未知';
+        const modeMap = {
+            'practice-cn': '中文练习',
+            'practice-en': '英文练习',
+            'input-cn': '中文录入',
+            'input-en': '英文录入',
+        };
 
-            const stats = record.stats || {};
-            const speed = stats.wpm || stats.cpm || 0;
-            // ⭐ 修复：添加空值检查
-            const speedLabel = record.mode && record.mode.includes('en') ? 'WPM' : 'CPM';
+        this.listEl.innerHTML = this.records
+            .map((record) => {
+                const modeLabel = modeMap[record.mode] || record.mode || '未知';
+                const stats = record.stats || {};
+                const speed = stats.wpm || stats.cpm || 0;
+                const speedLabel =
+                    record.mode && record.mode.includes('en') ? 'WPM' : 'CPM';
 
-            return `
-            <div class="history-item">
-                <span class="date">${this._formatDate(record.createdAt)}</span>
-                <span class="mode">${modeLabel}</span>
-                <span class="article">${record.articleTitle || ''}</span>
-                <span class="stats">
-                    <span>${speedLabel} <span class="num">${speed}</span></span>
-                    <span>准确率 <span class="num">${stats.accuracy || 0}%</span></span>
-                    <span>正确 <span class="num">${stats.correct || 0}</span></span>
-                    <span>错误 <span class="num">${stats.errors || 0}</span></span>
-                </span>
-            </div>
-        `;
-        }).join('');
+                return `
+                    <div class="history-item" data-id="${record.id}">
+                        <span class="date">${this._formatDate(record.createdAt)}</span>
+                        <span class="mode">${modeLabel}</span>
+                        <span class="article">${record.articleTitle || ''}</span>
+                        <span class="stats">
+                            <span>${speedLabel} <span class="num">${speed}</span></span>
+                            <span>准确率 <span class="num">${stats.accuracy || 0}%</span></span>
+                            <span>正确 <span class="num">${stats.correct || 0}</span></span>
+                            <span>错误 <span class="num">${stats.errors || 0}</span></span>
+                        </span>
+                    </div>
+                `;
+            })
+            .join('');
+
+        // ⭐ 绑定点击事件
+        this.listEl.querySelectorAll('.history-item').forEach((el) => {
+            el.addEventListener('click', () => {
+                const id = el.dataset.id;
+                const record = this.records.find((r) => r.id === id);
+                if (record && this.dataDisplay) {
+                    this.dataDisplay.show({
+                        stats: record.stats,
+                        mode: record.mode,
+                        articleTitle: record.articleTitle,
+                        createdAt: record.createdAt,
+                        showRestart: false,
+                    });
+                }
+            });
+        });
     }
 
     _formatDate(timestamp) {
@@ -122,7 +145,7 @@ export default class HistoryView {
             month: '2-digit',
             day: '2-digit',
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
         });
     }
 }
