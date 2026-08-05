@@ -3,7 +3,7 @@
  * 职责：管理每个用户的偏好设置，持久化到 localStorage
  */
 
-import Storage from '../utils/storage.js';
+import Storage from '../../utils/storage.js';
 
 // ============================================
 // 常量

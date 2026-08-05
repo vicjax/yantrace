@@ -3,8 +3,8 @@
  * 职责：管理文章的增删改查，持久化到 localStorage
  */
 
-import Storage from '../utils/storage.js';
-import Helpers from '../utils/helpers.js';
+import Storage from '../../utils/storage.js';
+import Helpers from '../../utils/helpers.js';
 
 // ============================================
 // 常量

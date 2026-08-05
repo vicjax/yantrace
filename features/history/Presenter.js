@@ -2,8 +2,8 @@
  * HistoryPresenter - 历史记录展示器
  * 职责：业务逻辑（加载历史、导出、清空）
  */
-import BasePresenter from '../core/BasePresenter.js';
-import HistoryView from '../views/HistoryView.js';
+import BasePresenter from '../../core/BasePresenter.js';
+import HistoryView from './View.js';
 
 export default class HistoryPresenter extends BasePresenter {
     constructor(options = {}) {

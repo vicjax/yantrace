@@ -3,8 +3,8 @@
  * 职责：管理历史记录的增删改查、统计，持久化到 localStorage
  */
 
-import Storage from '../utils/storage.js';
-import Helpers from '../utils/helpers.js';
+import Storage from '../../utils/storage.js';
+import Helpers from '../../utils/helpers.js';
 
 const STORAGE_KEY = 'yantrace_history';
 

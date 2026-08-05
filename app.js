@@ -10,18 +10,21 @@
 import Storage from './utils/storage.js';
 import * as Helpers from './utils/helpers.js';
 
-import ArticleService from './services/article.js';
-import UserService from './services/user.js';
-import HistoryService from './services/history.js';
-import SettingsService from './services/settings.js';
-
 import Navigator from './modules/navigator.js';
 import PracticeEngine from './modules/practice/index.js';
 import ResultManager from './modules/result.js';
-import UserPresenter from './presenters/UserPresenter.js';
-import ArticlePresenter from './presenters/ArticlePresenter.js';
-import HistoryPresenter from './presenters/HistoryPresenter.js';
-import SettingsPresenter from './presenters/SettingsPresenter.js';
+
+// Model 层
+import { Model as UserModel } from './features/user/index.js';
+import { Model as ArticleModel } from './features/article/index.js';
+import { Model as HistoryModel } from './features/history/index.js';
+import { Model as SettingsModel } from './features/settings/index.js';
+
+// Presenter 层（默认导出）
+import UserPresenter from './features/user/index.js';
+import ArticlePresenter from './features/article/index.js';
+import HistoryPresenter from './features/history/index.js';
+import SettingsPresenter from './features/settings/index.js';
 
 
 // ============================================
@@ -81,10 +84,10 @@ class App {
     }
 
     _initServices() {
-        this.articleService = new ArticleService();
-        this.userService = new UserService();
-        this.historyService = new HistoryService();
-        this.settingsService = new SettingsService();
+        this.articleService = new ArticleModel();
+        this.userService = new UserModel();
+        this.historyService = new HistoryModel();
+        this.settingsService = new SettingsModel();
         console.log('📚 服务层初始化完成');
     }
 

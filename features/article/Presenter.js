@@ -2,8 +2,8 @@
  * ArticlePresenter - 文章管理展示器
  * 职责：业务逻辑（增删改查、模式管理）
  */
-import BasePresenter from '../core/BasePresenter.js';
-import ArticleView from '../views/ArticleView.js';
+import BasePresenter from '../../core/BasePresenter.js';
+import ArticleView from './View.js';
 
 export default class ArticlePresenter extends BasePresenter {
     constructor(options = {}) {
