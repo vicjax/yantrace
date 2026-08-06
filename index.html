@@ -1,48 +1,63 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>砚迹 · 打字练习</title>
     <link rel="stylesheet" href="style.css" />
-</head>
+  </head>
 
-<body>
+  <body>
     <div id="app">
-        <!-- ===== 顶部栏（所有页面共用） ===== -->
-        <header class="topbar">
-            <div class="topbar-left">
-                <span class="logo">砚迹</span>
-            </div>
-            <div class="topbar-right">
-                <span class="user-name" id="userName">👤 未登录</span>
-            </div>
-        </header>
-
-        <!-- ===== 页面容器（动态渲染） ===== -->
-        <div id="pageContainer" class="page-container"></div>
-
-        <!-- ===== 结果弹窗 ===== -->
-        <div class="result-overlay" id="resultOverlay">
-            <div class="result-card">
-                <h2 id="resultTitle">🎉 练习完成！</h2>
-                <div class="result-main">
-                    <span class="result-number" id="resultMainNumber">0</span>
-                    <span class="result-label" id="resultMainLabel">CPM</span>
-                </div>
-                <div class="result-grid" id="resultGrid"></div>
-                <div class="result-actions">
-                    <button class="result-btn restart" id="resultRestartBtn">🔄 再来一次</button>
-                    <button class="result-btn copy" id="resultCopyBtn">📋 复制结果</button>
-                    <button class="result-btn home" id="resultHomeBtn">🏠 返回首页</button>
-                </div>
-            </div>
+      <!-- ===== 顶部栏（所有页面共用） ===== -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <span class="logo">砚迹</span>
         </div>
+        <div class="topbar-right">
+          <span class="user-name" id="userName">👤 未登录</span>
+        </div>
+      </header>
 
+      <!-- ===== 页面容器（动态渲染） ===== -->
+      <div id="pageContainer" class="page-container"></div>
+
+      <!-- ===== 结果弹窗 ===== -->
+      <div class="result-overlay" id="resultOverlay">
+        <div class="result-card">
+          <h2 id="resultTitle">🎉 练习完成！</h2>
+
+          <!-- 主速度 -->
+          <div class="result-main">
+            <span class="result-number" id="resultMainNumber">0</span>
+            <span class="result-label" id="resultMainLabel">CPM</span>
+          </div>
+
+          <!-- 简略数据 -->
+          <div class="result-summary">
+            <span>准确率 <b id="resultAccuracy">0%</b></span>
+            <span>用时 <b id="resultTime">0s</b></span>
+          </div>
+
+          <!-- 统计网格（隐藏，仅详细模式使用） -->
+          <div class="result-grid" id="resultGrid" style="display: none"></div>
+
+          <!-- 按钮 -->
+          <div class="result-actions">
+            <button class="result-btn restart" id="resultRestartBtn">
+              🔄 再来一次
+            </button>
+            <button class="result-btn detail" id="resultDetailBtn">
+              📊 查看详细数据
+            </button>
+            <button class="result-btn home" id="resultHomeBtn">
+              🏠 返回首页
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script type="module" src="app.js"></script>
-</body>
-
+  </body>
 </html>

@@ -12,8 +12,14 @@ import * as Helpers from "./utils/helpers.js";
 
 import Navigator from "./modules/navigator.js";
 import PracticeEngine from "./modules/practice/index.js";
-import ResultManager from "./modules/result.js";
-import DataDisplay from "./modules/DataDisplay.js";
+import ResultToast from "./modules/ResultToast.js";
+import { MENU_CONFIG } from "./config/menu.js";
+
+import {
+  getHomeHtml,
+  getPracticeCnHtml,
+  getPracticeEnHtml,
+} from "./modules/PageTemplates.js";
 
 // Model 层
 import { Model as UserModel } from "./features/user/index.js";
@@ -43,7 +49,6 @@ class App {
     this.navigator = null;
     this.practiceEngine = null;
     this.resultManager = null;
-    this.dataDisplay = null;
 
     // Presenter 实例（按需初始化）
     this.userPresenter = null;
@@ -137,17 +142,26 @@ class App {
       getSettings: () => this._getCurrentSettings(),
     });
 
-    // ⭐ 创建全局唯一的 DataDisplay
-    this.dataDisplay = new DataDisplay();
-    this.dataDisplay.onRestart(() => this._onResultRestart());
+    // ⭐ 结果模块
+    // 替换 resultPresenter 为 resultToast
+    this.resultToast = new ResultToast();
+    this.resultToast.setCallbacks(
+      () => this._onResultRestart(),
+      (data) => {
+        console.log("📊 查看详细数据:", data);
+        // TODO: 调用数据分析模块
+      },
+    );
 
-    // ⭐ 注入 dataDisplay 到 ResultManager
-    this.resultManager = new ResultManager({
-      historyService: this.historyService,
+    // app.js _initModules()
+
+    // 设置 Presenter
+    this.settingsPresenter = new SettingsPresenter({
+      settingsService: this.settingsService,
       userService: this.userService,
-      onRestart: () => this._onResultRestart(),
-      dataDisplay: this.dataDisplay, // 依赖注入
+      // ⭐ 删除 onSettingsChanged 回调
     });
+
     console.log("🧩 功能模块初始化完成");
   }
 
@@ -185,7 +199,6 @@ class App {
       this.historyPresenter = new HistoryPresenter({
         historyService: this.historyService,
         userService: this.userService,
-        dataDisplay: this.dataDisplay, // ⭐ 注入
       });
     }
     return this.historyPresenter;
@@ -196,9 +209,7 @@ class App {
       this.settingsPresenter = new SettingsPresenter({
         settingsService: this.settingsService,
         userService: this.userService,
-        onSettingsChanged: (settings) => {
-          this._applySettings(settings);
-        },
+        // ⭐ 不再需要 onSettingsChanged
       });
     }
     return this.settingsPresenter;
@@ -216,48 +227,10 @@ class App {
   _applyUserSettings() {
     const settings = this._getCurrentSettings();
     if (!settings) return;
-    this._applySettings(settings);
-  }
 
-  _applySettings(settings) {
-    const fontSize = settings.fontSize || 22;
-    const pageHeight = settings.pageHeight || 550;
-    const theme = settings.theme || "dark";
-
-    document.documentElement.style.setProperty("--font-size", fontSize + "px");
-
-    const fixedHeight = 166;
-    const textBoxHeight = Math.max(pageHeight - fixedHeight, 200);
-
-    document.querySelectorAll(".text-box").forEach((el) => {
-      el.style.fontSize = fontSize + "px";
-      el.style.minHeight = textBoxHeight + "px";
-      el.style.maxHeight = textBoxHeight + "px";
-
-      const pinyinSize = Math.max(fontSize - 4, 12);
-      const lineSpacing = pinyinSize + 2;
-      const lineHeight = fontSize + lineSpacing;
-      el.style.lineHeight = lineHeight / fontSize;
-    });
-
-    const container = document.querySelector(".page-container");
-    if (container) {
-      container.style.minHeight = pageHeight + "px";
-    }
-
-    const isLight = theme === "light";
-    document.body.classList.toggle("light-theme", isLight);
-
-    this._refreshCurrentPage();
-  }
-
-  _refreshCurrentPage() {
-    const pageId = this.currentPageId;
-    if (!pageId || pageId === "home") return;
-
-    if (pageId === "practice-cn" || pageId === "practice-en") {
-      const type = pageId === "practice-cn" ? "chinese" : "english";
-      this.practiceEngine?.refresh(type);
+    // 直接调用 settingsPresenter 的 applySettings
+    if (this.settingsPresenter) {
+      this.settingsPresenter.applySettings(settings);
     }
   }
 
@@ -273,13 +246,13 @@ class App {
 
     switch (pageId) {
       case "home":
-        html = this._getHomeHtml();
+        html = getHomeHtml();
         break;
       case "practice-cn":
-        html = this._getPracticeCnHtml();
+        html = getPracticeCnHtml();
         break;
       case "practice-en":
-        html = this._getPracticeEnHtml();
+        html = getPracticeEnHtml();
         break;
       case "user":
       case "history":
@@ -290,7 +263,6 @@ class App {
       default:
         html = '<p class="placeholder">页面不存在</p>';
     }
-
     container.innerHTML = html;
 
     this._applyUserSettings();
@@ -298,140 +270,6 @@ class App {
     this.currentPageId = pageId;
   }
 
-  // ============================================
-  // 页面 HTML 生成（保持不变）
-  // ============================================
-
-  _getHomeHtml() {
-    const config = this._getMenuConfig();
-    let html = "";
-
-    config.sections.forEach((section) => {
-      const sectionClass =
-        section.id === "practice"
-          ? "home-section-practice"
-          : "home-section-management";
-      html += `<div class="home-section ${sectionClass}">`;
-      html += `<div class="home-section-title">${section.title}</div>`;
-      html += `<div class="home-grid">`;
-
-      section.items.forEach((item) => {
-        const descHtml = item.desc
-          ? `<span class="home-btn-desc">${item.desc}</span>`
-          : "";
-        html += `
-                    <button class="home-btn" data-target="${item.id}">
-                        <span class="home-btn-icon">${item.icon}</span>
-                        <span class="home-btn-label">${item.label}</span>
-                        ${descHtml}
-                    </button>
-                `;
-      });
-
-      html += `</div></div>`;
-    });
-
-    return html;
-  }
-
-  _getPracticeCnHtml() {
-    return `
-            <div class="mode-header">
-                <button class="back-btn" data-target="home">← 返回</button>
-                <h2>🀄 中文打字练习</h2>
-                <select id="cnArticleSelect" class="article-select"></select>
-                <button class="reset-btn" id="cnResetBtn">⟳ 重新开始</button>
-            </div>
-
-            <div class="stats-bar" id="cnStatsBar">
-                <span>CPM⚡<b id="cnCpm">0</b></span>
-                <span>KPM⌨️<b id="cnKpm">0</b></span>
-                <span>KSPC📊<b id="cnKspc">0</b></span>
-                <span>准确率🎯<b id="cnAccuracy">100</b>%</span>
-                <span>字数📝<b id="cnProgressChars">0</b>/<b id="cnTotalChars">0</b></span>
-                <span>用时⏱<b id="cnTimer">00:00</b></span>
-                <span>峰值⚡<b id="cnPeakSpeed">0</b></span>
-            </div>
-
-            <div class="progress-container">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="cnProgressFill" style="width:0%"></div>
-                </div>
-                <span class="progress-text" id="cnProgressText">0%</span>
-            </div>
-
-            <div class="text-box" id="cnTextBox">
-                <span class="placeholder">选择一篇文章开始练习</span>
-            </div>
-        `;
-  }
-
-  _getPracticeEnHtml() {
-    return `
-            <div class="mode-header">
-                <button class="back-btn" data-target="home">← 返回</button>
-                <h2>🔤 英文打字练习</h2>
-                <select id="enArticleSelect" class="article-select"></select>
-                <button class="reset-btn" id="enResetBtn">⟳ 重新开始</button>
-            </div>
-
-            <div class="stats-bar" id="enStatsBar">
-                <span>WPM⚡<b id="enWpm">0</b></span>
-                <span>KPM⌨️<b id="enKpm">0</b></span>
-                <span>KSPC📊<b id="enKspc">0</b></span>
-                <span>准确率🎯<b id="enAccuracy">100</b>%</span>
-                <span>字数📝<b id="enProgressChars">0</b>/<b id="enTotalChars">0</b></span>
-                <span>用时⏱<b id="enTimer">00:00</b></span>
-                <span>峰值⚡<b id="enPeakSpeed">0</b></span>
-            </div>
-
-            <div class="progress-container">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="enProgressFill" style="width:0%"></div>
-                </div>
-                <span class="progress-text" id="enProgressText">0%</span>
-            </div>
-
-            <div class="text-box" id="enTextBox">
-                <span class="placeholder">选择一篇文章开始练习</span>
-            </div>
-        `;
-  }
-
-  _getMenuConfig() {
-    return {
-      sections: [
-        {
-          id: "practice",
-          title: "🎯 练习",
-          items: [
-            {
-              id: "practice-cn",
-              icon: "🀄",
-              label: "中文练习",
-              desc: "开始打字",
-            },
-            {
-              id: "practice-en",
-              icon: "🔤",
-              label: "英文练习",
-              desc: "Start Typing",
-            },
-          ],
-        },
-        {
-          id: "management",
-          title: "📂 管理",
-          items: [
-            { id: "article-management", icon: "📄", label: "文章管理" },
-            { id: "user", icon: "👤", label: "用户管理" },
-            { id: "history", icon: "📊", label: "历史记录" },
-            { id: "settings", icon: "⚙️", label: "设置" },
-          ],
-        },
-      ],
-    };
-  }
 
   // ============================================
   // 页面事件绑定
@@ -530,16 +368,21 @@ class App {
     const currentPage = this.currentPageId || "practice-cn";
     const articleTitle = this.practiceEngine?.currentArticleTitle || "";
 
-    // 先初始化 ResultManager（如果还没初始化）
-    if (!this.resultManager) {
-      this.resultManager = new ResultManager({
-        historyService: this.historyService,
-        userService: this.userService,
-        onRestart: () => this._onResultRestart(),
-      });
+    // 1. 保存历史（直接调用 historyService）
+    const user = this.userService?.getCurrent();
+    if (user) {
+      this.historyService.addWithDedup(
+        user.id,
+        currentPage,
+        articleTitle,
+        stats,
+      );
     }
 
-    this.resultManager.show(stats, currentPage, articleTitle);
+    // 2. 显示弹窗
+    if (this.resultToast) {
+      this.resultToast.show(stats, currentPage, articleTitle);
+    }
   }
 
   _onResultRestart() {
