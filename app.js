@@ -47,7 +47,6 @@ class App {
     // 功能模块实例
     this.navigator = null;
     this.practiceEngine = null;
-    this.resultManager = null;
 
     // Presenter 实例
     this.userPresenter = null;
