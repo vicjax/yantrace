@@ -3,7 +3,7 @@
  * 职责：业务逻辑（增删改查、切换用户）
  */
 import BasePresenter from '../../core/BasePresenter.js';
-import UserView from './View.js';
+import UserView from './UserView.js';
 
 export default class UserPresenter extends BasePresenter {
     constructor(options = {}) {

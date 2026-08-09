@@ -3,7 +3,7 @@
  * 职责：业务逻辑（增删改查、模式管理）
  */
 import BasePresenter from '../../core/BasePresenter.js';
-import ArticleView from './View.js';
+import ArticleView from './ArticleView.js';
 
 export default class ArticlePresenter extends BasePresenter {
     constructor(options = {}) {

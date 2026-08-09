@@ -3,7 +3,7 @@
  * 职责：业务逻辑（加载设置、保存设置、应用设置）
  */
 import BasePresenter from "../../core/BasePresenter.js";
-import SettingsView from "./View.js";
+import SettingsView from "./SettingsView.js";
 
 export default class SettingsPresenter extends BasePresenter {
   constructor(options = {}) {

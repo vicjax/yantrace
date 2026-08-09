@@ -1,6 +1,3 @@
-/**
- * 设置模块入口
- * 导出 SettingsPresenter 作为公共 API
- */
-export { default as Model } from './Model.js';
-export { default } from './Presenter.js';
+export { default as SettingsModel } from './SettingsModel.js';
+export { default as SettingsView } from './SettingsView.js';
+export { default } from './SettingsPresenter.js';

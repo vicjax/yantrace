@@ -13,7 +13,6 @@ import * as Helpers from "./utils/helpers.js";
 import Navigator from "./modules/navigator.js";
 import PracticeEngine from "./modules/practice/index.js";
 import ResultToast from "./modules/ResultToast.js";
-import { MENU_CONFIG } from "./config/menu.js";
 
 import {
   getHomeHtml,
@@ -22,16 +21,16 @@ import {
 } from "./modules/PageTemplates.js";
 
 // Model 层
-import { Model as UserModel } from "./features/user/index.js";
-import { Model as ArticleModel } from "./features/article/index.js";
-import { Model as HistoryModel } from "./features/history/index.js";
-import { Model as SettingsModel } from "./features/settings/index.js";
+import { ArticleModel } from "./features/article/index.js";
+import { UserModel } from "./features/user/index.js";
+import { SettingsModel } from "./features/settings/index.js";
+import { RecordsModel } from "./features/records/index.js";
 
 // Presenter 层
 import UserPresenter from "./features/user/index.js";
 import ArticlePresenter from "./features/article/index.js";
-import HistoryPresenter from "./features/history/index.js";
 import SettingsPresenter from "./features/settings/index.js";
+import RecordsPresenter from "./features/records/index.js";
 
 // ============================================
 // 应用类
@@ -39,22 +38,22 @@ import SettingsPresenter from "./features/settings/index.js";
 
 class App {
   constructor() {
-    // 服务实例（按需初始化）
+    // 服务实例
     this.articleService = null;
     this.userService = null;
     this.historyService = null;
     this.settingsService = null;
 
-    // 功能模块实例（按需初始化）
+    // 功能模块实例
     this.navigator = null;
     this.practiceEngine = null;
     this.resultManager = null;
 
-    // Presenter 实例（按需初始化）
+    // Presenter 实例
     this.userPresenter = null;
     this.articlePresenter = null;
-    this.historyPresenter = null;
     this.settingsPresenter = null;
+    this.recordsPresenter = null;
 
     // 状态
     this.currentUser = null;
@@ -99,7 +98,7 @@ class App {
   _initServices() {
     this.articleService = new ArticleModel();
     this.userService = new UserModel();
-    this.historyService = new HistoryModel();
+    this.historyService = new RecordsModel();
     this.settingsService = new SettingsModel();
     console.log("📚 服务层初始化完成");
   }
@@ -130,43 +129,56 @@ class App {
   // ============================================
 
   _initModules() {
-    // 导航（立即初始化，所有页面都需要）
+    // 导航
     this.navigator = new Navigator({
       onPageChange: (pageId) => this._onPageChange(pageId),
     });
 
-    // 打字引擎（立即初始化，但内部按需加载）
+    // 打字引擎
     this.practiceEngine = new PracticeEngine({
       articleService: this.articleService,
       onComplete: (stats) => this._onPracticeComplete(stats),
       getSettings: () => this._getCurrentSettings(),
     });
 
-    // ⭐ 结果模块
-    // 替换 resultPresenter 为 resultToast
+    // 完成弹窗
     this.resultToast = new ResultToast();
     this.resultToast.setCallbacks(
       () => this._onResultRestart(),
       (data) => {
-        console.log("📊 查看详细数据:", data);
-        // TODO: 调用数据分析模块
-      },
+        this.navigator.goTo("history");
+        setTimeout(() => {
+          const user = this.userService?.getCurrent();
+          if (user && this.recordsPresenter) {
+            const records = this.historyService.getRecentByUser(user.id, 1);
+            if (records && records.length > 0) {
+              this.recordsPresenter.refresh(records[0].id);
+            }
+          }
+        }, 100);
+      }
     );
-
-    // app.js _initModules()
 
     // 设置 Presenter
     this.settingsPresenter = new SettingsPresenter({
       settingsService: this.settingsService,
       userService: this.userService,
-      // ⭐ 删除 onSettingsChanged 回调
+    });
+
+    // 记录 Presenter（历史记录 + 数据分析合并）
+    this.recordsPresenter = new RecordsPresenter({
+      historyService: this.historyService,
+      userService: this.userService,
+      onBack: () => {
+        this.navigator.goTo("home");
+      },
     });
 
     console.log("🧩 功能模块初始化完成");
   }
 
   // ============================================
-  // Presenter 工厂方法（按需创建）
+  // Presenter 工厂方法
   // ============================================
 
   _getUserPresenter() {
@@ -194,22 +206,11 @@ class App {
     return this.articlePresenter;
   }
 
-  _getHistoryPresenter() {
-    if (!this.historyPresenter) {
-      this.historyPresenter = new HistoryPresenter({
-        historyService: this.historyService,
-        userService: this.userService,
-      });
-    }
-    return this.historyPresenter;
-  }
-
   _getSettingsPresenter() {
     if (!this.settingsPresenter) {
       this.settingsPresenter = new SettingsPresenter({
         settingsService: this.settingsService,
         userService: this.userService,
-        // ⭐ 不再需要 onSettingsChanged
       });
     }
     return this.settingsPresenter;
@@ -227,8 +228,6 @@ class App {
   _applyUserSettings() {
     const settings = this._getCurrentSettings();
     if (!settings) return;
-
-    // 直接调用 settingsPresenter 的 applySettings
     if (this.settingsPresenter) {
       this.settingsPresenter.applySettings(settings);
     }
@@ -263,13 +262,12 @@ class App {
       default:
         html = '<p class="placeholder">页面不存在</p>';
     }
-    container.innerHTML = html;
 
+    container.innerHTML = html;
     this._applyUserSettings();
     this._bindPageEvents(pageId);
     this.currentPageId = pageId;
   }
-
 
   // ============================================
   // 页面事件绑定
@@ -298,7 +296,7 @@ class App {
 
     if (pageId === "practice-cn" || pageId === "practice-en") {
       const resetBtn = document.getElementById(
-        pageId === "practice-cn" ? "cnResetBtn" : "enResetBtn",
+        pageId === "practice-cn" ? "cnResetBtn" : "enResetBtn"
       );
       if (resetBtn) {
         resetBtn.addEventListener("click", () => {
@@ -336,7 +334,7 @@ class App {
       this._getArticlePresenter()?.destroy();
     }
     if (pageId === "history") {
-      this._getHistoryPresenter()?.destroy();
+      this.recordsPresenter?.destroy();
     }
     if (pageId === "settings") {
       this._getSettingsPresenter()?.destroy();
@@ -356,7 +354,7 @@ class App {
     } else if (pageId === "article-management") {
       this._getArticlePresenter()?.render(container);
     } else if (pageId === "history") {
-      this._getHistoryPresenter()?.render(container);
+      this.recordsPresenter?.render(container);
     }
   }
 
@@ -368,18 +366,18 @@ class App {
     const currentPage = this.currentPageId || "practice-cn";
     const articleTitle = this.practiceEngine?.currentArticleTitle || "";
 
-    // 1. 保存历史（直接调用 historyService）
+    // 保存历史
     const user = this.userService?.getCurrent();
-    if (user) {
+    if (user && this.historyService) {
       this.historyService.addWithDedup(
         user.id,
         currentPage,
         articleTitle,
-        stats,
+        stats
       );
     }
 
-    // 2. 显示弹窗
+    // 显示弹窗
     if (this.resultToast) {
       this.resultToast.show(stats, currentPage, articleTitle);
     }
