@@ -1,10 +1,13 @@
 /**
- * SettingsView - 设置视图
- * 职责：纯 DOM 渲染，不包含业务逻辑
+ * SettingsView - 设置视图（弹窗紧凑版）
+ * 职责：渲染设置弹窗 UI，不包含业务逻辑
  */
 export default class SettingsView {
     constructor(options = {}) {
         this.onSave = options.onSave || null;
+        this.onReset = options.onReset || null;
+        this.onSoundTest = options.onSoundTest || null;
+        this.onClose = options.onClose || null;
         this.container = null;
         this.settings = {};
     }
@@ -17,23 +20,17 @@ export default class SettingsView {
         this._populateForm();
     }
 
-    /**
-     * 填充表单数据
-     */
     populate(settings) {
         this.settings = settings;
         this._populateForm();
     }
 
-    /**
-     * 获取表单数据
-     */
     getSettings() {
         return {
-            defaultMode: this.defaultModeSelect?.value || 'practice-cn',
-            fontSize: parseInt(this.fontSizeInput?.value) || 22,
-            pageHeight: parseInt(this.pageHeightInput?.value) || 550,
-            theme: this.themeSelect?.value || 'dark'
+            fontSize: parseInt(this.fontSizeSlider?.value) || 22,
+            pageHeight: parseInt(this.pageHeightSlider?.value) || 550,
+            theme: this._getSelectedTheme(),
+            sound: this.soundSelect?.value || 'off'
         };
     }
 
@@ -47,77 +44,212 @@ export default class SettingsView {
 
     _getHtml() {
         return `
-            <div class="mode-header">
-                <button class="back-btn" data-target="home">← 返回</button>
+            <div class="settings-modal-header">
                 <h2>⚙️ 设置</h2>
+                <button class="settings-modal-close" id="settingsCloseBtn">✕</button>
             </div>
-            <div class="settings-group">
-                <label>默认模式</label>
-                <select id="settingDefaultMode">
-                    <option value="practice-cn">🀄 中文练习</option>
-                    <option value="practice-en">🔤 英文练习</option>
-                    <option value="article-management">📄 文章管理</option>
-                </select>
+
+            <div class="settings-panel">
+
+                <!-- 外观 -->
+                <div class="settings-section">
+                    <div class="section-label">🎨 外观</div>
+
+                    <div class="settings-row">
+                        <span class="settings-label">主题</span>
+                        <div class="theme-toggle">
+                            <button class="theme-btn" data-theme="dark" id="themeDark">🌙 暗色</button>
+                            <button class="theme-btn" data-theme="light" id="themeLight">☀️ 亮色</button>
+                        </div>
+                    </div>
+
+                    <div class="settings-row">
+                        <span class="settings-label">字体大小</span>
+                        <div class="settings-control">
+                            <input type="range" id="fontSizeSlider" min="14" max="36" step="1" />
+                            <span class="settings-value" id="fontSizeValue">22px</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 布局 -->
+                <div class="settings-section">
+                    <div class="section-label">📐 布局</div>
+
+                    <div class="settings-row">
+                        <span class="settings-label">页面高度</span>
+                        <div class="settings-control">
+                            <input type="range" id="pageHeightSlider" min="400" max="800" step="10" />
+                            <span class="settings-value" id="pageHeightValue">550px</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 声音 -->
+                <div class="settings-section">
+                    <div class="section-label">🔊 声音</div>
+
+                    <div class="settings-row">
+                        <span class="settings-label">按键音效</span>
+                        <div class="settings-control">
+                            <select id="soundSelect">
+                                <option value="off">🔇 关闭</option>
+                                <option value="clicky">🟦 青轴</option>
+                                <option value="tactile">🟧 茶轴</option>
+                                <option value="speed">⚪ 银轴</option>
+                                <option value="silent">🟫 静音红轴</option>
+                                <option value="membrane">🟩 薄膜</option>
+                            </select>
+                            <button class="sound-test-btn" id="soundTestBtn">🔊 试听</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作 -->
+                <div class="settings-section" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
+                    <div class="section-label">⚡ 操作</div>
+                    <div class="settings-row settings-actions">
+                        <button class="save-btn" id="settingsSaveBtn">💾 保存设置</button>
+                        <button class="reset-btn" id="settingsResetBtn">🔄 恢复默认</button>
+                    </div>
+                </div>
+
             </div>
-            <div class="settings-group">
-                <label>字体大小</label>
-                <input type="number" id="settingFontSize" min="14" max="36" />
-                <span style="color:#666688;font-size:12px;">px（14-36）</span>
-            </div>
-            <div class="settings-group">
-                <label>页面高度</label>
-                <input type="number" id="settingPageHeight" min="400" max="800" step="10" />
-                <span style="color:#666688;font-size:12px;">px（400-800）</span>
-            </div>
-            <div class="settings-group">
-                <label>主题</label>
-                <select id="settingTheme">
-                    <option value="dark">🌙 暗色</option>
-                    <option value="light">☀️ 亮色</option>
-                </select>
-            </div>
-            <button class="save-btn" id="settingsSaveBtn">💾 保存设置</button>
         `;
     }
 
     _cacheElements() {
-        this.defaultModeSelect = document.getElementById('settingDefaultMode');
-        this.fontSizeInput = document.getElementById('settingFontSize');
-        this.pageHeightInput = document.getElementById('settingPageHeight');
-        this.themeSelect = document.getElementById('settingTheme');
+        this.themeDark = document.getElementById('themeDark');
+        this.themeLight = document.getElementById('themeLight');
+        this.fontSizeSlider = document.getElementById('fontSizeSlider');
+        this.fontSizeValue = document.getElementById('fontSizeValue');
+        this.pageHeightSlider = document.getElementById('pageHeightSlider');
+        this.pageHeightValue = document.getElementById('pageHeightValue');
+        this.soundSelect = document.getElementById('soundSelect');
+        this.soundTestBtn = document.getElementById('soundTestBtn');
         this.saveBtn = document.getElementById('settingsSaveBtn');
+        this.resetBtn = document.getElementById('settingsResetBtn');
+        this.closeBtn = document.getElementById('settingsCloseBtn');
     }
 
     _bindEvents() {
-        // 返回按钮
-        this.container.querySelectorAll('.back-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const target = btn.dataset.target;
-                if (target && window.app?.navigator) {
-                    window.app.navigator.goTo(target);
-                }
-            });
-        });
+        // 主题切换
+        if (this.themeDark) {
+            this.themeDark.addEventListener('click', () => this._setTheme('dark'));
+        }
+        if (this.themeLight) {
+            this.themeLight.addEventListener('click', () => this._setTheme('light'));
+        }
 
+        // 字体大小滑块
+        if (this.fontSizeSlider) {
+            this.fontSizeSlider.addEventListener('input', () => {
+                const val = this.fontSizeSlider.value;
+                this.fontSizeValue.textContent = val + 'px';
+            });
+        }
+
+        // 页面高度滑块
+        if (this.pageHeightSlider) {
+            this.pageHeightSlider.addEventListener('input', () => {
+                const val = this.pageHeightSlider.value;
+                this.pageHeightValue.textContent = val + 'px';
+            });
+        }
+
+        // 保存
         if (this.saveBtn) {
             this.saveBtn.addEventListener('click', () => {
                 if (this.onSave) this.onSave();
             });
         }
+
+        // 恢复默认
+        if (this.resetBtn) {
+            this.resetBtn.addEventListener('click', () => {
+                if (this.onReset) this.onReset();
+            });
+        }
+
+        // 试听
+        if (this.soundTestBtn) {
+            this.soundTestBtn.addEventListener('click', () => {
+                const sound = this.soundSelect?.value || 'off';
+                if (this.onSoundTest) this.onSoundTest(sound);
+            });
+        }
+
+        // 关闭
+        if (this.closeBtn) {
+            this.closeBtn.addEventListener('click', () => {
+                if (this.onClose) this.onClose();
+            });
+        }
+
+        // 点击遮罩关闭
+        const overlay = this.container?.closest('.settings-modal')?.querySelector('.settings-modal-overlay');
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                if (this.onClose) this.onClose();
+            });
+        }
+
+        // ESC 键关闭
+        this._escHandler = (e) => {
+            if (e.key === 'Escape' && this.onClose) {
+                this.onClose();
+            }
+        };
+        document.addEventListener('keydown', this._escHandler);
     }
 
     _populateForm() {
-        if (this.defaultModeSelect) {
-            this.defaultModeSelect.value = this.settings.defaultMode || 'practice-cn';
+        const s = this.settings;
+
+        // 主题
+        this._setTheme(s.theme || 'dark');
+
+        // 字体
+        const fontSize = s.fontSize || 22;
+        if (this.fontSizeSlider) {
+            this.fontSizeSlider.value = fontSize;
+            this.fontSizeValue.textContent = fontSize + 'px';
         }
-        if (this.fontSizeInput) {
-            this.fontSizeInput.value = this.settings.fontSize || 22;
+
+        // 页面高度
+        const pageHeight = s.pageHeight || 550;
+        if (this.pageHeightSlider) {
+            this.pageHeightSlider.value = pageHeight;
+            this.pageHeightValue.textContent = pageHeight + 'px';
         }
-        if (this.pageHeightInput) {
-            this.pageHeightInput.value = this.settings.pageHeight || 550;
+
+        // 音效
+        if (this.soundSelect) {
+            this.soundSelect.value = s.sound || 'off';
         }
-        if (this.themeSelect) {
-            this.themeSelect.value = this.settings.theme || 'dark';
+    }
+
+    _setTheme(theme) {
+        this._selectedTheme = theme;
+        if (this.themeDark) {
+            this.themeDark.classList.toggle('active', theme === 'dark');
+        }
+        if (this.themeLight) {
+            this.themeLight.classList.toggle('active', theme === 'light');
+        }
+    }
+
+    _getSelectedTheme() {
+        return this._selectedTheme || 'dark';
+    }
+
+    /**
+     * 清理事件监听（弹窗关闭时调用）
+     */
+    cleanup() {
+        if (this._escHandler) {
+            document.removeEventListener('keydown', this._escHandler);
+            this._escHandler = null;
         }
     }
 }

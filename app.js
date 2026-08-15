@@ -155,7 +155,7 @@ class App {
             }
           }
         }, 100);
-      }
+      },
     );
 
     // 设置 Presenter
@@ -295,7 +295,7 @@ class App {
 
     if (pageId === "practice-cn" || pageId === "practice-en") {
       const resetBtn = document.getElementById(
-        pageId === "practice-cn" ? "cnResetBtn" : "enResetBtn"
+        pageId === "practice-cn" ? "cnResetBtn" : "enResetBtn",
       );
       if (resetBtn) {
         resetBtn.addEventListener("click", () => {
@@ -311,7 +311,15 @@ class App {
   // ============================================
 
   _bindEvents() {
-    // 空方法，保留接口
+    // 设置齿轮点击
+    const gearBtn = document.getElementById("settingsGearBtn");
+    if (gearBtn) {
+      gearBtn.addEventListener("click", () => {
+        if (this.settingsPresenter) {
+          this.settingsPresenter.open();
+        }
+      });
+    }
   }
 
   // ============================================
@@ -372,7 +380,7 @@ class App {
         user.id,
         currentPage,
         articleTitle,
-        stats
+        stats,
       );
     }
 

@@ -13,9 +13,10 @@ const STORAGE_KEY = 'yantrace_settings';
 
 // 默认设置
 const DEFAULT_SETTINGS = {
-    defaultMode: 'practice-cn',
     fontSize: 22,
-    theme: 'dark'
+    pageHeight: 550,
+    theme: 'dark',
+    sound: 'off'  // 新增：音效选项 'off' | 'mechanical' | 'laptop'
 };
 
 

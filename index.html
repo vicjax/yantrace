@@ -15,12 +15,21 @@
           <span class="logo">砚迹</span>
         </div>
         <div class="topbar-right">
+          <button class="settings-gear" id="settingsGearBtn" title="设置">⚙️</button>
           <span class="user-name" id="userName">👤 未登录</span>
         </div>
       </header>
 
       <!-- ===== 页面容器（动态渲染） ===== -->
       <div id="pageContainer" class="page-container"></div>
+
+      <!-- ===== 设置弹窗 ===== -->
+      <div id="settingsModal" class="settings-modal" style="display:none;">
+        <div class="settings-modal-overlay"></div>
+        <div class="settings-modal-content">
+          <!-- 由 SettingsView 渲染 -->
+        </div>
+      </div>
 
       <!-- ===== 结果弹窗 ===== -->
       <div class="result-overlay" id="resultOverlay">

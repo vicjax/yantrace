@@ -30,7 +30,7 @@ export const MENU_CONFIG = {
                 { id: 'article-management', icon: '📄', label: '文章管理' },
                 { id: 'user', icon: '👤', label: '用户管理' },
                 { id: 'history', icon: '📊', label: '历史记录' },
-                { id: 'settings', icon: '⚙️', label: '设置' },
+                // ⭐ settings 已移除
             ],
         },
     ],

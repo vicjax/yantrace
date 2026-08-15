@@ -660,34 +660,214 @@ body {
 /* ============================================
    设置
    ============================================ */
-.settings-group {
-  margin: 12px 0;
-  padding: 12px 16px;
-  background: #12121f;
-  border-radius: 10px;
-  border: 1px solid #2a2a40;
+.settings-panel {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 4px 0 8px 0;
 }
-.settings-group label {
-  display: block;
-  font-size: 13px;
-  color: #8888aa;
-  margin-bottom: 4px;
+
+.settings-section {
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #2a2a40;
 }
-.settings-group select,
-.settings-group input[type="number"] {
-  width: 100%;
-  padding: 6px 12px;
+
+.settings-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.section-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666688;
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* 每一行：label + 控件 横向排列 */
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+  gap: 16px;
+}
+
+.settings-label {
+  font-size: 14px;
+  color: #c8c8f0;
+  min-width: 72px;
+  flex-shrink: 0;
+}
+
+.settings-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+/* ===== 主题切换按钮 ===== */
+.theme-toggle {
+  display: flex;
+  gap: 4px;
   background: #0e0e1a;
+  border-radius: 8px;
+  padding: 4px;
   border: 1px solid #2a2a40;
+}
+
+.theme-btn {
+  padding: 6px 18px;
+  border: none;
   border-radius: 6px;
+  background: transparent;
+  color: #8888aa;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.theme-btn:hover {
+  color: #e0e0e0;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.theme-btn.active {
+  background: #4f46e5;
+  color: #fff;
+}
+
+/* ===== 滑块 ===== */
+.settings-control input[type="range"] {
+  width: 180px;
+  flex-shrink: 0;
+  accent-color: #4f46e5;
+  background: transparent;
+  cursor: pointer;
+  height: 4px;
+}
+
+.settings-control input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  background: #2a2a40;
+  border-radius: 4px;
+}
+
+.settings-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #4f46e5;
+  cursor: pointer;
+  margin-top: -6px;
+}
+
+.settings-control input[type="range"]::-moz-range-track {
+  height: 4px;
+  background: #2a2a40;
+  border-radius: 4px;
+  border: none;
+}
+
+.settings-control input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #4f46e5;
+  cursor: pointer;
+  border: none;
+}
+
+.settings-value {
+  font-size: 14px;
+  color: #8888aa;
+  min-width: 44px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== 音效下拉 + 试听按钮 ===== */
+.settings-control select {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #2a2a40;
+  background: #0e0e1a;
   color: #e0e0e0;
   font-size: 14px;
-  font-family: inherit;
+  cursor: pointer;
   outline: none;
+  min-width: 120px;
+  font-family: inherit;
 }
-.settings-group select:focus,
-.settings-group input:focus {
+
+.settings-control select:focus {
   border-color: #4f46e5;
+}
+
+.sound-test-btn {
+  padding: 6px 14px;
+  border: 1px solid #2a2a40;
+  border-radius: 6px;
+  background: transparent;
+  color: #8888aa;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.sound-test-btn:hover {
+  background: #1a1a30;
+  color: #e0e0e0;
+}
+
+/* ===== 操作按钮 ===== */
+.settings-actions {
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+.save-btn {
+  background: #34d399;
+  color: #0f0f1a;
+  padding: 8px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  font-weight: 500;
+}
+
+.save-btn:hover {
+  background: #6ee7b7;
+}
+
+.reset-btn {
+  background: transparent;
+  border: 1px solid #3a3a5a;
+  color: #8888aa;
+  padding: 8px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.reset-btn:hover {
+  background: rgba(248, 113, 113, 0.1);
+  border-color: #f87171;
+  color: #f87171;
 }
 
 /* ============================================
@@ -767,8 +947,8 @@ body {
 .result-btn {
   padding: 8px 20px;
   border: none;
-  border-radius: 30px;
-  font-size: 13px;
+  border-radius: 8px; /* 从 30px 改为 8px，与设置弹窗一致 */
+  font-size: 14px; /* 从 13px 改为 14px */
   cursor: pointer;
   transition: 0.2s;
   font-family: inherit;
@@ -1537,14 +1717,632 @@ body {
   color: #8888aa;
 }
 .records-detail-speed-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
 }
 
 .records-detail-compare {
-    font-size: 13px;
-    color: #8888aa;
-    margin-top: 2px;
+  font-size: 13px;
+  color: #8888aa;
+  margin-top: 2px;
+}
+
+/* ============================================
+   亮色主题
+   ============================================ */
+body.light-theme {
+  background: #f0f0f5;
+}
+
+body.light-theme #app {
+  background: #ffffff;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme .topbar {
+  border-bottom-color: #e8e8ef;
+}
+
+body.light-theme .logo {
+  color: #4f46e5;
+  background: none;
+  -webkit-background-clip: unset;
+  background-clip: unset;
+}
+
+body.light-theme .user-name {
+  color: #666688;
+  border-color: #e0e0e8;
+}
+body.light-theme .user-name:hover {
+  background: #f5f5fa;
+  border-color: #4f46e5;
+  color: #1a1a2e;
+}
+
+body.light-theme .home-btn {
+  background: #f8f8fc;
+  border-color: #e8e8ef;
+  color: #1a1a2e;
+}
+body.light-theme .home-btn:hover {
+  background: #f0f0f8;
+  border-color: #4f46e5;
+}
+
+body.light-theme .home-section-title {
+  color: #9999bb;
+}
+
+body.light-theme .home-section-management .home-btn {
+  color: #8888aa;
+}
+body.light-theme .home-section-management .home-btn:hover {
+  background: #f5f5fa;
+  border-color: #4f46e5;
+  color: #1a1a2e;
+}
+
+body.light-theme .back-btn {
+  border-color: #e0e0e8;
+  color: #8888aa;
+}
+body.light-theme .back-btn:hover {
+  background: #f0f0f8;
+  color: #1a1a2e;
+}
+
+body.light-theme .mode-header h2 {
+  color: #1a1a2e;
+}
+
+body.light-theme .stats-bar {
+  background: #f8f8fc;
+  border-color: #e8e8ef;
+  color: #8888aa;
+}
+body.light-theme .stats-bar b {
+  color: #1a1a2e;
+}
+
+body.light-theme .text-box {
+  background: #f8f8fc;
+  border-color: #e8e8ef;
+  color: #1a1a2e;
+}
+
+body.light-theme .settings-section {
+  border-bottom-color: #e8e8ef;
+}
+
+body.light-theme .settings-label {
+  color: #1a1a2e;
+}
+
+body.light-theme .settings-control select {
+  background: #f8f8fc;
+  border-color: #e0e0e8;
+  color: #1a1a2e;
+}
+
+body.light-theme .settings-control select:focus {
+  border-color: #4f46e5;
+}
+
+body.light-theme
+  .settings-control
+  input[type="range"]::-webkit-slider-runnable-track {
+  background: #e0e0e8;
+}
+
+body.light-theme .settings-value {
+  color: #666688;
+}
+
+body.light-theme .theme-toggle {
+  background: #f0f0f8;
+  border-color: #e0e0e8;
+}
+
+body.light-theme .theme-btn {
+  color: #8888aa;
+}
+body.light-theme .theme-btn:hover {
+  color: #1a1a2e;
+  background: rgba(0, 0, 0, 0.04);
+}
+body.light-theme .theme-btn.active {
+  background: #4f46e5;
+  color: #fff;
+}
+
+body.light-theme .sound-test-btn {
+  border-color: #e0e0e8;
+  color: #8888aa;
+}
+body.light-theme .sound-test-btn:hover {
+  background: #f0f0f8;
+  color: #1a1a2e;
+}
+
+body.light-theme .reset-btn {
+  border-color: #e0e0e8;
+  color: #8888aa;
+}
+body.light-theme .reset-btn:hover {
+  background: rgba(248, 113, 113, 0.08);
+  border-color: #f87171;
+  color: #f87171;
+}
+
+body.light-theme .section-label {
+  color: #9999bb;
+}
+
+/* 亮色主题下的统计栏 */
+body.light-theme .progress-bar {
+  background: #e8e8ef;
+}
+body.light-theme .progress-text {
+  color: #8888aa;
+}
+
+/* 亮色主题下的重置按钮（通用） */
+body.light-theme .reset-btn {
+  background: transparent;
+  border-color: #e0e0e8;
+  color: #8888aa;
+}
+body.light-theme .reset-btn:hover {
+  background: #f0f0f8;
+  color: #1a1a2e;
+}
+
+/* ============================================
+   亮色主题 - 功能模块补全
+   ============================================ */
+
+/* ----- 文章管理 ----- */
+body.light-theme .am-left,
+body.light-theme .am-right {
+  background: #f8f8fc;
+  border-color: #e8e8ef;
+}
+
+body.light-theme .am-list-header {
+  background: #f0f0f8;
+  border-bottom-color: #e8e8ef;
+  color: #666688;
+}
+
+body.light-theme .am-list-item {
+  color: #8888aa;
+}
+body.light-theme .am-list-item:hover {
+  background: #f0f0f8;
+  color: #1a1a2e;
+}
+body.light-theme .am-list-item.active {
+  background: #4f46e5;
+  color: #fff;
+}
+body.light-theme .am-list-item.active .am-item-type {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+body.light-theme .am-item-type {
+  background: #e8e8ef;
+  color: #666688;
+}
+
+body.light-theme .am-content-header {
+  background: #f0f0f8;
+  border-bottom-color: #e8e8ef;
+}
+
+body.light-theme .am-title {
+  color: #1a1a2e;
+}
+
+body.light-theme .am-content {
+  color: #1a1a2e;
+}
+body.light-theme .am-content .placeholder {
+  color: #9999bb;
+}
+body.light-theme .am-content.editing {
+  border-color: #4f46e5;
+  background: #ffffff;
+}
+
+body.light-theme .am-title-edit {
+  background: #f0f0f8;
+  border-top-color: #e8e8ef;
+}
+body.light-theme .am-title-edit input {
+  background: #ffffff;
+  border-color: #e0e0e8;
+  color: #1a1a2e;
+}
+body.light-theme .am-title-edit input:focus {
+  border-color: #4f46e5;
+}
+
+body.light-theme .am-actions {
+  border-top-color: #e8e8ef;
+}
+body.light-theme .am-actions .action-btn {
+  border-color: #e0e0e8;
+  color: #8888aa;
+}
+body.light-theme .am-actions .action-btn:hover {
+  background: #f0f0f8;
+  color: #1a1a2e;
+}
+body.light-theme .am-actions .action-btn.danger:hover {
+  border-color: #f87171;
+  color: #f87171;
+}
+
+body.light-theme .am-status {
+  color: #8888aa;
+}
+body.light-theme .am-count {
+  color: #9999bb;
+}
+body.light-theme .am-list .placeholder {
+  color: #9999bb;
+}
+
+/* ----- 用户管理 ----- */
+body.light-theme .user-item {
+  background: #f8f8fc;
+  border-color: #e8e8ef;
+}
+body.light-theme .user-item .name {
+  color: #1a1a2e;
+}
+body.light-theme .user-item .badge {
+  background: #f0f0f8;
+  color: #8888aa;
+}
+body.light-theme .user-item .actions button {
+  border-color: #e0e0e8;
+  color: #8888aa;
+}
+body.light-theme .user-item .actions button:hover {
+  background: #f0f0f8;
+  color: #1a1a2e;
+}
+body.light-theme .user-item .actions button.danger:hover {
+  border-color: #f87171;
+  color: #f87171;
+}
+
+/* ----- 历史记录 ----- */
+body.light-theme .history-item {
+  background: #f8f8fc;
+  border-color: #e8e8ef;
+}
+body.light-theme .history-item .date {
+  color: #8888aa;
+}
+body.light-theme .history-item .mode {
+  color: #4f46e5;
+}
+body.light-theme .history-item .stats {
+  color: #8888aa;
+}
+body.light-theme .history-item .stats .num {
+  color: #1a1a2e;
+}
+body.light-theme .history-empty {
+  color: #9999bb;
+}
+
+/* ----- 记录页面（合并页） ----- */
+body.light-theme .records-list {
+  background: #f8f8fc;
+  border-color: #e8e8ef;
+}
+body.light-theme .records-list-header {
+  background: #f0f0f8;
+  border-bottom-color: #e8e8ef;
+  color: #666688;
+}
+body.light-theme .records-list-item {
+  color: #8888aa;
+}
+body.light-theme .records-list-item:hover {
+  background: #f0f0f8;
+  color: #1a1a2e;
+}
+body.light-theme .records-list-item.active {
+  background: #4f46e5;
+  color: #fff;
+}
+body.light-theme .records-count {
+  color: #9999bb;
+}
+body.light-theme .records-empty {
+  color: #9999bb;
+}
+
+body.light-theme .records-detail {
+  background: #f8f8fc;
+  border-color: #e8e8ef;
+}
+body.light-theme .records-detail-empty {
+  color: #9999bb;
+}
+body.light-theme .records-detail-header {
+  border-bottom-color: #e8e8ef;
+}
+body.light-theme .records-detail-title {
+  color: #1a1a2e;
+}
+body.light-theme .records-detail-date {
+  color: #8888aa;
+}
+body.light-theme .records-detail-article {
+  border-bottom-color: #e8e8ef;
+  color: #8888aa;
+}
+body.light-theme .records-detail-number {
+  color: #4f46e5;
+}
+body.light-theme .records-detail-label {
+  color: #8888aa;
+}
+body.light-theme .records-detail-compare {
+  color: #9999bb;
+}
+
+body.light-theme .records-stat-item {
+  background: #f0f0f8;
+  border-color: #e8e8ef;
+}
+body.light-theme .records-stat-number {
+  color: #1a1a2e;
+}
+body.light-theme .records-stat-label {
+  color: #8888aa;
+}
+
+body.light-theme .records-detail-divider {
+  border-top-color: #e8e8ef;
+}
+body.light-theme .records-detail-section {
+  color: #8888aa;
+}
+body.light-theme .records-detail-row {
+  color: #8888aa;
+}
+body.light-theme .records-detail-row b {
+  color: #1a1a2e;
+}
+
+body.light-theme .records-detail-actions {
+  border-top-color: #e8e8ef;
+}
+body.light-theme .records-btn.copy {
+  border-color: #e0e0e8;
+  color: #8888aa;
+}
+body.light-theme .records-btn.copy:hover {
+  background: #f0f0f8;
+  color: #1a1a2e;
+}
+
+/* ----- 录入模式 ----- */
+body.light-theme .input-area {
+  background: #f8f8fc;
+  border-color: #e8e8ef;
+}
+body.light-theme .input-display {
+  background: #ffffff;
+  border-color: #e0e0e8;
+  color: #1a1a2e;
+}
+body.light-theme .input-display:focus {
+  border-color: #4f46e5;
+}
+body.light-theme .input-display:empty::before {
+  color: #9999bb;
+}
+body.light-theme .existing-text {
+  background: #f0f0f8;
+  border-color: #e0e0e8;
+  color: #1a1a2e;
+}
+body.light-theme .existing-label,
+body.light-theme .input-label {
+  color: #8888aa;
+}
+
+/* ----- 录入模式统计状态 ----- */
+body.light-theme .status-unsaved {
+  color: #f59e0b;
+}
+body.light-theme .status-saved {
+  color: #34d399;
+}
+/* ============================================
+   顶部栏设置齿轮
+   ============================================ */
+
+.settings-gear {
+  background: transparent !important;
+  border: none;
+  color: #8888aa;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  font-family: inherit;
+  line-height: 1;
+}
+
+.settings-gear:hover {
+  color: #e0e0e0;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* 亮色主题 */
+body.light-theme .settings-gear {
+  color: #8888aa;
+}
+body.light-theme .settings-gear:hover {
+  color: #1a1a2e;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* ============================================
+   设置弹窗
+   ============================================ */
+
+.settings-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.settings-modal-content {
+  position: relative;
+  background: #1a1a2e;
+  border-radius: 20px;
+  padding: 28px 32px 32px;
+  max-width: 560px;
+  width: 92%;
+  max-height: 85vh;
+  overflow-y: auto;
+  border: 1px solid #2a2a40;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
+  animation: settingsFadeIn 0.2s ease;
+}
+
+@keyframes settingsFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 弹窗头部 */
+.settings-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #2a2a40;
+}
+
+.settings-modal-header h2 {
+  font-size: 20px;
+  font-weight: 500;
+  color: #c8c8f0;
+  margin: 0;
+}
+
+.settings-modal-close {
+  background: transparent;
+  border: none;
+  color: #8888aa;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: 0.2s;
+  line-height: 1;
+}
+.settings-modal-close:hover {
+  color: #e0e0e0;
+}
+
+/* 亮色主题弹窗 */
+body.light-theme .settings-modal-content {
+  background: #ffffff;
+  border-color: #e8e8ef;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.15);
+}
+body.light-theme .settings-modal-header {
+  border-bottom-color: #e8e8ef;
+}
+body.light-theme .settings-modal-header h2 {
+  color: #1a1a2e;
+}
+
+/* 弹窗滚动条 */
+.settings-modal-content::-webkit-scrollbar {
+  width: 4px;
+}
+.settings-modal-content::-webkit-scrollbar-thumb {
+  background: #3a3a5a;
+  border-radius: 4px;
+}
+body.light-theme .settings-modal-content::-webkit-scrollbar-thumb {
+  background: #d0d0d8;
+}
+/* 结果弹窗 - 亮色 */
+body.light-theme .result-card {
+  background: #ffffff;
+  border-color: #e8e8ef;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.15);
+}
+body.light-theme .result-card h2 {
+  color: #1a1a2e;
+}
+body.light-theme .result-card .result-number {
+  color: #4f46e5;
+}
+body.light-theme .result-card .result-label {
+  color: #8888aa;
+}
+body.light-theme .result-summary {
+  color: #8888aa;
+}
+body.light-theme .result-summary b {
+  color: #1a1a2e;
+}
+body.light-theme .result-grid .item {
+  background: #f8f8fc;
+  border-color: #e8e8ef;
+}
+body.light-theme .result-grid .item .num {
+  color: #1a1a2e;
+}
+body.light-theme .result-grid .item .lbl {
+  color: #8888aa;
+}
+body.light-theme .result-btn.copy {
+  border-color: #e0e0e8;
+  color: #8888aa;
+}
+body.light-theme .result-btn.copy:hover {
+  background: #f0f0f8;
+  color: #1a1a2e;
+}
+body.light-theme .result-btn.home {
+  background: #34d399;
+  color: #0f0f1a;
+}
+body.light-theme .result-btn.home:hover {
+  background: #6ee7b7;
 }
