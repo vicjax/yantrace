@@ -55,7 +55,7 @@ export default class RecordsView {
       return;
     }
     detailEl.innerHTML = this._getDetailHtml(recordData, comparison);
-    this._bindDetailEvents();
+    // this._bindDetailEvents();  // ⭐ 已删除
   }
 
   updateListSelection(selectedId) {
@@ -260,5 +260,3 @@ export default class RecordsView {
     this._renderList(records, selectedId);
 }
 }
-
-

@@ -164,6 +164,18 @@ class App {
       userService: this.userService,
     });
 
+    // 用户管理 Presenter
+    // app.js _initModules() 中
+    this.userPresenter = new UserPresenter({
+      userService: this.userService,
+      settingsService: this.settingsService,
+      historyService: this.historyService, // ⭐ 新增
+      onUserChanged: () => {
+      },
+    });
+    this.userPresenter.updateTopbar();
+    this.userPresenter.setCurrentPage("home");
+
     // 记录 Presenter（历史记录 + 数据分析合并）
     this.recordsPresenter = new RecordsPresenter({
       historyService: this.historyService,
@@ -331,6 +343,11 @@ class App {
     this._leavePage(currentPage);
     this._renderPage(pageId);
     this._enterPage(pageId);
+
+    // 通知用户管理当前页面
+    if (this.userPresenter) {
+      this.userPresenter.setCurrentPage(pageId);
+    }
   }
 
   _leavePage(pageId) {
@@ -354,8 +371,6 @@ class App {
 
     if (pageId === "practice-cn" || pageId === "practice-en") {
       this.practiceEngine?.enter(pageId);
-    } else if (pageId === "user") {
-      this._getUserPresenter()?.render(container);
     } else if (pageId === "settings") {
       this._getSettingsPresenter()?.render(container);
     } else if (pageId === "article-management") {

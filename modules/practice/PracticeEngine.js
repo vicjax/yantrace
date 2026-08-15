@@ -359,7 +359,6 @@ export default class PracticeEngine {
   }
 
   recordKeypress() {
-    console.log('🔊 recordKeypress 触发');  // 加这行
     this.keystrokes++;
     this._startTimer();
     this._updateProgressOnly();
@@ -835,7 +834,6 @@ export default class PracticeEngine {
    */
   _playSound() {
     const sound = window.__soundSetting || "off";
-    console.log('🔊 音效:', sound); 
     if (sound === "off") return;
 
     const soundPath = `./assets/sounds/${sound}.mp3`;

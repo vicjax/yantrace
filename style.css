@@ -1314,15 +1314,16 @@ body {
 }
 
 .records-body {
-  display: flex;
-  gap: 12px;
-  flex: 1;
-  min-height: 300px;
-  padding-top: 10px;
+    display: flex;
+    gap: 12px;
+    flex: 1;
+    min-height: 0;  /* ⭐ 添加，防止 flex 溢出 */
+    padding-top: 10px;
 }
 
 .records-list {
   flex: 0 0 220px;
+  max-height: 500px; /* ⭐ 添加最大高度 */
   background: #12121f;
   border-radius: 10px;
   border: 1px solid #2a2a40;
@@ -2345,4 +2346,463 @@ body.light-theme .result-btn.home {
 }
 body.light-theme .result-btn.home:hover {
   background: #6ee7b7;
+}
+/* ============================================
+   自定义模态框（用户管理弹窗）
+   ============================================ */
+
+.custom-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.custom-modal-content {
+  position: relative;
+  background: #1a1a2e;
+  border-radius: 16px;
+  padding: 24px 28px 28px;
+  max-width: 400px;
+  width: 92%;
+  border: 1px solid #2a2a40;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
+  animation: settingsFadeIn 0.2s ease;
+}
+
+.custom-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.custom-modal-header h3 {
+  font-size: 18px;
+  font-weight: 500;
+  color: #c8c8f0;
+  margin: 0;
+}
+
+.custom-modal-close {
+  background: transparent;
+  border: none;
+  color: #8888aa;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: 0.2s;
+  line-height: 1;
+}
+.custom-modal-close:hover {
+  color: #e0e0e0;
+}
+
+.custom-modal-body {
+  margin-bottom: 20px;
+}
+
+.custom-modal-body label {
+  display: block;
+  font-size: 13px;
+  color: #8888aa;
+  margin-bottom: 6px;
+}
+
+.custom-modal-body input {
+  width: 100%;
+  padding: 8px 12px;
+  background: #0e0e1a;
+  border: 1px solid #2a2a40;
+  border-radius: 6px;
+  color: #e0e0e0;
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+}
+.custom-modal-body input:focus {
+  border-color: #4f46e5;
+}
+
+.custom-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.custom-modal-footer .btn-ghost,
+.custom-modal-footer .btn-primary {
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: 0.2s;
+  border: none;
+}
+
+.custom-modal-footer .btn-ghost {
+  background: transparent;
+  border: 1px solid #3a3a5a;
+  color: #8888aa;
+}
+.custom-modal-footer .btn-ghost:hover {
+  background: #2a2a42;
+  color: #e0e0e0;
+}
+
+.custom-modal-footer .btn-primary {
+  background: #4f46e5;
+  color: #fff;
+}
+.custom-modal-footer .btn-primary:hover {
+  background: #6366f1;
+}
+
+/* 亮色主题 */
+body.light-theme .custom-modal-content {
+  background: #ffffff;
+  border-color: #e8e8ef;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.15);
+}
+body.light-theme .custom-modal-header h3 {
+  color: #1a1a2e;
+}
+body.light-theme .custom-modal-body label {
+  color: #8888aa;
+}
+body.light-theme .custom-modal-body input {
+  background: #f8f8fc;
+  border-color: #e0e0e8;
+  color: #1a1a2e;
+}
+body.light-theme .custom-modal-body input:focus {
+  border-color: #4f46e5;
+}
+body.light-theme .custom-modal-footer .btn-ghost {
+  border-color: #e0e0e8;
+  color: #8888aa;
+}
+body.light-theme .custom-modal-footer .btn-ghost:hover {
+  background: #f0f0f8;
+  color: #1a1a2e;
+}
+body.light-theme .custom-modal-close {
+  color: #8888aa;
+}
+body.light-theme .custom-modal-close:hover {
+  color: #1a1a2e;
+}
+/* ============================================
+   用户下拉菜单
+   ============================================ */
+
+.user-dropdown {
+  position: fixed;
+  z-index: 1500;
+  background: #1a1a2e;
+  border: 1px solid #2a2a40;
+  border-radius: 12px;
+  padding: 8px 0;
+  min-width: 200px;
+  max-width: 280px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  animation: settingsFadeIn 0.15s ease;
+}
+
+.user-dropdown-header {
+  padding: 8px 16px 6px;
+  font-size: 12px;
+  color: #666688;
+  border-bottom: 1px solid #2a2a40;
+  margin-bottom: 4px;
+}
+
+.user-dropdown-title {
+  font-weight: 500;
+}
+
+.user-dropdown-list {
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.user-dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: 0.15s;
+  gap: 8px;
+  border-radius: 0;
+}
+
+.user-dropdown-item:hover {
+  background: #2a2a42;
+}
+
+.user-dropdown-item.current {
+  background: rgba(79, 70, 229, 0.15);
+}
+
+.user-dropdown-item.current .user-dropdown-name {
+  color: #a78bfa;
+}
+
+.user-dropdown-name {
+  flex: 1;
+  font-size: 14px;
+  color: #e0e0e0;
+}
+
+.user-dropdown-badge {
+  font-size: 11px;
+  color: #8888aa;
+  background: #2a2a42;
+  padding: 1px 10px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.user-dropdown-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.user-dropdown-item:hover .user-dropdown-actions {
+  opacity: 1;
+}
+
+.user-dropdown-rename,
+.user-dropdown-delete {
+  background: transparent;
+  border: none;
+  color: #666688;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  transition: 0.15s;
+  line-height: 1;
+}
+
+.user-dropdown-rename:hover {
+  color: #e0e0e0;
+  background: #3a3a5a;
+}
+
+.user-dropdown-delete:hover {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.15);
+}
+
+.user-dropdown-footer {
+  padding: 6px 14px 2px;
+  border-top: 1px solid #2a2a40;
+  margin-top: 4px;
+}
+
+.user-dropdown-add-btn {
+  background: transparent;
+  border: none;
+  color: #8888aa;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 6px 0;
+  width: 100%;
+  text-align: left;
+  transition: 0.15s;
+  font-family: inherit;
+}
+
+.user-dropdown-add-btn:hover {
+  color: #e0e0e0;
+}
+
+.user-dropdown-empty {
+  color: #666688;
+  text-align: center;
+  padding: 20px 0;
+  font-size: 13px;
+}
+
+/* 亮色主题 */
+body.light-theme .user-dropdown {
+  background: #ffffff;
+  border-color: #e8e8ef;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
+
+body.light-theme .user-dropdown-header {
+  border-bottom-color: #e8e8ef;
+  color: #9999bb;
+}
+
+body.light-theme .user-dropdown-item:hover {
+  background: #f0f0f8;
+}
+
+body.light-theme .user-dropdown-item.current {
+  background: rgba(79, 70, 229, 0.08);
+}
+
+body.light-theme .user-dropdown-item.current .user-dropdown-name {
+  color: #4f46e5;
+}
+
+body.light-theme .user-dropdown-name {
+  color: #1a1a2e;
+}
+
+body.light-theme .user-dropdown-badge {
+  background: #f0f0f8;
+  color: #8888aa;
+}
+
+body.light-theme .user-dropdown-footer {
+  border-top-color: #e8e8ef;
+}
+
+body.light-theme .user-dropdown-add-btn {
+  color: #8888aa;
+}
+body.light-theme .user-dropdown-add-btn:hover {
+  color: #1a1a2e;
+}
+
+body.light-theme .user-dropdown-rename:hover {
+  color: #1a1a2e;
+  background: #e8e8ef;
+}
+
+body.light-theme .user-dropdown-delete:hover {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+}
+/* ============================================
+   用户名 - 交互状态
+   ============================================ */
+
+.user-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  border-radius: 30px;
+  border: 1px solid #2a2a40;
+  transition: 0.2s;
+  user-select: none;
+  font-size: 14px;
+  color: #8888aa;
+}
+
+.user-name .user-name-arrow {
+  font-size: 10px;
+  transition: transform 0.2s;
+  color: #666688;
+}
+
+/* 可点击状态（首页） */
+.user-name.interactive {
+  cursor: pointer;
+  border-color: #2a2a40;
+}
+
+.user-name.interactive:hover {
+  background: #1a1a30;
+  border-color: #4f46e5;
+  color: #e0e0e0;
+}
+
+.user-name.interactive:hover .user-name-arrow {
+  color: #8888aa;
+}
+
+/* 只读状态（其他页面） */
+.user-name.readonly {
+  cursor: default;
+  border-color: transparent;
+  background: transparent;
+}
+
+.user-name.readonly:hover {
+  background: transparent;
+  border-color: transparent;
+  color: #8888aa;
+}
+
+.user-name.readonly .user-name-arrow {
+  display: none;
+}
+
+/* 亮色主题 */
+body.light-theme .user-name {
+  border-color: #e0e0e8;
+  color: #8888aa;
+}
+
+body.light-theme .user-name .user-name-arrow {
+  color: #9999bb;
+}
+
+body.light-theme .user-name.interactive:hover {
+  background: #f5f5fa;
+  border-color: #4f46e5;
+  color: #1a1a2e;
+}
+
+body.light-theme .user-name.readonly {
+  border-color: transparent;
+  background: transparent;
+}
+
+body.light-theme .user-name.readonly:hover {
+  background: transparent;
+  border-color: transparent;
+  color: #8888aa;
+}
+
+/* ============================================
+   弹窗错误提示
+   ============================================ */
+
+.modal-error {
+    color: #f87171;
+    font-size: 13px;
+    margin-top: 6px;
+    padding-left: 2px;
+    display: none;
+}
+
+#userModalInput.error {
+    border-color: #f87171 !important;
+    outline-color: #f87171 !important;
+}
+
+#userModalInput.error:focus {
+    border-color: #f87171 !important;
+    box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.2);
+}
+
+/* 亮色主题 */
+body.light-theme .modal-error {
+    color: #dc2626;
+}
+
+body.light-theme #userModalInput.error {
+    border-color: #dc2626 !important;
 }
