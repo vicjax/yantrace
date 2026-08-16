@@ -75,6 +75,8 @@ class App {
     this._initDefaultData();
     this._bindEvents();
 
+    this._bindBackButtons();
+
     this._applyUserSettings();
     this._renderPage("home");
 
@@ -165,11 +167,10 @@ class App {
     });
 
     // 用户管理 Presenter
-    // app.js _initModules() 中
     this.userPresenter = new UserPresenter({
       userService: this.userService,
       settingsService: this.settingsService,
-      historyService: this.historyService, // ⭐ 新增
+      historyService: this.historyService,
       onUserChanged: () => {},
     });
     this.userPresenter.updateTopbar();
@@ -284,8 +285,6 @@ class App {
   // ============================================
 
   _bindPageEvents(pageId) {
-    
-
     if (pageId === "home") {
       document.querySelectorAll(".home-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -327,6 +326,23 @@ class App {
   }
 
   // ============================================
+  // 返回按钮统一绑定
+  // ============================================
+
+  _bindBackButtons() {
+    // 使用事件委托，一次性绑定，永久生效
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest(".back-btn");
+      if (btn) {
+        const target = btn.dataset.target;
+        if (target && this.navigator) {
+          this.navigator.goTo(target);
+        }
+      }
+    });
+  }
+
+  // ============================================
   // 页面生命周期
   // ============================================
 
@@ -335,16 +351,6 @@ class App {
     this._leavePage(currentPage);
     this._renderPage(pageId);
     this._enterPage(pageId);
-
-    // ⭐ 统一绑定返回按钮（所有页面）
-    document.querySelectorAll(".back-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const target = btn.dataset.target;
-        if (target && this.navigator) {
-          this.navigator.goTo(target);
-        }
-      });
-    });
 
     if (this.userPresenter) {
       this.userPresenter.setCurrentPage(pageId);
