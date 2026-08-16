@@ -1,0 +1,13 @@
+/* ============================================
+   砚迹（YanTrace）- 首页剩余样式
+   ============================================ */
+
+/* 首页专属：管理区标题在边框之上的特殊情况 */
+.home-section-management .home-section-title {
+  font-size: var(--font-size-sm);
+  color: #444466;
+  letter-spacing: 1px;
+  border-top: 1px solid var(--border-default);
+  padding-top: 20px;
+  margin-top: var(--spacing-sm);
+}

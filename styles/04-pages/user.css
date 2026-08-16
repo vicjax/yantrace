@@ -1,0 +1,60 @@
+/* ============================================
+   砚迹（YanTrace）- 用户管理列表样式
+   ============================================ */
+
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.user-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+}
+
+.user-item .name {
+  font-size: var(--font-size-md);
+  color: var(--text-primary);
+}
+
+.user-item .badge {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  background: var(--bg-surface-strong);
+  padding: 2px 12px;
+  border-radius: var(--radius-full);
+}
+
+.user-item .actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.user-item .actions button {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: var(--transition-base);
+  font-family: inherit;
+}
+
+.user-item .actions button:hover {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+.user-item .actions button.danger:hover {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}

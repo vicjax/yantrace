@@ -1,55 +1,48 @@
 /**
  * 砚迹（YanTrace）- 页面模板
  * 职责：生成各页面的 HTML 结构
- * 位置：modules/PageTemplates.js
  */
 
-import { MENU_CONFIG } from '../config/menu.js';
+import { MENU_CONFIG } from "../config/menu.js";
 
-/**
- * 生成首页 HTML
- */
 export function getHomeHtml() {
-    let html = '';
+  let html = "";
 
-    MENU_CONFIG.sections.forEach((section) => {
-        const sectionClass =
-            section.id === 'practice'
-                ? 'home-section-practice'
-                : 'home-section-management';
-        html += `<div class="home-section ${sectionClass}">`;
-        html += `<div class="home-section-title">${section.title}</div>`;
-        html += `<div class="home-grid">`;
+  MENU_CONFIG.sections.forEach((section) => {
+    const sectionClass =
+      section.id === "practice"
+        ? "home-section-practice"
+        : "home-section-management";
+    html += `<div class="home-section ${sectionClass}">`;
+    html += `<div class="home-section-title">${section.title}</div>`;
+    html += `<div class="home-grid">`;
 
-        section.items.forEach((item) => {
-            const descHtml = item.desc
-                ? `<span class="home-btn-desc">${item.desc}</span>`
-                : '';
-            html += `
+    section.items.forEach((item) => {
+      const descHtml = item.desc
+        ? `<span class="home-btn-desc">${item.desc}</span>`
+        : "";
+      html += `
                 <button class="home-btn" data-target="${item.id}">
                     <span class="home-btn-icon">${item.icon}</span>
                     <span class="home-btn-label">${item.label}</span>
                     ${descHtml}
                 </button>
             `;
-        });
-
-        html += `</div></div>`;
     });
 
-    return html;
+    html += `</div></div>`;
+  });
+
+  return html;
 }
 
-/**
- * 生成中文练习页 HTML
- */
 export function getPracticeCnHtml() {
-    return `
+  return `
         <div class="mode-header">
-            <button class="back-btn" data-target="home">← 返回</button>
+            <button class="btn btn-back back-btn" data-target="home">← 返回</button>
             <h2>🀄 中文打字练习</h2>
             <select id="cnArticleSelect" class="article-select"></select>
-            <button class="reset-btn" id="cnResetBtn">⟳ 重新开始</button>
+            <button class="btn btn-reset" id="cnResetBtn">⟳ 重新开始</button>
         </div>
 
         <div class="stats-bar" id="cnStatsBar">
@@ -75,16 +68,13 @@ export function getPracticeCnHtml() {
     `;
 }
 
-/**
- * 生成英文练习页 HTML
- */
 export function getPracticeEnHtml() {
-    return `
+  return `
         <div class="mode-header">
-            <button class="back-btn" data-target="home">← 返回</button>
+            <button class="btn btn-back back-btn" data-target="home">← 返回</button>
             <h2>🔤 英文打字练习</h2>
             <select id="enArticleSelect" class="article-select"></select>
-            <button class="reset-btn" id="enResetBtn">⟳ 重新开始</button>
+            <button class="btn btn-reset" id="enResetBtn">⟳ 重新开始</button>
         </div>
 
         <div class="stats-bar" id="enStatsBar">

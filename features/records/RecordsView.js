@@ -69,7 +69,7 @@ export default class RecordsView {
     return `
             <div class="records-page">
                 <div class="records-header">
-                    <button class="records-back-btn" data-action="back">← 返回</button>
+                    <button class="btn btn-back back-btn" data-target="home">← 返回</button>
                     <span class="records-title">📊 历史记录</span>
                     <div class="records-header-actions">
                         <button class="records-btn-header" data-action="export">📥 导出CSV</button>
@@ -133,10 +133,16 @@ export default class RecordsView {
     });
   }
 
- _getDetailHtml(data, comparison) {
+  _getDetailHtml(data, comparison) {
     const dateStr = this._formatDate(data.createdAt);
-    const rankText = comparison.total > 0 ? `${comparison.rank}/${comparison.total}` : "--";
-    const modeLabel = data.mode === "practice-cn" ? "中文练习" : data.mode === "practice-en" ? "英文练习" : data.mode;
+    const rankText =
+      comparison.total > 0 ? `${comparison.rank}/${comparison.total}` : "--";
+    const modeLabel =
+      data.mode === "practice-cn"
+        ? "中文练习"
+        : data.mode === "practice-en"
+          ? "英文练习"
+          : data.mode;
     const totalChars = data.correct + data.errors + data.fixed;
 
     return `
@@ -202,17 +208,11 @@ export default class RecordsView {
             </div>
         </div>
     `;
-}
+  }
 
   _bindEvents() {
     const container = this.container;
     if (!container) return;
-
-    container
-      .querySelector(".records-back-btn")
-      ?.addEventListener("click", () => {
-        if (this.onBack) this.onBack();
-      });
 
     container
       .querySelector('[data-action="export"]')
@@ -258,5 +258,5 @@ export default class RecordsView {
     this.records = records;
     this.selectedId = selectedId;
     this._renderList(records, selectedId);
-}
+  }
 }

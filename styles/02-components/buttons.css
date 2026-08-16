@@ -1,0 +1,136 @@
+/* ============================================
+   砚迹（YanTrace）- 按钮组件
+   ============================================ */
+
+/* ----- 基础按钮 ----- */
+.btn {
+  padding: 6px 16px;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: var(--transition-base);
+  font-family: inherit;
+  font-weight: 500;
+}
+
+/* ----- 主要按钮 ----- */
+.btn-primary {
+  background: var(--color-accent);
+  color: var(--text-inverse);
+}
+.btn-primary:hover {
+  background: var(--color-accent-hover);
+}
+
+/* ----- 成功按钮（保存） ----- */
+.btn-save {
+  background: var(--color-success);
+  color: var(--text-inverse);
+}
+.btn-save:hover {
+  background: var(--color-success-hover);
+}
+
+/* ----- 幽灵按钮（透明边框） ----- */
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+}
+.btn-ghost:hover {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+/* ----- 危险按钮（删除） ----- */
+.btn-danger {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+}
+.btn-danger:hover {
+  background: rgba(248, 113, 113, 0.1);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+/* ----- 重置/恢复默认按钮 ----- */
+.btn-reset {
+  background: var(--color-accent);
+  color: var(--text-inverse);
+}
+.btn-reset:hover {
+  background: var(--color-accent-hover);
+}
+
+/* ----- 新建按钮 ----- */
+.btn-new {
+  background: var(--color-warning);
+  color: var(--text-inverse);
+}
+.btn-new:hover {
+  background: #fbbf24;
+}
+
+/* ----- 返回按钮 ----- */
+.btn-back {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  transition: var(--transition-base);
+  font-family: inherit;
+}
+.btn-back:hover {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+/* ----- 文章管理操作按钮 ----- */
+.btn-action {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  color: var(--text-muted);
+  padding: 6px 16px;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: var(--transition-base);
+  font-family: inherit;
+}
+.btn-action:hover {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+.btn-action.danger:hover {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+/* ===== 上下文覆盖（设置面板专用） ===== */
+
+/* 设置面板中的保存按钮 */
+.settings-actions .btn-save {
+  padding: 8px 24px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+}
+
+/* 设置面板中的重置按钮 */
+.settings-actions .btn-reset {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+  padding: 8px 24px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+}
+.settings-actions .btn-reset:hover {
+  background: rgba(248, 113, 113, 0.1);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}

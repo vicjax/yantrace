@@ -1,0 +1,31 @@
+/* ============================================
+   砚迹（YanTrace）- CSS 变量（亮色主题）
+   ============================================ */
+
+body.light-theme {
+  /* ----- 背景色 ----- */
+  --bg-app: #f0f0f5;
+  --bg-container: #ffffff;
+  --bg-surface: #f8f8fc;
+  --bg-surface-hover: #f0f0f8;
+  --bg-surface-strong: #f5f5fa;
+  --bg-input: #ffffff;
+  --bg-elevated: #fafafe;
+
+  /* ----- 边框色 ----- */
+  --border-default: #e8e8ef;
+  --border-strong: #e0e0e8;
+  --border-input: #e0e0e8;
+
+  /* ----- 文本色 ----- */
+  --text-primary: #1a1a2e;
+  --text-secondary: #2a2a42;
+  --text-muted: #8888aa;
+  --text-dim: #9999bb;
+  --text-inverse: #ffffff;
+
+  /* ----- 阴影 ----- */
+  --shadow-app: 0 20px 60px rgba(0, 0, 0, 0.1);
+  --shadow-modal: 0 30px 80px rgba(0, 0, 0, 0.15);
+  --shadow-dropdown: 0 20px 60px rgba(0, 0, 0, 0.12);
+}

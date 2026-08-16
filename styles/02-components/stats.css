@@ -1,0 +1,31 @@
+/* ============================================
+   砚迹（YanTrace）- 统计栏组件
+   ============================================ */
+
+.stats-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: var(--spacing-xs) var(--spacing-sm);
+  background: var(--bg-surface);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  margin-bottom: var(--spacing-sm);
+  border: 1px solid var(--border-default);
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.stats-bar span {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.stats-bar b {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+}

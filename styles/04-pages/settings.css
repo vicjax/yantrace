@@ -1,0 +1,178 @@
+/* ============================================
+   砚迹（YanTrace）- 设置面板样式（弹窗内）
+   ============================================ */
+
+.settings-panel {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 4px 0 var(--spacing-sm) 0;
+}
+
+.settings-section {
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.settings-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.section-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* 每一行：label + 控件 横向排列 */
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+  gap: var(--spacing-md);
+}
+
+.settings-label {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  min-width: 72px;
+  flex-shrink: 0;
+}
+
+.settings-control {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex: 1;
+  justify-content: flex-end;
+}
+
+/* ----- 主题切换按钮 ----- */
+.theme-toggle {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-surface-strong);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  border: 1px solid var(--border-default);
+}
+
+.theme-btn {
+  padding: 6px 18px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  transition: var(--transition-base);
+  font-family: inherit;
+}
+
+.theme-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.theme-btn.active {
+  background: var(--color-accent);
+  color: var(--text-inverse);
+}
+
+/* ----- 滑块 ----- */
+.settings-control input[type="range"] {
+  width: 180px;
+  flex-shrink: 0;
+  accent-color: var(--color-accent);
+  background: transparent;
+  cursor: pointer;
+  height: 4px;
+}
+
+.settings-control input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  background: var(--border-default);
+  border-radius: 4px;
+}
+
+.settings-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  cursor: pointer;
+  margin-top: -6px;
+}
+
+.settings-control input[type="range"]::-moz-range-track {
+  height: 4px;
+  background: var(--border-default);
+  border-radius: 4px;
+  border: none;
+}
+
+.settings-control input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  cursor: pointer;
+  border: none;
+}
+
+.settings-value {
+  font-size: var(--font-size-base);
+  color: var(--text-muted);
+  min-width: 44px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ----- 音效下拉 + 试听按钮 ----- */
+.settings-control select {
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+  cursor: pointer;
+  outline: none;
+  min-width: 120px;
+  font-family: inherit;
+}
+
+.settings-control select:focus {
+  border-color: var(--color-accent);
+}
+
+.sound-test-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  transition: var(--transition-base);
+  font-family: inherit;
+}
+
+.sound-test-btn:hover {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+/* ----- 操作按钮（只保留容器样式，具体按钮在 buttons.css） ----- */
+.settings-actions {
+  justify-content: flex-start;
+  gap: var(--spacing-sm);
+}

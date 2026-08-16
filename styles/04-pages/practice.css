@@ -1,0 +1,128 @@
+/* ============================================
+   砚迹（YanTrace）- 练习页样式
+   ============================================ */
+
+/* ----- 文章展示区 ----- */
+.text-box {
+  background: var(--bg-surface-strong);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  padding: 22px 28px;
+  margin-bottom: 22px;
+  overflow-y: auto;
+  user-select: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: var(--font-size-base, 22px);
+  line-height: 2;
+  letter-spacing: 0.5px;
+  flex: 1;
+  display: block;
+}
+
+/* ----- 字符样式 ----- */
+.text-box .char {
+  display: inline-block;
+  min-width: 0.5em;
+  text-align: center;
+  border-radius: 3px;
+  padding: 0 1px;
+  transition: 0.1s;
+  position: relative;
+  vertical-align: top;
+}
+
+.text-box .char.correct {
+  color: var(--color-success);
+}
+
+.text-box .char.error {
+  color: var(--color-danger);
+  background: rgba(248, 113, 113, 0.15);
+}
+
+.text-box .char.fixed {
+  color: var(--color-warning);
+  background: rgba(251, 191, 36, 0.12);
+}
+
+.text-box .char.current {
+  background: var(--color-accent);
+  color: var(--text-inverse);
+  padding: 1px 0px;
+  border-radius: 4px;
+  animation: pulse 1s ease-in-out infinite alternate;
+  position: relative;
+  z-index: 2;
+  line-height: 1;
+  vertical-align: baseline;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+    transform: scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+/* ----- 浮动输入框（中文打字专用） ----- */
+.floating-input {
+  position: fixed;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  color: var(--text-primary);
+  font-family: "Segoe UI", "PingFang SC", monospace;
+  font-size: var(--pinyin-size, 18px);
+  line-height: var(--pinyin-size, 18px);
+  height: var(--pinyin-size, 18px);
+  text-align: left;
+  padding: 0;
+  margin: 0;
+  caret-color: var(--color-accent);
+  z-index: 100;
+  pointer-events: auto;
+  min-width: 10px;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 0;
+  box-sizing: content-box;
+  letter-spacing: 0;
+  text-indent: 0;
+  overflow: visible;
+}
+
+.floating-input:focus {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.floating-input::selection {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+/* ----- 下拉选择器 ----- */
+.article-select {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  font-family: inherit;
+  outline: none;
+  max-width: 160px;
+}
+
+.article-select:focus {
+  border-color: var(--color-accent);
+}

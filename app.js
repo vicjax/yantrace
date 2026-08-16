@@ -170,8 +170,7 @@ class App {
       userService: this.userService,
       settingsService: this.settingsService,
       historyService: this.historyService, // ⭐ 新增
-      onUserChanged: () => {
-      },
+      onUserChanged: () => {},
     });
     this.userPresenter.updateTopbar();
     this.userPresenter.setCurrentPage("home");
@@ -285,14 +284,7 @@ class App {
   // ============================================
 
   _bindPageEvents(pageId) {
-    document.querySelectorAll(".back-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const target = btn.dataset.target;
-        if (target && this.navigator) {
-          this.navigator.goTo(target);
-        }
-      });
-    });
+    
 
     if (pageId === "home") {
       document.querySelectorAll(".home-btn").forEach((btn) => {
@@ -344,7 +336,16 @@ class App {
     this._renderPage(pageId);
     this._enterPage(pageId);
 
-    // 通知用户管理当前页面
+    // ⭐ 统一绑定返回按钮（所有页面）
+    document.querySelectorAll(".back-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.target;
+        if (target && this.navigator) {
+          this.navigator.goTo(target);
+        }
+      });
+    });
+
     if (this.userPresenter) {
       this.userPresenter.setCurrentPage(pageId);
     }

@@ -3,47 +3,47 @@
  * 职责：渲染设置弹窗 UI，不包含业务逻辑
  */
 export default class SettingsView {
-    constructor(options = {}) {
-        this.onSave = options.onSave || null;
-        this.onReset = options.onReset || null;
-        this.onSoundTest = options.onSoundTest || null;
-        this.onClose = options.onClose || null;
-        this.container = null;
-        this.settings = {};
-    }
+  constructor(options = {}) {
+    this.onSave = options.onSave || null;
+    this.onReset = options.onReset || null;
+    this.onSoundTest = options.onSoundTest || null;
+    this.onClose = options.onClose || null;
+    this.container = null;
+    this.settings = {};
+  }
 
-    render(container) {
-        this.container = container;
-        container.innerHTML = this._getHtml();
-        this._cacheElements();
-        this._bindEvents();
-        this._populateForm();
-    }
+  render(container) {
+    this.container = container;
+    container.innerHTML = this._getHtml();
+    this._cacheElements();
+    this._bindEvents();
+    this._populateForm();
+  }
 
-    populate(settings) {
-        this.settings = settings;
-        this._populateForm();
-    }
+  populate(settings) {
+    this.settings = settings;
+    this._populateForm();
+  }
 
-    getSettings() {
-        return {
-            fontSize: parseInt(this.fontSizeSlider?.value) || 22,
-            pageHeight: parseInt(this.pageHeightSlider?.value) || 550,
-            theme: this._getSelectedTheme(),
-            sound: this.soundSelect?.value || 'off'
-        };
-    }
+  getSettings() {
+    return {
+      fontSize: parseInt(this.fontSizeSlider?.value) || 22,
+      pageHeight: parseInt(this.pageHeightSlider?.value) || 550,
+      theme: this._getSelectedTheme(),
+      sound: this.soundSelect?.value || "off",
+    };
+  }
 
-    destroy() {
-        this.container = null;
-    }
+  destroy() {
+    this.container = null;
+  }
 
-    // ============================================
-    // 私有方法
-    // ============================================
+  // ============================================
+  // 私有方法
+  // ============================================
 
-    _getHtml() {
-        return `
+  _getHtml() {
+    return `
             <div class="settings-modal-header">
                 <h2>⚙️ 设置</h2>
                 <button class="settings-modal-close" id="settingsCloseBtn">✕</button>
@@ -109,147 +109,149 @@ export default class SettingsView {
                 <div class="settings-section" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
                     <div class="section-label">⚡ 操作</div>
                     <div class="settings-row settings-actions">
-                        <button class="save-btn" id="settingsSaveBtn">💾 保存设置</button>
-                        <button class="reset-btn" id="settingsResetBtn">🔄 恢复默认</button>
+                        <button class="btn btn-save" id="settingsSaveBtn">💾 保存设置</button>
+                        <button class="btn btn-reset" id="settingsResetBtn">🔄 恢复默认</button>
                     </div>
                 </div>
 
             </div>
         `;
+  }
+
+  _cacheElements() {
+    this.themeDark = document.getElementById("themeDark");
+    this.themeLight = document.getElementById("themeLight");
+    this.fontSizeSlider = document.getElementById("fontSizeSlider");
+    this.fontSizeValue = document.getElementById("fontSizeValue");
+    this.pageHeightSlider = document.getElementById("pageHeightSlider");
+    this.pageHeightValue = document.getElementById("pageHeightValue");
+    this.soundSelect = document.getElementById("soundSelect");
+    this.soundTestBtn = document.getElementById("soundTestBtn");
+    this.saveBtn = document.getElementById("settingsSaveBtn");
+    this.resetBtn = document.getElementById("settingsResetBtn");
+    this.closeBtn = document.getElementById("settingsCloseBtn");
+  }
+
+  _bindEvents() {
+    // 主题切换
+    if (this.themeDark) {
+      this.themeDark.addEventListener("click", () => this._setTheme("dark"));
+    }
+    if (this.themeLight) {
+      this.themeLight.addEventListener("click", () => this._setTheme("light"));
     }
 
-    _cacheElements() {
-        this.themeDark = document.getElementById('themeDark');
-        this.themeLight = document.getElementById('themeLight');
-        this.fontSizeSlider = document.getElementById('fontSizeSlider');
-        this.fontSizeValue = document.getElementById('fontSizeValue');
-        this.pageHeightSlider = document.getElementById('pageHeightSlider');
-        this.pageHeightValue = document.getElementById('pageHeightValue');
-        this.soundSelect = document.getElementById('soundSelect');
-        this.soundTestBtn = document.getElementById('soundTestBtn');
-        this.saveBtn = document.getElementById('settingsSaveBtn');
-        this.resetBtn = document.getElementById('settingsResetBtn');
-        this.closeBtn = document.getElementById('settingsCloseBtn');
+    // 字体大小滑块
+    if (this.fontSizeSlider) {
+      this.fontSizeSlider.addEventListener("input", () => {
+        const val = this.fontSizeSlider.value;
+        this.fontSizeValue.textContent = val + "px";
+      });
     }
 
-    _bindEvents() {
-        // 主题切换
-        if (this.themeDark) {
-            this.themeDark.addEventListener('click', () => this._setTheme('dark'));
-        }
-        if (this.themeLight) {
-            this.themeLight.addEventListener('click', () => this._setTheme('light'));
-        }
-
-        // 字体大小滑块
-        if (this.fontSizeSlider) {
-            this.fontSizeSlider.addEventListener('input', () => {
-                const val = this.fontSizeSlider.value;
-                this.fontSizeValue.textContent = val + 'px';
-            });
-        }
-
-        // 页面高度滑块
-        if (this.pageHeightSlider) {
-            this.pageHeightSlider.addEventListener('input', () => {
-                const val = this.pageHeightSlider.value;
-                this.pageHeightValue.textContent = val + 'px';
-            });
-        }
-
-        // 保存
-        if (this.saveBtn) {
-            this.saveBtn.addEventListener('click', () => {
-                if (this.onSave) this.onSave();
-            });
-        }
-
-        // 恢复默认
-        if (this.resetBtn) {
-            this.resetBtn.addEventListener('click', () => {
-                if (this.onReset) this.onReset();
-            });
-        }
-
-        // 试听
-        if (this.soundTestBtn) {
-            this.soundTestBtn.addEventListener('click', () => {
-                const sound = this.soundSelect?.value || 'off';
-                if (this.onSoundTest) this.onSoundTest(sound);
-            });
-        }
-
-        // 关闭
-        if (this.closeBtn) {
-            this.closeBtn.addEventListener('click', () => {
-                if (this.onClose) this.onClose();
-            });
-        }
-
-        // 点击遮罩关闭
-        const overlay = this.container?.closest('.settings-modal')?.querySelector('.settings-modal-overlay');
-        if (overlay) {
-            overlay.addEventListener('click', () => {
-                if (this.onClose) this.onClose();
-            });
-        }
-
-        // ESC 键关闭
-        this._escHandler = (e) => {
-            if (e.key === 'Escape' && this.onClose) {
-                this.onClose();
-            }
-        };
-        document.addEventListener('keydown', this._escHandler);
+    // 页面高度滑块
+    if (this.pageHeightSlider) {
+      this.pageHeightSlider.addEventListener("input", () => {
+        const val = this.pageHeightSlider.value;
+        this.pageHeightValue.textContent = val + "px";
+      });
     }
 
-    _populateForm() {
-        const s = this.settings;
-
-        // 主题
-        this._setTheme(s.theme || 'dark');
-
-        // 字体
-        const fontSize = s.fontSize || 22;
-        if (this.fontSizeSlider) {
-            this.fontSizeSlider.value = fontSize;
-            this.fontSizeValue.textContent = fontSize + 'px';
-        }
-
-        // 页面高度
-        const pageHeight = s.pageHeight || 550;
-        if (this.pageHeightSlider) {
-            this.pageHeightSlider.value = pageHeight;
-            this.pageHeightValue.textContent = pageHeight + 'px';
-        }
-
-        // 音效
-        if (this.soundSelect) {
-            this.soundSelect.value = s.sound || 'off';
-        }
+    // 保存
+    if (this.saveBtn) {
+      this.saveBtn.addEventListener("click", () => {
+        if (this.onSave) this.onSave();
+      });
     }
 
-    _setTheme(theme) {
-        this._selectedTheme = theme;
-        if (this.themeDark) {
-            this.themeDark.classList.toggle('active', theme === 'dark');
-        }
-        if (this.themeLight) {
-            this.themeLight.classList.toggle('active', theme === 'light');
-        }
+    // 恢复默认
+    if (this.resetBtn) {
+      this.resetBtn.addEventListener("click", () => {
+        if (this.onReset) this.onReset();
+      });
     }
 
-    _getSelectedTheme() {
-        return this._selectedTheme || 'dark';
+    // 试听
+    if (this.soundTestBtn) {
+      this.soundTestBtn.addEventListener("click", () => {
+        const sound = this.soundSelect?.value || "off";
+        if (this.onSoundTest) this.onSoundTest(sound);
+      });
     }
 
-    /**
-     * 清理事件监听（弹窗关闭时调用）
-     */
-    cleanup() {
-        if (this._escHandler) {
-            document.removeEventListener('keydown', this._escHandler);
-            this._escHandler = null;
-        }
+    // 关闭
+    if (this.closeBtn) {
+      this.closeBtn.addEventListener("click", () => {
+        if (this.onClose) this.onClose();
+      });
     }
+
+    // 点击遮罩关闭
+    const overlay = this.container
+      ?.closest(".settings-modal")
+      ?.querySelector(".settings-modal-overlay");
+    if (overlay) {
+      overlay.addEventListener("click", () => {
+        if (this.onClose) this.onClose();
+      });
+    }
+
+    // ESC 键关闭
+    this._escHandler = (e) => {
+      if (e.key === "Escape" && this.onClose) {
+        this.onClose();
+      }
+    };
+    document.addEventListener("keydown", this._escHandler);
+  }
+
+  _populateForm() {
+    const s = this.settings;
+
+    // 主题
+    this._setTheme(s.theme || "dark");
+
+    // 字体
+    const fontSize = s.fontSize || 22;
+    if (this.fontSizeSlider) {
+      this.fontSizeSlider.value = fontSize;
+      this.fontSizeValue.textContent = fontSize + "px";
+    }
+
+    // 页面高度
+    const pageHeight = s.pageHeight || 550;
+    if (this.pageHeightSlider) {
+      this.pageHeightSlider.value = pageHeight;
+      this.pageHeightValue.textContent = pageHeight + "px";
+    }
+
+    // 音效
+    if (this.soundSelect) {
+      this.soundSelect.value = s.sound || "off";
+    }
+  }
+
+  _setTheme(theme) {
+    this._selectedTheme = theme;
+    if (this.themeDark) {
+      this.themeDark.classList.toggle("active", theme === "dark");
+    }
+    if (this.themeLight) {
+      this.themeLight.classList.toggle("active", theme === "light");
+    }
+  }
+
+  _getSelectedTheme() {
+    return this._selectedTheme || "dark";
+  }
+
+  /**
+   * 清理事件监听（弹窗关闭时调用）
+   */
+  cleanup() {
+    if (this._escHandler) {
+      document.removeEventListener("keydown", this._escHandler);
+      this._escHandler = null;
+    }
+  }
 }

@@ -1,0 +1,30 @@
+/* ============================================
+   砚迹（YanTrace）- 全局重置
+   ============================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", "PingFang SC", Roboto, "Helvetica Neue", sans-serif;
+  background: var(--bg-app);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+#app {
+  width: 100%;
+  max-width: 820px;
+  min-height: 650px;
+  background: var(--bg-container);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-lg) var(--spacing-xl) 36px;
+  box-shadow: var(--shadow-app);
+}

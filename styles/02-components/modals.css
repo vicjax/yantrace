@@ -1,0 +1,289 @@
+/* ============================================
+   砚迹（YanTrace）- 弹窗组件
+   ============================================ */
+
+/* ----- 结果弹窗 ----- */
+.result-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(10px);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.result-overlay.show {
+  display: flex;
+}
+
+.result-card {
+  background: var(--bg-elevated);
+  padding: var(--spacing-xl) 38px;
+  border-radius: 28px;
+  max-width: 520px;
+  width: 92%;
+  text-align: center;
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-modal);
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.result-card h2 {
+  font-size: 26px;
+  font-weight: 300;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.result-main {
+  margin-bottom: var(--spacing-md);
+}
+
+.result-number {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: #60a5fa;
+  display: block;
+}
+
+.result-label {
+  font-size: var(--font-size-md);
+  color: #9999bb;
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--spacing-sm);
+  margin: 14px 0 18px;
+}
+
+.result-grid .item {
+  background: var(--bg-surface);
+  padding: 10px 6px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+}
+
+.result-grid .item .num {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.result-grid .item .lbl {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.result-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.result-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  cursor: pointer;
+  transition: var(--transition-base);
+  font-family: inherit;
+  font-weight: 500;
+}
+
+.result-btn.restart {
+  background: var(--color-accent);
+  color: var(--text-inverse);
+}
+.result-btn.restart:hover {
+  background: var(--color-accent-hover);
+}
+
+.result-btn.copy {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+}
+.result-btn.copy:hover {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+.result-btn.home {
+  background: var(--color-success);
+  color: var(--text-inverse);
+}
+.result-btn.home:hover {
+  background: var(--color-success-hover);
+}
+
+/* ----- 设置弹窗 ----- */
+.settings-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.settings-modal-content {
+  position: relative;
+  background: var(--bg-container);
+  border-radius: 20px;
+  padding: var(--spacing-lg) var(--spacing-xl) var(--spacing-xl);
+  max-width: 560px;
+  width: 92%;
+  max-height: 85vh;
+  overflow-y: auto;
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-modal);
+  animation: fadeIn 0.2s ease;
+}
+
+.settings-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.settings-modal-header h2 {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.settings-modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: var(--transition-base);
+  line-height: 1;
+}
+.settings-modal-close:hover {
+  color: var(--text-primary);
+}
+
+/* ----- 自定义弹窗（用户管理） ----- */
+.custom-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.custom-modal-content {
+  position: relative;
+  background: var(--bg-container);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-lg);
+  max-width: 400px;
+  width: 92%;
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-modal);
+  animation: fadeIn 0.2s ease;
+}
+
+.custom-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.custom-modal-header h3 {
+  font-size: var(--font-size-lg);
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.custom-modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: var(--transition-base);
+  line-height: 1;
+}
+.custom-modal-close:hover {
+  color: var(--text-primary);
+}
+
+.custom-modal-body {
+  margin-bottom: 20px;
+}
+
+.custom-modal-body label {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.custom-modal-body input {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.custom-modal-body input:focus {
+  border-color: var(--color-accent);
+}
+
+.custom-modal-body input.error {
+  border-color: var(--color-danger) !important;
+}
+
+.custom-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+}
+
+/* ----- 模态框错误提示 ----- */
+.modal-error {
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+  margin-top: 6px;
+  padding-left: 2px;
+  display: none;
+}
