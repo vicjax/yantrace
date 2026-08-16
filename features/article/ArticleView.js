@@ -50,7 +50,11 @@ export default class ArticleView {
     this._setContentEditable(true);
     this._updateButtons();
     this._setStatus("编辑中", "#f59e0b");
-    this._hideTitleInput();
+    // ⭐ 改为显示标题输入框并预填当前标题
+    this._showTitleInput();
+    if (this.titleInput) {
+      this.titleInput.value = article?.title || "";
+    }
     this._focusContent();
   }
 
@@ -62,6 +66,9 @@ export default class ArticleView {
     this._updateButtons();
     this._setStatus("新建文章", "#f59e0b");
     this._showTitleInput();
+    if (this.titleInput) {
+      this.titleInput.value = "";
+    }
     this._focusTitle();
   }
 
@@ -100,50 +107,50 @@ export default class ArticleView {
 
   _getHtml() {
     return `
-            <div class="mode-header">
-                <button class="btn btn-back back-btn" data-target="home">← 返回</button>
-                <h2>📄 文章管理</h2>
-                <select id="amLangSelect" class="article-select">
-                    <option value="chinese">中文</option>
-                    <option value="english">English</option>
-                </select>
-                <button class="new-btn" id="amNewBtn">➕ 新建</button>
-            </div>
+    <div class="mode-header">
+      <button class="btn btn-back back-btn" data-target="home">← 返回</button>
+      <h2>📄 文章管理</h2>
+      <select id="amLangSelect" class="article-select">
+        <option value="chinese">中文</option>
+        <option value="english">English</option>
+      </select>
+      <button class="btn btn-new" id="amNewBtn">➕ 新建</button>
+    </div>
 
-            <div class="article-management-body">
-                <div class="am-left">
-                    <div class="am-list-header">
-                        <span>文章列表</span>
-                        <span class="am-count" id="amCount">0 篇</span>
-                    </div>
-                    <div class="am-list" id="amList">
-                        <span class="placeholder">加载中...</span>
-                    </div>
-                </div>
+    <div class="article-management-body">
+      <div class="am-left">
+        <div class="am-list-header">
+          <span>文章列表</span>
+          <span class="am-count" id="amCount">0 篇</span>
+        </div>
+        <div class="am-list" id="amList">
+          <span class="placeholder">加载中...</span>
+        </div>
+      </div>
 
-                <div class="am-right">
-                    <div class="am-content-header">
-                        <span class="am-title" id="amTitle">请选择一篇文章</span>
-                        <span class="am-status" id="amStatus">查看中</span>
-                    </div>
-                    <div class="am-content" id="amContent" contenteditable="false">
-                        <span class="placeholder">请从左侧选择一篇文章</span>
-                    </div>
-                    <div class="am-title-edit" id="amTitleEdit" style="display:none;">
-                        <label>标题：</label>
-                        <input type="text" id="amTitleInput" placeholder="请输入文章标题" />
-                    </div>
-                </div>
-            </div>
+      <div class="am-right">
+        <div class="am-content-header">
+          <span class="am-title" id="amTitle">请选择一篇文章</span>
+          <span class="am-status" id="amStatus">查看中</span>
+        </div>
+        <div class="am-content" id="amContent" contenteditable="false">
+          <span class="placeholder">请从左侧选择一篇文章</span>
+        </div>
+        <div class="am-title-edit" id="amTitleEdit" style="display:none;">
+          <label>标题：</label>
+          <input type="text" id="amTitleInput" placeholder="请输入文章标题" />
+        </div>
+      </div>
+    </div>
 
-            <div class="am-actions">
-                <button class="btn btn-action" id="amViewBtn">📖 查看</button>
-                <button class="btn btn-action" id="amEditBtn">✏️ 编辑</button>
-                <button class="btn btn-action danger" id="amDeleteBtn">🗑️ 删除</button>
-                <button class="btn btn-save" id="amSaveBtn" style="display:none;">💾 保存</button>
-                <button class="btn btn-reset" id="amCancelBtn" style="display:none;">↻ 取消</button>
-            </div>
-        `;
+    <div class="am-actions">
+      <!-- ❌ 删除查看按钮 -->
+      <button class="btn btn-action" id="amEditBtn">✏️ 编辑</button>
+      <button class="btn btn-action danger" id="amDeleteBtn">🗑️ 删除</button>
+      <button class="btn btn-save" id="amSaveBtn" style="display:none;">💾 保存</button>
+      <button class="btn btn-reset" id="amCancelBtn" style="display:none;">↻ 取消</button>
+    </div>
+  `;
   }
 
   _cacheElements() {
@@ -156,7 +163,6 @@ export default class ArticleView {
     this.titleEdit = document.getElementById("amTitleEdit");
     this.titleInput = document.getElementById("amTitleInput");
 
-    this.viewBtn = document.getElementById("amViewBtn");
     this.editBtn = document.getElementById("amEditBtn");
     this.deleteBtn = document.getElementById("amDeleteBtn");
     this.saveBtn = document.getElementById("amSaveBtn");
@@ -176,12 +182,6 @@ export default class ArticleView {
     if (this.newBtn) {
       this.newBtn.addEventListener("click", () => {
         if (this.onCreateNew) this.onCreateNew();
-      });
-    }
-
-    if (this.viewBtn) {
-      this.viewBtn.addEventListener("click", () => {
-        if (this.onView) this.onView();
       });
     }
 
@@ -305,8 +305,6 @@ export default class ArticleView {
   _updateButtons() {
     const isEditing = this.mode === "edit" || this.mode === "new";
 
-    if (this.viewBtn)
-      this.viewBtn.style.display = isEditing ? "none" : "inline-block";
     if (this.editBtn)
       this.editBtn.style.display = isEditing ? "none" : "inline-block";
     if (this.deleteBtn)

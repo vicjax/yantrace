@@ -40,7 +40,7 @@ export function getPracticeCnHtml() {
   return `
         <div class="mode-header">
             <button class="btn btn-back back-btn" data-target="home">← 返回</button>
-            <h2>🀄 中文打字练习</h2>
+            <h2>✍️ 中文打字练习</h2>
             <select id="cnArticleSelect" class="article-select"></select>
             <button class="btn btn-reset" id="cnResetBtn">⟳ 重新开始</button>
         </div>

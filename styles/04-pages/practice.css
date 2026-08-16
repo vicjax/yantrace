@@ -48,7 +48,7 @@
 
 .text-box .char.current {
   background: var(--color-accent);
-  color: var(--text-inverse);
+  color: #ffffff;
   padding: 1px 0px;
   border-radius: 4px;
   animation: pulse 1s ease-in-out infinite alternate;
