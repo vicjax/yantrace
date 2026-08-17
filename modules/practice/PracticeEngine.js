@@ -233,6 +233,31 @@ export default class PracticeEngine {
     }
   }
 
+  /**
+   * 手动停止练习
+   * 主动结束当前练习，触发完成回调
+   */
+  stopPractice() {
+    if (this.isFinished) return;
+    if (this.totalChars === 0) return;
+
+    this.isFinished = true;
+
+    // 清除计时器
+    if (this._statsTimer) {
+      clearInterval(this._statsTimer);
+      this._statsTimer = null;
+    }
+
+    // 刷新统计显示
+    this._refreshStatsDisplay();
+
+    // 触发完成回调
+    if (this.onComplete) {
+      this.onComplete(this.getStats());
+    }
+  }
+
   focus() {
     if (this.strategy && typeof this.strategy.focus === "function") {
       this.strategy.focus();

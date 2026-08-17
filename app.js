@@ -306,6 +306,19 @@ class App {
           this.practiceEngine?.reset(type);
         });
       }
+
+      const stopBtn = document.getElementById(
+        pageId === "practice-cn" ? "cnStopBtn" : "enStopBtn",
+      );
+
+      if (stopBtn) {
+        stopBtn.addEventListener("click", () => {
+          if (this.practiceEngine?.isFinished) return;
+          if (!this.practiceEngine?.startTime) return;
+          this.practiceEngine?.stopPractice();
+          stopBtn.blur();
+        });
+      }
     }
   }
 

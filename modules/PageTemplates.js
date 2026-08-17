@@ -43,6 +43,7 @@ export function getPracticeCnHtml() {
             <h2>✍️ 中文打字练习</h2>
             <select id="cnArticleSelect" class="article-select"></select>
             <button class="btn btn-reset" id="cnResetBtn">⟳ 重新开始</button>
+            <button class="btn btn-stop" id="cnStopBtn">⏹ 停止</button>
         </div>
 
         <div class="stats-bar" id="cnStatsBar">
@@ -75,6 +76,7 @@ export function getPracticeEnHtml() {
             <h2>🔤 英文打字练习</h2>
             <select id="enArticleSelect" class="article-select"></select>
             <button class="btn btn-reset" id="enResetBtn">⟳ 重新开始</button>
+            <button class="btn btn-stop" id="enStopBtn">⏹ 停止</button>
         </div>
 
         <div class="stats-bar" id="enStatsBar">

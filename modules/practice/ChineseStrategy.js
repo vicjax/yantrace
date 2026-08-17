@@ -275,9 +275,6 @@ export default class ChineseStrategy {
 
   /**
    * 更新输入框位置到当前字符下方
-   */
-  /**
-   * 更新输入框位置到当前字符下方
    * 优化版：使用 transform 减少重排，增加容错
    */
   updatePosition() {
