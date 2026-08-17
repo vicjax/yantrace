@@ -285,6 +285,7 @@ class App {
   // ============================================
 
   _bindPageEvents(pageId) {
+    // 首页按钮
     if (pageId === "home") {
       document.querySelectorAll(".home-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -297,6 +298,7 @@ class App {
     }
 
     if (pageId === "practice-cn" || pageId === "practice-en") {
+      // 重置按钮
       const resetBtn = document.getElementById(
         pageId === "practice-cn" ? "cnResetBtn" : "enResetBtn",
       );
@@ -307,16 +309,33 @@ class App {
         });
       }
 
+      // 停止按钮
       const stopBtn = document.getElementById(
         pageId === "practice-cn" ? "cnStopBtn" : "enStopBtn",
       );
-
       if (stopBtn) {
         stopBtn.addEventListener("click", () => {
           if (this.practiceEngine?.isFinished) return;
           if (!this.practiceEngine?.startTime) return;
           this.practiceEngine?.stopPractice();
           stopBtn.blur();
+        });
+      }
+
+      // 限时模式下拉选择
+      const timeSelect = document.getElementById(
+        pageId === "practice-cn" ? "cnTimeLimitSelect" : "enTimeLimitSelect",
+      );
+      if (timeSelect) {
+        timeSelect.addEventListener("change", () => {
+          const seconds = parseInt(timeSelect.value) || 0;
+          const currentMode = this.practiceEngine?.currentMode || "chinese";
+          this.practiceEngine?.setTimeLimit(seconds);
+          this.practiceEngine?.reset(currentMode);
+          const user = this.userService?.getCurrent();
+          if (user) {
+            this.settingsService?.setItem(user.id, "timeLimit", seconds);
+          }
         });
       }
     }
@@ -390,6 +409,18 @@ class App {
     if (!container) return;
 
     if (pageId === "practice-cn" || pageId === "practice-en") {
+      // 加载限时模式设置
+      const settings = this._getCurrentSettings();
+      if (settings && settings.timeLimit !== undefined) {
+        this.practiceEngine?.setTimeLimit(settings.timeLimit);
+        // 同步下拉框
+        const timeSelect = document.getElementById(
+          pageId === "practice-cn" ? "cnTimeLimitSelect" : "enTimeLimitSelect",
+        );
+        if (timeSelect) {
+          timeSelect.value = String(settings.timeLimit);
+        }
+      }
       this.practiceEngine?.enter(pageId);
     } else if (pageId === "settings") {
       this._getSettingsPresenter()?.render(container);

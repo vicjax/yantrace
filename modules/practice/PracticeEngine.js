@@ -77,6 +77,9 @@ export default class PracticeEngine {
     this._timerPaused = false;
     this._timerAccumulated = 0;
 
+    // 限时模式
+    this.timeLimit = 0; // 0 = 无限时
+
     this._bindResizeEvent();
   }
 
@@ -86,7 +89,6 @@ export default class PracticeEngine {
 
   enter(pageId) {
     const type = pageId === "practice-cn" ? "chinese" : "english";
-    // 根据页面 ID 设置对应的 DOM 引用
     this._setPageDom(pageId);
     this.loadFirstArticle(type);
   }
@@ -95,16 +97,12 @@ export default class PracticeEngine {
     this.clearStrategy();
   }
 
-  /**
-   * 根据页面 ID 设置 DOM 引用
-   */
   _setPageDom(pageId) {
     if (pageId === "practice-cn") {
       this.textBox = document.getElementById("cnTextBox");
       this.selector = document.getElementById("cnArticleSelect");
       this.resetBtn = document.getElementById("cnResetBtn");
 
-      // ⭐ 初始化中文统计元素
       this.stats.cn = {
         cpm: document.getElementById("cnCpm"),
         kpm: document.getElementById("cnKpm"),
@@ -122,7 +120,6 @@ export default class PracticeEngine {
       this.selector = document.getElementById("enArticleSelect");
       this.resetBtn = document.getElementById("enResetBtn");
 
-      // ⭐ 初始化英文统计元素
       this.stats.en = {
         wpm: document.getElementById("enWpm"),
         kpm: document.getElementById("enKpm"),
@@ -168,7 +165,6 @@ export default class PracticeEngine {
     const article = this.articleService.getById(articleId);
     if (!article) return;
 
-    // 清理旧策略和定时器
     if (this.strategy) {
       this.strategy.destroy();
       this.strategy = null;
@@ -197,7 +193,6 @@ export default class PracticeEngine {
     this._updateProgressOnly();
     this._updateTimerDisplay(0);
 
-    // 中文模式：创建浮动输入框
     if (this.strategy && this.currentMode === "chinese") {
       this.textBox.offsetHeight;
       requestAnimationFrame(() => {
@@ -217,7 +212,6 @@ export default class PracticeEngine {
         }
       });
     } else {
-      // 英文模式：直接聚焦（无输入框）
       setTimeout(() => this.focus(), 100);
     }
   }
@@ -234,25 +228,42 @@ export default class PracticeEngine {
   }
 
   /**
+   * 设置限时模式
+   * @param {number} seconds - 0 = 无限时, 30/60/120 = 限时秒数
+   */
+  setTimeLimit(seconds) {
+    this.timeLimit = seconds || 0;
+    // 重置计时器显示
+    this._updateTimerDisplay(0);
+    // 如果正在练习，重新启动定时器
+    if (this.startTime && !this.isFinished && this._statsTimer) {
+      clearInterval(this._statsTimer);
+      this._statsTimer = null;
+      this._startStatsTimer();
+    }
+  }
+
+  /**
    * 手动停止练习
-   * 主动结束当前练习，触发完成回调
    */
   stopPractice() {
     if (this.isFinished) return;
     if (this.totalChars === 0) return;
 
+    // 销毁输入框，关闭输入法
+    if (this.strategy && typeof this.strategy._destroyInput === "function") {
+      this.strategy._destroyInput();
+    }
+
     this.isFinished = true;
 
-    // 清除计时器
     if (this._statsTimer) {
       clearInterval(this._statsTimer);
       this._statsTimer = null;
     }
 
-    // 刷新统计显示
     this._refreshStatsDisplay();
 
-    // 触发完成回调
     if (this.onComplete) {
       this.onComplete(this.getStats());
     }
@@ -504,9 +515,6 @@ export default class PracticeEngine {
     this._scrollToCurrentChar();
   }
 
-  /**
-   * 滚动到当前字符位置（优化版）
-   */
   _scrollToCurrentChar() {
     if (!this.textBox || this.isFinished) return;
 
@@ -518,12 +526,9 @@ export default class PracticeEngine {
     const containerRect = this.textBox.getBoundingClientRect();
     const charRect = charEl.getBoundingClientRect();
 
-    // 计算字符底部到容器底部的距离
     const distanceToBottom = containerRect.bottom - charRect.bottom;
 
-    // 如果字符即将被输入框遮挡（距离底部 < 100px），触发滚动
     if (distanceToBottom < 100) {
-      // 滚动目标：让字符出现在容器顶部下方 20% 位置
       const targetOffset = containerRect.height * 0.2;
       const currentOffset = charRect.top - containerRect.top;
       const scrollDelta = currentOffset - targetOffset;
@@ -558,9 +563,15 @@ export default class PracticeEngine {
 
       if (this._timerStartTime) {
         this._timerSeconds = Math.floor(
-          (Date.now() - this._timerStartTime) / 1000,
+          (Date.now() - this._timerStartTime) / 1000
         );
         this._updateTimerDisplay(this._timerSeconds);
+
+        // 限时模式：检查是否超时
+        if (this.timeLimit > 0 && this._timerSeconds >= this.timeLimit) {
+          this.stopPractice();
+          return;
+        }
       }
 
       this._refreshStatsDisplay();
@@ -576,33 +587,44 @@ export default class PracticeEngine {
 
     const el = isChinese ? this.stats.cn : this.stats.en;
 
-    // CPM / WPM
     if (isChinese && el.cpm) {
       el.cpm.textContent = stats.cpm;
     } else if (!isChinese && el.wpm) {
       el.wpm.textContent = stats.wpm;
     }
 
-    // 通用指标
     if (el.kpm) el.kpm.textContent = stats.kpm;
     if (el.kspc) el.kspc.textContent = stats.kspc;
     if (el.accuracy) el.accuracy.textContent = stats.actualAccuracy;
     if (el.progressChars) el.progressChars.textContent = stats.processed;
     if (el.totalChars) el.totalChars.textContent = stats.totalChars;
-
-    // ⭐ 峰值（使用净速度）
     if (el.peakSpeed) el.peakSpeed.textContent = stats.peakSpeed;
   }
 
   _updateTimerDisplay(seconds) {
-    const timerText = formatTime(seconds);
+    // seconds 是累计秒数
+    let displaySeconds = seconds;
+    let isCountdown = false;
 
-    // 同时更新中文和英文计时器
+    if (this.timeLimit > 0) {
+      displaySeconds = Math.max(0, this.timeLimit - seconds);
+      isCountdown = true;
+    }
+
+    const timerText = formatTime(displaySeconds);
+    const isWarning = isCountdown && displaySeconds < 10;
+
     const cnTimer = document.getElementById("cnTimer");
-    if (cnTimer) cnTimer.textContent = timerText;
+    if (cnTimer) {
+      cnTimer.textContent = timerText;
+      cnTimer.style.color = isWarning ? "var(--color-danger)" : "";
+    }
 
     const enTimer = document.getElementById("enTimer");
-    if (enTimer) enTimer.textContent = timerText;
+    if (enTimer) {
+      enTimer.textContent = timerText;
+      enTimer.style.color = isWarning ? "var(--color-danger)" : "";
+    }
   }
 
   _updateProgressOnly() {
@@ -654,7 +676,6 @@ export default class PracticeEngine {
         ? 0
         : Math.round((processed / this.totalChars) * 100);
 
-    // 峰值速度使用净速度
     const peakSpeed =
       this.currentMode === "chinese" ? this._peakCpm : this._peakWpm;
 
@@ -689,7 +710,6 @@ export default class PracticeEngine {
   _samplePeakSpeed() {
     if (!this.startTime) return;
 
-    // 最小采样时间：15秒后才开始记录峰值
     const elapsed = (Date.now() - this.startTime) / 1000;
     if (elapsed < 15) return;
 
@@ -698,7 +718,6 @@ export default class PracticeEngine {
 
     const stats = this._calcStats();
 
-    // 使用净速度（准确率惩罚后的速度）
     if (this.currentMode === "chinese") {
       const speed = stats.netCpm;
       if (speed > this._peakCpm) {
@@ -752,11 +771,13 @@ export default class PracticeEngine {
     this._timerPaused = false;
     this._timerAccumulated = 0;
 
+    // 重置限时模式显示
+    this._updateTimerDisplay(0);
+
     if (this._statsTimer) {
       clearInterval(this._statsTimer);
       this._statsTimer = null;
     }
-    this._updateTimerDisplay(0);
     this._resetStatsDisplay();
   }
 
@@ -764,7 +785,6 @@ export default class PracticeEngine {
     const cn = this.stats.cn;
     const en = this.stats.en;
 
-    // 重置中文统计
     if (cn) {
       if (cn.cpm) cn.cpm.textContent = "0";
       if (cn.kpm) cn.kpm.textContent = "0";
@@ -777,7 +797,6 @@ export default class PracticeEngine {
       if (cn.progressText) cn.progressText.textContent = "0%";
     }
 
-    // 重置英文统计
     if (en) {
       if (en.wpm) en.wpm.textContent = "0";
       if (en.kpm) en.kpm.textContent = "0";
@@ -796,7 +815,6 @@ export default class PracticeEngine {
   // ============================================
 
   _bindUIEvents() {
-    // 移除旧监听
     if (this.selector && this._selectorHandler) {
       this.selector.removeEventListener("change", this._selectorHandler);
     }
@@ -853,10 +871,6 @@ export default class PracticeEngine {
     return String(str).replace(/[&<>"']/g, (m) => map[m] || m);
   }
 
-  /**
-   * 播放按键音效
-   * @private
-   */
   _playSound() {
     const sound = window.__soundSetting || "off";
     if (sound === "off") return;
@@ -865,20 +879,11 @@ export default class PracticeEngine {
     try {
       const audio = new Audio(soundPath);
       audio.volume = 0.3;
-      audio.play().catch(() => {
-        // 自动播放被浏览器阻止，忽略
-      });
-    } catch (e) {
-      // 静默失败
-    }
+      audio.play().catch(() => {});
+    } catch (e) {}
   }
 
-  /**
-   * 刷新页面（设置变化时调用）
-   * @param {string} type - 'chinese' 或 'english'
-   */
   refresh(type) {
-    // 重新加载当前文章
     if (this.currentArticleId) {
       this.loadArticle(type, this.currentArticleId);
     } else {

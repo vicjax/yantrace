@@ -108,6 +108,32 @@
   background: rgba(248, 113, 113, 0.15);
 }
 
+/* ============================================
+   限时模式切换按钮（紧凑版）
+   ============================================ */
+
+.btn-time-limit {
+  padding: 2px 8px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  transition: var(--transition-base);
+}
+
+.btn-time-limit:hover {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+.btn-time-limit.active {
+  background: var(--color-accent);
+  color: var(--text-inverse);
+}
+
 /* ----- 文章管理操作按钮 ----- */
 .btn-action {
   background: transparent;

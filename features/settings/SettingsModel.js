@@ -16,7 +16,8 @@ const DEFAULT_SETTINGS = {
     fontSize: 22,
     pageHeight: 550,
     theme: 'dark',
-    sound: 'off'  // 新增：音效选项 'off' | 'mechanical' | 'laptop'
+    sound: 'off',
+    timeLimit: 0,  // 0 = 无限时, 30, 60, 120
 };
 
 
