@@ -9,8 +9,10 @@ export default class ResultToast {
     this.overlay = null;
     this.title = null;
     this.speedEl = null;
+    this.speedLabelEl = null;
     this.accuracyEl = null;
     this.timeEl = null;
+    this.charsEl = null;
     this.restartBtn = null;
     this.detailBtn = null;
 
@@ -18,6 +20,7 @@ export default class ResultToast {
     this._onDetail = null;
     this._isShowing = false;
     this._pendingData = null;
+    this._saved = true; // ⭐ 新增
 
     this._cacheElements();
     this._bindEvents();
@@ -32,8 +35,10 @@ export default class ResultToast {
     this.overlay = document.getElementById("resultOverlay");
     this.title = document.getElementById("resultTitle");
     this.speedEl = document.getElementById("resultMainNumber");
+    this.speedLabelEl = document.getElementById("resultMainLabel");
     this.accuracyEl = document.getElementById("resultAccuracy");
     this.timeEl = document.getElementById("resultTime");
+    this.charsEl = document.getElementById("resultChars");
 
     this.restartBtn = document.getElementById("resultRestartBtn");
     this.detailBtn = document.getElementById("resultDetailBtn");
@@ -57,6 +62,8 @@ export default class ResultToast {
 
     if (this.detailBtn) {
       this.detailBtn.addEventListener("click", () => {
+        // ⭐ 未保存时不执行任何操作
+        if (!this._saved) return;
         this.hide();
         if (this._onDetail && this._pendingData) {
           this._onDetail(this._pendingData);
@@ -64,7 +71,6 @@ export default class ResultToast {
       });
     }
 
-    // ⭐ 新增：返回首页
     if (this.homeBtn) {
       this.homeBtn.addEventListener("click", () => {
         this.hide();
@@ -108,9 +114,6 @@ export default class ResultToast {
   // 公共方法
   // ============================================
 
-  /**
-   * 设置回调
-   */
   setCallbacks(onRestart, onDetail) {
     this._onRestart = onRestart;
     this._onDetail = onDetail;
@@ -119,33 +122,59 @@ export default class ResultToast {
   /**
    * 显示弹窗
    */
-  show(stats, mode, articleTitle) {
+  show(stats, mode, articleTitle, saved = true) {
     if (!stats) return;
 
-    // 保存数据供详细查看使用
     this._pendingData = { stats, mode, articleTitle, createdAt: Date.now() };
 
+    // ⭐ 保存状态供点击事件使用
+    this._saved = saved;
+
     const isChinese = mode === "practice-cn" || mode === "input-cn";
-    const speed = isChinese ? stats.cpm : stats.wpm;
+    const rawSpeed = isChinese ? stats.cpm : stats.wpm;
+    const speedLabel = isChinese ? "CPM" : "WPM";
+    const accuracy = stats.actualAccuracy || 0;
+    const netSpeed = Math.round(rawSpeed * (accuracy / 100));
 
     // 标题
-    const titleText = isChinese
-      ? "🎉 中文练习完成！"
-      : "🎉 English Practice Complete!";
-    if (this.title) this.title.textContent = titleText;
+    if (this.title) {
+      this.title.textContent = saved ? "🎉 练习完成！" : "📉 练习未达标";
+      this.title.style.color = saved ? "" : "#f59e0b";
+    }
 
     // 速度
-    if (this.speedEl) this.speedEl.textContent = speed || 0;
+    if (this.speedEl) this.speedEl.textContent = netSpeed || 0;
+    if (this.speedLabelEl) this.speedLabelEl.textContent = speedLabel;
 
     // 准确率
-    if (this.accuracyEl)
+    if (this.accuracyEl) {
       this.accuracyEl.textContent = (stats.actualAccuracy || 0) + "%";
+    }
 
     // 用时
-    if (this.timeEl) this.timeEl.textContent = (stats.elapsed || 0) + "s";
+    if (this.timeEl) {
+      this.timeEl.textContent = (stats.elapsed || 0) + "s";
+    }
 
-    // 按钮文字
-    if (this.detailBtn) this.detailBtn.textContent = "📊 查看详细数据";
+    // 字数
+    if (this.charsEl) {
+      const processed = stats.processed || 0;
+      const total = stats.totalChars || 0;
+      this.charsEl.textContent = `${processed}/${total}`;
+    }
+
+    // ⭐ 按钮文字和样式
+    if (this.detailBtn) {
+      if (saved) {
+        this.detailBtn.textContent = "📊 查看详细数据";
+        this.detailBtn.style.opacity = "1";
+        this.detailBtn.style.cursor = "pointer";
+      } else {
+        this.detailBtn.textContent = "❌ 未保存记录";
+        this.detailBtn.style.opacity = "0.5";
+        this.detailBtn.style.cursor = "default";
+      }
+    }
 
     // 显示弹窗
     if (this.overlay) {
@@ -154,7 +183,6 @@ export default class ResultToast {
     }
 
     this._isShowing = true;
-    console.log(`📊 完成弹窗: ${titleText}`);
   }
 
   /**

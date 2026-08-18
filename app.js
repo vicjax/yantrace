@@ -435,24 +435,59 @@ class App {
   // 练习完成
   // ============================================
 
+  // ============================================
+  // 结果过滤
+  // ============================================
+
+  /**
+   * 判断结果是否应该保存
+   * @param {Object} stats - 统计数据
+   * @returns {boolean}
+   */
+  _shouldSaveResult(stats) {
+    // ⭐ 开发模式：控制台执行 localStorage.setItem('_devMode', 'true') 开启
+    if (localStorage.getItem("_devMode") === "true") return true;
+
+    const accuracy = stats.actualAccuracy || 0;
+    const elapsed = stats.elapsed || 0;
+    const processed = stats.processed || 0;
+
+    // 准确率低于 60% 不保存
+    if (accuracy < 60) return false;
+    // 练习时间少于 60 秒不保存
+    if (elapsed < 60) return false;
+    // 输入字符少于 3 个不保存
+    if (processed < 3) return false;
+
+    return true;
+  }
+
+  // ============================================
+  // 练习完成
+  // ============================================
+
   _onPracticeComplete(stats) {
     const currentPage = this.currentPageId || "practice-cn";
     const articleTitle = this.practiceEngine?.currentArticleTitle || "";
 
-    // 保存历史
-    const user = this.userService?.getCurrent();
-    if (user && this.historyService) {
-      this.historyService.addWithDedup(
-        user.id,
-        currentPage,
-        articleTitle,
-        stats,
-      );
+    // 判断是否保存
+    const shouldSave = this._shouldSaveResult(stats);
+
+    if (shouldSave) {
+      const user = this.userService?.getCurrent();
+      if (user && this.historyService) {
+        this.historyService.addWithDedup(
+          user.id,
+          currentPage,
+          articleTitle,
+          stats,
+        );
+      }
     }
 
-    // 显示弹窗
+    // 显示弹窗（传入 shouldSave 参数）
     if (this.resultToast) {
-      this.resultToast.show(stats, currentPage, articleTitle);
+      this.resultToast.show(stats, currentPage, articleTitle, shouldSave);
     }
   }
 

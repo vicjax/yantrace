@@ -41,6 +41,9 @@
 .result-main {
   margin-bottom: var(--spacing-md);
 }
+.result-summary {
+  margin-bottom: var(--spacing-sm);
+}
 
 .result-number {
   font-size: var(--font-size-xl);

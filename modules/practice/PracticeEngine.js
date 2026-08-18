@@ -588,9 +588,9 @@ export default class PracticeEngine {
     const el = isChinese ? this.stats.cn : this.stats.en;
 
     if (isChinese && el.cpm) {
-      el.cpm.textContent = stats.cpm;
+      el.cpm.textContent = stats.netCpm;
     } else if (!isChinese && el.wpm) {
-      el.wpm.textContent = stats.wpm;
+      el.wpm.textContent = stats.netWpm;
     }
 
     if (el.kpm) el.kpm.textContent = stats.kpm;
