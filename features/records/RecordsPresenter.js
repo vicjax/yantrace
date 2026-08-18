@@ -92,7 +92,10 @@ export default class RecordsPresenter {
     this.selectedRecord = record;
     const data = this.model.formatRecord(record);
     const otherRecords = this.currentRecords.filter((r) => r.id !== recordId);
-    const comparison = this.model.getRecentComparison(otherRecords, data.speed);
+    const comparison = this.model.getRecentComparison(
+      otherRecords,
+      data.netSpeed,
+    );
 
     this.view.updateDetail(data, comparison);
   }

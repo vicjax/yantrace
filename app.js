@@ -452,12 +452,12 @@ class App {
     const elapsed = stats.elapsed || 0;
     const processed = stats.processed || 0;
 
-    // 准确率低于 60% 不保存
-    if (accuracy < 60) return false;
-    // 练习时间少于 60 秒不保存
-    if (elapsed < 60) return false;
-    // 输入字符少于 3 个不保存
-    if (processed < 3) return false;
+    // 准确率 ≥ 80%
+    if (accuracy < 80) return false;
+    // 时长 ≥ 15 秒
+    if (elapsed < 15) return false;
+    // 字符数 ≥ 10 个
+    if (processed < 10) return false;
 
     return true;
   }

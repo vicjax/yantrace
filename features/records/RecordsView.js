@@ -104,15 +104,20 @@ export default class RecordsView {
       .map((record) => {
         const isChinese =
           record.mode === "practice-cn" || record.mode === "input-cn";
-        const totalCorrect =
-          (record.stats?.correct || 0) + (record.stats?.fixed || 0);
-        const minutes = (record.stats?.elapsed || 0) / 60;
-        const speed =
+        const stats = record.stats || {};
+        const totalCorrect = (stats.correct || 0) + (stats.fixed || 0);
+        const processed =
+          (stats.correct || 0) + (stats.errors || 0) + (stats.fixed || 0);
+        const minutes = (stats.elapsed || 0) / 60;
+        const accuracy =
+          processed === 0 ? 100 : Math.round((totalCorrect / processed) * 100);
+        const rawSpeed =
           minutes > 0
             ? isChinese
               ? Math.round(totalCorrect / minutes)
               : Math.round(totalCorrect / 5 / minutes)
             : 0;
+        const speed = Math.round(rawSpeed * (accuracy / 100));
         const speedLabel = isChinese ? "CPM" : "WPM";
         const date = this._formatDate(record.createdAt);
 
@@ -152,14 +157,14 @@ export default class RecordsView {
                 <span class="records-detail-article-info">${data.articleTitle} · ${totalChars}字</span>
             </div>
 
-            <div class="records-detail-speed-wrapper">
+           <div class="records-detail-speed-wrapper">
                 <div class="records-detail-speed">
-                    <span class="records-detail-number">${data.speed}</span>
-                    <span class="records-detail-label">${data.speedLabel}</span>
+                    <span class="records-detail-number">${data.netSpeed}</span>
+                    <span class="records-detail-label">
+                        ${data.speedLabel} <span style="font-size:12px;color:var(--text-muted);font-weight:normal;">毛速度 ${data.speed}</span>
+                    </span>
                 </div>
-                <div class="records-detail-compare">毛速度 ${data.rawSpeed} · 净速度 ${data.netSpeed}</div>
             </div>
-
             <div class="records-detail-stats">
                 <div class="records-stat-item">
                     <span class="records-stat-number">${data.accuracy}%</span>
@@ -200,7 +205,7 @@ export default class RecordsView {
 
             <div class="records-detail-section">📈 近10次对比</div>
             <div class="records-detail-row">
-                <span>本次 <b>${data.speed}</b></span>
+                <span>本次 <b>${data.netSpeed}</b></span>
                 <span>最高 <b>${comparison.max}</b></span>
                 <span>最低 <b>${comparison.min}</b></span>
                 <span>平均 <b>${comparison.avg}</b></span>
