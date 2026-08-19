@@ -29,7 +29,7 @@ export default class SettingsView {
     return {
       fontSize: parseInt(this.fontSizeSlider?.value) || 22,
       pageHeight: parseInt(this.pageHeightSlider?.value) || 550,
-      theme: this._getSelectedTheme(),
+      theme: this.themeSelect?.value || "dark", // ← 直接读取下拉框值
       sound: this.soundSelect?.value || "off",
     };
   }
@@ -55,21 +55,25 @@ export default class SettingsView {
                 <div class="settings-section">
                     <div class="section-label">🎨 外观</div>
 
-                    <div class="settings-row">
-                        <span class="settings-label">主题</span>
-                        <div class="theme-toggle">
-                            <button class="theme-btn" data-theme="dark" id="themeDark">🌙 暗色</button>
-                            <button class="theme-btn" data-theme="light" id="themeLight">☀️ 亮色</button>
-                        </div>
+                <div class="settings-row">
+                    <span class="settings-label">主题</span>
+                    <div class="settings-control">
+                        <select id="themeSelect">
+                            <option value="dark">🌙 深空灰（暗色）</option>
+                            <option value="light">☀️ 暖阳白（亮色）</option>
+                            <option value="eye-care">🌿 豆沙绿（护眼）</option>
+                            <option value="warm-yellow">📜 暖黄（护眼）</option>
+                        </select>
                     </div>
+                </div>
 
-                    <div class="settings-row">
-                        <span class="settings-label">字体大小</span>
-                        <div class="settings-control">
-                            <input type="range" id="fontSizeSlider" min="14" max="36" step="1" />
-                            <span class="settings-value" id="fontSizeValue">22px</span>
-                        </div>
+                <div class="settings-row">
+                    <span class="settings-label">字体大小</span>
+                    <div class="settings-control">
+                        <input type="range" id="fontSizeSlider" min="14" max="36" step="1" />
+                        <span class="settings-value" id="fontSizeValue">22px</span>
                     </div>
+                </div>
                 </div>
 
                 <!-- 布局 -->
@@ -119,8 +123,7 @@ export default class SettingsView {
   }
 
   _cacheElements() {
-    this.themeDark = document.getElementById("themeDark");
-    this.themeLight = document.getElementById("themeLight");
+    this.themeSelect = document.getElementById("themeSelect");
     this.fontSizeSlider = document.getElementById("fontSizeSlider");
     this.fontSizeValue = document.getElementById("fontSizeValue");
     this.pageHeightSlider = document.getElementById("pageHeightSlider");
@@ -133,14 +136,14 @@ export default class SettingsView {
   }
 
   _bindEvents() {
-    // 主题切换
-    if (this.themeDark) {
-      this.themeDark.addEventListener("click", () => this._setTheme("dark"));
-    }
-    if (this.themeLight) {
-      this.themeLight.addEventListener("click", () => this._setTheme("light"));
+    // 替换主题切换事件
+    if (this.themeSelect) {
+      this.themeSelect.addEventListener("change", () => {
+        this._setTheme(this.themeSelect.value);
+      });
     }
 
+    // 其余保持不变
     // 字体大小滑块
     if (this.fontSizeSlider) {
       this.fontSizeSlider.addEventListener("input", () => {
@@ -208,8 +211,10 @@ export default class SettingsView {
   _populateForm() {
     const s = this.settings;
 
-    // 主题
-    this._setTheme(s.theme || "dark");
+    // 主题 - 改为下拉选择
+    if (this.themeSelect) {
+      this.themeSelect.value = s.theme || "dark";
+    }
 
     // 字体
     const fontSize = s.fontSize || 22;
@@ -232,17 +237,12 @@ export default class SettingsView {
   }
 
   _setTheme(theme) {
+    // 更新下拉框选中值
+    if (this.themeSelect) {
+      this.themeSelect.value = theme;
+    }
+    // 保存当前选中
     this._selectedTheme = theme;
-    if (this.themeDark) {
-      this.themeDark.classList.toggle("active", theme === "dark");
-    }
-    if (this.themeLight) {
-      this.themeLight.classList.toggle("active", theme === "light");
-    }
-  }
-
-  _getSelectedTheme() {
-    return this._selectedTheme || "dark";
   }
 
   /**

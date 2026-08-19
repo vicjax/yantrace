@@ -13,6 +13,7 @@ import * as Helpers from "./utils/helpers.js";
 import Navigator from "./modules/navigator.js";
 import PracticeEngine from "./modules/practice/index.js";
 import ResultToast from "./modules/ResultToast.js";
+import Modal from "./modules/Modal.js";
 
 import {
   getHomeHtml,
@@ -90,7 +91,7 @@ class App {
 
   _initStorage() {
     if (!Storage.isAvailable()) {
-      alert("⚠️ localStorage 不可用，请检查浏览器设置");
+      Modal.alert('localStorage 不可用，请检查浏览器设置', '⚠️ 存储错误');
       throw new Error("localStorage is not available");
     }
     console.log("📦 存储初始化完成");

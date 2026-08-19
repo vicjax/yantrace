@@ -52,7 +52,7 @@
   padding: 1px 0px;
   border-radius: 4px;
   /* animation: pulse 1s ease-in-out infinite alternate;  */
-  box-shadow: 0 0 16px rgba(79, 70, 229, 0.4);
+  box-shadow: 0 0 16px var(--glow-accent, rgba(79, 70, 229, 0.4));
   position: relative;
   z-index: 2;
   line-height: 1;

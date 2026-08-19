@@ -66,4 +66,41 @@
   --transition-fast: 0.15s ease;
   --transition-base: 0.2s ease;
   --transition-slow: 0.3s ease;
+
+  /* ============================================
+   砚迹（YanTrace）- CSS 变量（深空灰暗色默认）
+   追加：v0.10.0 新增变量
+   ============================================ */
+
+  /* ----- 追加：半透明背景 ----- */
+  --bg-accent-subtle: rgba(79, 70, 229, 0.15);
+  --bg-danger-subtle: rgba(248, 113, 113, 0.15);
+  --bg-white-subtle: rgba(255, 255, 255, 0.06);
+  --bg-black-subtle: rgba(0, 0, 0, 0.6);
+
+  /* ----- 追加：文本占位 ----- */
+  --text-placeholder: rgba(255, 255, 255, 0.6);
+
+  /* ----- 追加：光晕 ----- */
+  --glow-accent: rgba(79, 70, 229, 0.4);
+  --glow-accent-strong: rgba(79, 70, 229, 0.5);
+
+  /* ----- 追加：卡片阴影 ----- */
+  --shadow-card: 0 8px 30px rgba(79, 70, 229, 0.2);
+  --shadow-card-hover: 0 8px 30px rgba(79, 70, 229, 0.25);
+
+  /* ----- 追加：危险色变体 ----- */
+  --color-danger-hover-bg: rgba(248, 113, 113, 0.1);
+
+  /* ----- 微调：暗色优化 ----- */
+  /* 保持原有变量不变，只调整部分色值（可选） */
+  /* 如觉得需要，可取消注释以下微调 */
+  /*
+--bg-app: #12121a;
+--bg-container: #1a1a2e;
+--bg-surface: #22223a;
+--bg-surface-hover: #2a2a44;
+--text-primary: #e8e8f0;
+--text-secondary: #b8b8d0;
+*/
 }

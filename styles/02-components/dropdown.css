@@ -43,7 +43,7 @@
 }
 
 .user-dropdown-item.current {
-  background: rgba(79, 70, 229, 0.15);
+  background: var(--bg-accent-subtle, rgba(79, 70, 229, 0.15));
 }
 
 .user-dropdown-item.current .user-dropdown-name {
@@ -97,7 +97,7 @@
 
 .user-dropdown-delete:hover {
   color: var(--color-danger);
-  background: rgba(248, 113, 113, 0.15);
+  background: var(--bg-danger-subtle, rgba(248, 113, 113, 0.15));
 }
 
 .user-dropdown-footer {

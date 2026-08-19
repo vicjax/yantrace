@@ -1,179 +1,126 @@
 /* ============================================
-   砚迹（YanTrace）- 弹窗组件
+   砚迹（YanTrace）- 弹窗组件（v0.10.0 统一版）
    ============================================ */
 
-/* ----- 结果弹窗 ----- */
-.result-overlay {
-  display: none;
+/* ============================================
+   1. 基础 Modal（Overlay + Content）
+   所有弹窗共享的遮罩和卡片基础样式
+   ============================================ */
+
+/* ----- 1.1 遮罩基础 ----- */
+.modal-overlay,
+.result-overlay,
+.settings-modal,
+.custom-modal {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(10px);
-  justify-content: center;
-  align-items: center;
   z-index: 1000;
-}
-
-.result-overlay.show {
   display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-black-subtle, rgba(0, 0, 0, 0.6));
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
 }
 
-.result-card {
-  background: var(--bg-elevated);
-  padding: var(--spacing-xl) 38px;
-  border-radius: 28px;
+/* 激活状态（所有弹窗共用） */
+.modal-overlay.active,
+.result-overlay.show,
+.settings-modal[style*="display: flex"],
+.custom-modal[style*="display: flex"] {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ----- 1.2 卡片基础 ----- */
+.modal-content,
+.result-card,
+.settings-modal-content,
+.custom-modal-content {
+  background: var(--bg-container);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
   max-width: 520px;
   width: 92%;
-  text-align: center;
-  border: 1px solid var(--border-strong);
-  box-shadow: var(--shadow-modal);
   max-height: 90vh;
-  overflow: auto;
-}
-
-.result-card h2 {
-  font-size: 26px;
-  font-weight: 300;
-  color: var(--text-secondary);
-  margin-bottom: 10px;
-}
-
-.result-main {
-  margin-bottom: var(--spacing-md);
-}
-.result-summary {
-  margin-bottom: var(--spacing-sm);
-}
-
-.result-number {
-  font-size: var(--font-size-xl);
-  font-weight: 600;
-  color: #60a5fa;
-  display: block;
-}
-
-.result-label {
-  font-size: var(--font-size-md);
-  color: #9999bb;
-}
-
-.result-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: var(--spacing-sm);
-  margin: 14px 0 18px;
-}
-
-.result-grid .item {
-  background: var(--bg-surface);
-  padding: 10px 6px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-default);
-}
-
-.result-grid .item .num {
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.result-grid .item .lbl {
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-
-.result-actions {
-  display: flex;
-  gap: var(--spacing-sm);
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.result-btn {
-  padding: 8px 20px;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-base);
-  cursor: pointer;
-  transition: var(--transition-base);
-  font-family: inherit;
-  font-weight: 500;
-}
-
-.result-btn.restart {
-  background: var(--color-accent);
-  color: var(--text-inverse);
-}
-.result-btn.restart:hover {
-  background: var(--color-accent-hover);
-}
-
-.result-btn.copy {
-  background: transparent;
-  border: 1px solid var(--border-strong);
-  color: var(--text-muted);
-}
-.result-btn.copy:hover {
-  background: var(--bg-surface-hover);
-  color: var(--text-primary);
-}
-
-.result-btn.home {
-  background: var(--color-success);
-  color: var(--text-inverse);
-}
-.result-btn.home:hover {
-  background: var(--color-success-hover);
-}
-
-/* ----- 设置弹窗 ----- */
-.settings-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.settings-modal-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-}
-
-.settings-modal-content {
-  position: relative;
-  background: var(--bg-container);
-  border-radius: 20px;
-  padding: var(--spacing-lg) var(--spacing-xl) var(--spacing-xl);
-  max-width: 560px;
-  width: 92%;
-  max-height: 85vh;
   overflow-y: auto;
   border: 1px solid var(--border-default);
   box-shadow: var(--shadow-modal);
-  animation: fadeIn 0.2s ease;
+  transform: scale(0.95) translateY(10px);
+  transition: transform 0.2s ease;
 }
 
-.settings-modal-header {
+/* 卡片入场动画（所有弹窗共用） */
+.modal-overlay.active .modal-content,
+.result-overlay.show .result-card,
+.settings-modal[style*="display: flex"] .settings-modal-content,
+.custom-modal[style*="display: flex"] .custom-modal-content {
+  transform: scale(1) translateY(0);
+}
+
+/* ============================================
+   2. 尺寸变体
+   ============================================ */
+
+.modal-content--sm,
+.custom-modal-content {
+  max-width: 400px;
+}
+
+.modal-content--md {
+  max-width: 520px;
+}
+
+.modal-content--lg,
+.settings-modal-content {
+  max-width: 560px;
+}
+
+/* ============================================
+   3. 通用组件（Header / Title / Close / Footer / Body）
+   ============================================ */
+
+/* ----- 3.1 头部 ----- */
+.modal-header,
+.settings-modal-header,
+.custom-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-md);
   padding-bottom: 14px;
   border-bottom: 1px solid var(--border-default);
 }
 
-.settings-modal-header h2 {
-  font-size: 20px;
+/* 设置弹窗头部特殊间距 */
+.settings-modal-header {
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+}
+
+/* ----- 3.2 标题 ----- */
+.modal-title,
+.settings-modal-header h2,
+.custom-modal-header h3 {
+  font-size: var(--font-size-lg);
   font-weight: 500;
   color: var(--text-secondary);
   margin: 0;
 }
 
-.settings-modal-close {
+/* 设置弹窗标题特殊字号 */
+.settings-modal-header h2 {
+  font-size: 20px;
+}
+
+/* ----- 3.3 关闭按钮 ----- */
+.modal-close,
+.settings-modal-close,
+.custom-modal-close {
   background: transparent;
   border: none;
   color: var(--text-muted);
@@ -183,71 +130,29 @@
   transition: var(--transition-base);
   line-height: 1;
 }
-.settings-modal-close:hover {
-  color: var(--text-primary);
-}
 
-/* ----- 自定义弹窗（用户管理） ----- */
-.custom-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.custom-modal-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-}
-
-.custom-modal-content {
-  position: relative;
-  background: var(--bg-container);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-lg);
-  max-width: 400px;
-  width: 92%;
-  border: 1px solid var(--border-default);
-  box-shadow: var(--shadow-modal);
-  animation: fadeIn 0.2s ease;
-}
-
-.custom-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-md);
-}
-
-.custom-modal-header h3 {
-  font-size: var(--font-size-lg);
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-.custom-modal-close {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 20px;
-  cursor: pointer;
-  padding: 0 4px;
-  transition: var(--transition-base);
-  line-height: 1;
-}
+.modal-close:hover,
+.settings-modal-close:hover,
 .custom-modal-close:hover {
   color: var(--text-primary);
 }
 
-.custom-modal-body {
-  margin-bottom: 20px;
+/* ----- 3.4 底部按钮区 ----- */
+.modal-footer,
+.custom-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
 }
 
+/* ----- 3.5 内容区（带表单） ----- */
+.modal-body,
+.custom-modal-body {
+  margin-bottom: var(--spacing-md);
+}
+
+.modal-body label,
 .custom-modal-body label {
   display: block;
   font-size: var(--font-size-sm);
@@ -255,6 +160,7 @@
   margin-bottom: 6px;
 }
 
+.modal-body input,
 .custom-modal-body input {
   width: 100%;
   padding: 8px 12px;
@@ -268,25 +174,169 @@
   box-sizing: border-box;
 }
 
+.modal-body input:focus,
 .custom-modal-body input:focus {
   border-color: var(--color-accent);
 }
 
+.modal-body input.error,
 .custom-modal-body input.error {
   border-color: var(--color-danger) !important;
 }
 
-.custom-modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--spacing-md);
-}
-
-/* ----- 模态框错误提示 ----- */
+/* ----- 3.6 错误提示 ----- */
 .modal-error {
   color: var(--color-danger);
   font-size: var(--font-size-sm);
   margin-top: 6px;
   padding-left: 2px;
   display: none;
+}
+
+/* ============================================
+   4. 用途变体
+   ============================================ */
+
+/* ----- 4.1 结果弹窗变体（继承卡片基础 + 特殊样式） ----- */
+.result-card {
+  text-align: center;
+  padding: var(--spacing-xl) 38px;
+  border-radius: 28px;
+}
+
+.result-card h2 {
+  font-size: 26px;
+  font-weight: 300;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.result-card .result-main {
+  margin-bottom: var(--spacing-md);
+}
+
+.result-card .result-summary {
+  margin-bottom: var(--spacing-sm);
+}
+
+.result-card .result-number {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: #60a5fa;
+  display: block;
+}
+
+.result-card .result-label {
+  font-size: var(--font-size-md);
+  color: #9999bb;
+}
+
+.result-card .result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--spacing-sm);
+  margin: 14px 0 18px;
+}
+
+.result-card .result-grid .item {
+  background: var(--bg-surface);
+  padding: 10px 6px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+}
+
+.result-card .result-grid .item .num {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.result-card .result-grid .item .lbl {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.result-card .result-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.result-card .result-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  cursor: pointer;
+  transition: var(--transition-base);
+  font-family: inherit;
+  font-weight: 500;
+}
+
+.result-card .result-btn.restart {
+  background: var(--color-accent);
+  color: var(--text-inverse);
+}
+.result-card .result-btn.restart:hover {
+  background: var(--color-accent-hover);
+}
+
+.result-card .result-btn.copy {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+}
+.result-card .result-btn.copy:hover {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+.result-card .result-btn.home {
+  background: var(--color-success);
+  color: var(--text-inverse);
+}
+.result-card .result-btn.home:hover {
+  background: var(--color-success-hover);
+}
+
+/* ----- 4.2 设置弹窗变体 ----- */
+.settings-modal-content {
+  padding: var(--spacing-lg) var(--spacing-xl) var(--spacing-xl);
+}
+
+/* ============================================
+   5. 原生弹窗（alert/confirm 覆盖）- 可选
+   ============================================ */
+
+/* 如果需要覆盖原生弹窗样式，取消注释下面代码 */
+/*
+.modal-native-overlay {
+  compiles...
+}
+*/
+
+/* ============================================
+   6. 兼容保障
+   ============================================ */
+
+/* 确保旧的 .settings-modal 默认隐藏（JS 控制显示） */
+.settings-modal,
+.custom-modal {
+  display: none !important;
+}
+
+/* 当 JS 设置 style.display = "flex" 时，覆盖 !important */
+.settings-modal[style*="display: flex"],
+.custom-modal[style*="display: flex"] {
+  display: flex !important;
+}
+
+/* 确保结果弹窗默认隐藏 */
+.result-overlay {
+  display: none !important;
+}
+
+.result-overlay.show {
+  display: flex !important;
 }

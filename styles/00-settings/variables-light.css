@@ -1,31 +1,55 @@
 /* ============================================
-   砚迹（YanTrace）- CSS 变量（亮色主题）
+   砚迹（YanTrace）- 暖阳白主题（亮色优化）
+   设计原则：用暖白/米白替代纯白，降低刺眼感
    ============================================ */
 
 body.light-theme {
-  /* ----- 背景色 ----- */
-  --bg-app: #f0f0f5;
-  --bg-container: #ffffff;
-  --bg-surface: #f8f8fc;
-  --bg-surface-hover: #f0f0f8;
-  --bg-surface-strong: #f5f5fa;
+  /* ===== 背景色 ===== */
+  --bg-app: #f5f0eb;
+  --bg-container: #faf7f2;
+  --bg-surface: #f5f0eb;
+  --bg-surface-hover: #ede8e0;
+  --bg-surface-strong: #e8e3da;
   --bg-input: #ffffff;
-  --bg-elevated: #fafafe;
+  --bg-elevated: #faf7f2;
 
-  /* ----- 边框色 ----- */
-  --border-default: #e8e8ef;
-  --border-strong: #e0e0e8;
-  --border-input: #e0e0e8;
+  /* ===== 边框色 ===== */
+  --border-default: #e5ddd5;
+  --border-strong: #d5ccc2;
+  --border-input: #d5ccc2;
 
-  /* ----- 文本色 ----- */
-  --text-primary: #1a1a2e;
-  --text-secondary: #2a2a42;
-  --text-muted: #8888aa;
-  --text-dim: #9999bb;
+  /* ===== 文本色 ===== */
+  --text-primary: #2a241e;
+  --text-secondary: #4a4038;
+  --text-muted: #9a8a7a;
+  --text-dim: #b0a090;
   --text-inverse: #ffffff;
 
-  /* ----- 阴影 ----- */
-  --shadow-app: 0 20px 60px rgba(0, 0, 0, 0.1);
-  --shadow-modal: 0 30px 80px rgba(0, 0, 0, 0.15);
-  --shadow-dropdown: 0 20px 60px rgba(0, 0, 0, 0.12);
+  /* ===== 功能色 ===== */
+  --color-accent: #4f46e5;
+  --color-accent-hover: #6366f1;
+  --color-success: #34d399;
+  --color-success-hover: #6ee7b7;
+  --color-warning: #f59e0b;
+  --color-danger: #dc3a3a;
+
+  /* ===== 半透明背景 ===== */
+  --bg-accent-subtle: rgba(79, 70, 229, 0.08);
+  --bg-danger-subtle: rgba(220, 58, 58, 0.08);
+  --bg-white-subtle: rgba(255, 255, 255, 0.3);
+  --bg-black-subtle: rgba(0, 0, 0, 0.06);
+
+  /* ===== 文本占位 ===== */
+  --text-placeholder: rgba(42, 36, 30, 0.35);
+
+  /* ===== 光晕 ===== */
+  --glow-accent: rgba(79, 70, 229, 0.2);
+  --glow-accent-strong: rgba(79, 70, 229, 0.3);
+
+  /* ===== 阴影 ===== */
+  --shadow-app: 0 20px 60px rgba(0, 0, 0, 0.06);
+  --shadow-modal: 0 30px 80px rgba(0, 0, 0, 0.1);
+  --shadow-dropdown: 0 20px 60px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.05);
+  --shadow-card-hover: 0 6px 28px rgba(0, 0, 0, 0.08);
 }

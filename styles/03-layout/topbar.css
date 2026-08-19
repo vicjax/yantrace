@@ -101,5 +101,5 @@
 
 .settings-gear:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--bg-white-subtle, rgba(255, 255, 255, 0.06));
 }

@@ -139,7 +139,11 @@ export default class ChineseStrategy {
     if (!charEl) return;
 
     if (show) {
-      charEl.style.boxShadow = "0 0 20px rgba(79, 70, 229, 0.5)";
+      charEl.style.boxShadow =
+        "0 0 20px " +
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--glow-accent-strong")
+            .trim() || "rgba(79, 70, 229, 0.5)";
       charEl.style.transform = "scale(1.05)";
       charEl.style.transition = "box-shadow 0.2s, transform 0.2s";
     } else {

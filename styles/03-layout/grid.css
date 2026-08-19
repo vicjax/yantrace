@@ -25,7 +25,7 @@
   background: var(--bg-surface-hover);
   border-color: var(--color-accent);
   transform: translateY(-3px);
-  box-shadow: 0 8px 30px rgba(79, 70, 229, 0.2);
+  box-shadow: var(--shadow-card, 0 8px 30px rgba(79, 70, 229, 0.2));
 }
 
 .home-btn-icon {
@@ -64,7 +64,7 @@
 
 .home-section-practice .home-btn:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(79, 70, 229, 0.25);
+  box-shadow: var(--shadow-card-hover, 0 8px 30px rgba(79, 70, 229, 0.25));
 }
 
 .home-section-practice .home-btn .home-btn-icon {

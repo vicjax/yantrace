@@ -4,6 +4,7 @@
  */
 import BasePresenter from "../../core/BasePresenter.js";
 import ArticleView from "./ArticleView.js";
+import Modal from "../../modules/Modal.js";
 
 export default class ArticlePresenter extends BasePresenter {
   constructor(options = {}) {
@@ -89,9 +90,9 @@ export default class ArticlePresenter extends BasePresenter {
     this._loadList();
   }
 
-  _handleSelectArticle(id) {
+  async _handleSelectArticle(id) {
     if (this.mode === "edit" || this.mode === "new") {
-      if (!confirm("当前有未保存的修改，确定要切换文章吗？")) {
+      if (!await Modal.confirm('当前有未保存的修改，确定要切换文章吗？')) {
         return;
       }
     }
@@ -105,9 +106,9 @@ export default class ArticlePresenter extends BasePresenter {
     this.view.updateList(this.articles, null);
   }
 
-  _handleEdit() {
+  async _handleEdit() {
     if (!this.selectedId) {
-      alert("请先选择一篇文章");
+      await Modal.alert('请先选择一篇文章');
       return;
     }
     const article = this.articleService.getById(this.selectedId);
@@ -117,16 +118,16 @@ export default class ArticlePresenter extends BasePresenter {
     this.view.showEdit(article);
   }
 
-  _handleDelete() {
+  async _handleDelete() {
     if (!this.selectedId) {
-      alert("请先选择一篇文章");
+      await Modal.alert('请先选择一篇文章');
       return;
     }
 
     const article = this.articleService.getById(this.selectedId);
     if (!article) return;
 
-    if (!confirm(`确定要删除「${article.title}」吗？此操作不可恢复！`)) {
+    if (!await Modal.confirm(`确定要删除「${article.title}」吗？此操作不可恢复！`)) {
       return;
     }
 
@@ -143,17 +144,17 @@ export default class ArticlePresenter extends BasePresenter {
     }
   }
 
-  _handleSave() {
+  async _handleSave() {
     const title = this.view.getTitle().trim();
     const content = this.view.getContent().trim();
 
     if (!title) {
-      alert("请输入文章标题");
+      await Modal.alert('请输入文章标题');
       return;
     }
 
     if (!content) {
-      alert("请输入文章内容");
+      await Modal.alert('请输入文章内容');
       return;
     }
 
@@ -166,7 +167,6 @@ export default class ArticlePresenter extends BasePresenter {
         this.currentLang,
       );
     } else if (this.mode === "edit") {
-      // ⭐ 修复：传入对象
       savedArticle = this.articleService.update(this.selectedId, {
         title,
         content,
@@ -180,7 +180,7 @@ export default class ArticlePresenter extends BasePresenter {
       this._loadArticle(savedArticle.id);
       console.log(`✅ 文章已保存：${savedArticle.title}`);
     } else {
-      alert("保存失败，请重试");
+      await Modal.alert('保存失败，请重试');
     }
   }
 

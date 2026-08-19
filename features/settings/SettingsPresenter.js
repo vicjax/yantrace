@@ -4,6 +4,7 @@
  */
 import BasePresenter from "../../core/BasePresenter.js";
 import SettingsView from "./SettingsView.js";
+import Modal from "../../modules/Modal.js";
 
 export default class SettingsPresenter extends BasePresenter {
   constructor(options = {}) {
@@ -89,10 +90,10 @@ export default class SettingsPresenter extends BasePresenter {
     this.view.populate(settings);
   }
 
-  _handleSave() {
+  async _handleSave() {
     const user = this.userService.getCurrent();
     if (!user) {
-      alert("请先登录");
+      await Modal.alert("请先登录");
       return;
     }
 
@@ -112,14 +113,14 @@ export default class SettingsPresenter extends BasePresenter {
     }
   }
 
-  _handleReset() {
+  async _handleReset() {
     const user = this.userService.getCurrent();
     if (!user) {
-      alert("请先登录");
+      await Modal.alert("请先登录");
       return;
     }
 
-    if (!confirm("确认恢复默认设置？所有当前设置将被重置。")) {
+    if (!(await Modal.confirm("确认恢复默认设置？所有当前设置将被重置。"))) {
       return;
     }
 
@@ -129,9 +130,9 @@ export default class SettingsPresenter extends BasePresenter {
     this.applySettings(defaults);
   }
 
-  _handleSoundTest(sound) {
+  async _handleSoundTest(sound) {
     if (!sound || sound === "off") {
-      alert("请先选择一个音效");
+      await Modal.alert("请先选择一个音效");
       return;
     }
 
@@ -182,9 +183,22 @@ export default class SettingsPresenter extends BasePresenter {
     }
 
     // 4. 主题
-    const isLight = theme === "light";
-    document.body.classList.toggle("light-theme", isLight);
-
+    // 4. 主题（支持多主题）
+    // 清除所有主题类
+    document.body.classList.remove(
+      "light-theme",
+      "eye-care-theme",
+      "warm-yellow-theme",
+    );
+    // 根据主题名称添加对应类
+    if (theme === "light") {
+      document.body.classList.add("light-theme");
+    } else if (theme === "eye-care") {
+      document.body.classList.add("eye-care-theme");
+    } else if (theme === "warm-yellow") {
+      document.body.classList.add("warm-yellow-theme");
+    }
+    // theme === "dark" 时，移除所有主题类（默认暗色）
     // 5. 音效设置
     window.__soundSetting = settings.sound || "off";
 

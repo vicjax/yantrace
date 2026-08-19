@@ -70,7 +70,7 @@
 }
 
 .am-list-item.active .am-item-type {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-placeholder, rgba(255, 255, 255, 0.6));
 }
 
 .am-item-title {

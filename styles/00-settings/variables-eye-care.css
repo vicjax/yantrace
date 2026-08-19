@@ -1,0 +1,56 @@
+/* ============================================
+   砚迹（YanTrace）- 豆沙绿主题（护眼）
+   设计原则：柔和豆沙绿背景，墨绿文字，低对比度
+   参考：经典护眼模式 #c7edcc ~ #e8f5e9
+   ============================================ */
+
+body.eye-care-theme {
+  /* ===== 背景色 ===== */
+  --bg-app: #d4e9d6;
+  --bg-container: #e8f5e9;
+  --bg-surface: #f1f8f4;
+  --bg-surface-hover: #e6f0e7;
+  --bg-surface-strong: #dce8de;
+  --bg-input: #fafffa;
+  --bg-elevated: #eaf5ec;
+
+  /* ===== 边框色 ===== */
+  --border-default: #c5dcc8;
+  --border-strong: #b0ccb4;
+  --border-input: #b0ccb4;
+
+  /* ===== 文本色 ===== */
+  --text-primary: #2d3a2d;
+  --text-secondary: #4a5a4a;
+  --text-muted: #7a8a7a;
+  --text-dim: #9aaa9a;
+  --text-inverse: #ffffff;
+
+  /* ===== 功能色 ===== */
+  --color-accent: #5b8c5a;
+  --color-accent-hover: #4a7a49;
+  --color-success: #34d399;
+  --color-success-hover: #6ee7b7;
+  --color-warning: #b8860b;
+  --color-danger: #b34040;
+
+  /* ===== 半透明背景 ===== */
+  --bg-accent-subtle: rgba(91, 140, 90, 0.12);
+  --bg-danger-subtle: rgba(179, 64, 64, 0.1);
+  --bg-white-subtle: rgba(255, 255, 255, 0.25);
+  --bg-black-subtle: rgba(0, 0, 0, 0.05);
+
+  /* ===== 文本占位 ===== */
+  --text-placeholder: rgba(45, 58, 45, 0.35);
+
+  /* ===== 光晕 ===== */
+  --glow-accent: rgba(91, 140, 90, 0.25);
+  --glow-accent-strong: rgba(91, 140, 90, 0.4);
+
+  /* ===== 阴影 ===== */
+  --shadow-app: 0 20px 60px rgba(60, 100, 60, 0.08);
+  --shadow-modal: 0 30px 80px rgba(60, 100, 60, 0.12);
+  --shadow-dropdown: 0 20px 60px rgba(60, 100, 60, 0.06);
+  --shadow-card: 0 4px 20px rgba(60, 100, 60, 0.08);
+  --shadow-card-hover: 0 6px 28px rgba(60, 100, 60, 0.12);
+}
