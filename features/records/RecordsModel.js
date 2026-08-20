@@ -64,6 +64,7 @@ export default class RecordsModel {
         backspaces: stats.backspaces || 0,
         keystrokes: stats.keystrokes || 0,
         elapsed: stats.elapsed || 0,
+        peakSpeed: stats.peakSpeed || 0,
       },
       createdAt: Date.now(),
     };

@@ -162,7 +162,6 @@ export default class ChineseStrategy {
       compositionStart: () => {
         this._isComposing = true;
         this._compositionProcessed = false;
-        // 组合输入开始时启动计时器
         this.engine._startTimer();
       },
 
@@ -181,15 +180,27 @@ export default class ChineseStrategy {
       },
 
       input: (e) => {
+        const value = this.inputEl.value;
+
+        // ⭐ 空格特殊处理：不受组合状态限制
+        if (value === " ") {
+          this.engine.recordKeypress();
+          this.engine._handleCharInput(" ");
+          this.inputEl.value = "";
+          this.updatePosition();
+          return;
+        }
+
         if (this._isComposing) return;
         if (this._compositionProcessed) {
           this._compositionProcessed = false;
           return;
         }
-        const value = this.inputEl.value;
+
         if (value.length > 0) {
           const char = value.charAt(value.length - 1);
           if (char.length === 1) {
+            this.engine.recordKeypress();
             this.engine._handleCharInput(char);
             this.inputEl.value = "";
             this.updatePosition();
@@ -197,9 +208,6 @@ export default class ChineseStrategy {
         }
       },
 
-      /**
-       * 输入框获得焦点时清除 placeholder
-       */
       focus: () => {
         if (this.inputEl) {
           this.inputEl.placeholder = "";
@@ -243,9 +251,6 @@ export default class ChineseStrategy {
         }
       },
 
-      /**
-       * 输入框失焦时暂停计时，变暗提示
-       */
       focusout: (e) => {
         const relatedTarget = e.relatedTarget;
         if (relatedTarget === this.inputEl) return;
@@ -295,18 +300,12 @@ export default class ChineseStrategy {
       const containerWidth = containerRect.width;
       const remainingWidth = containerWidth - pos.x - 4;
 
-      // ⭐ 拼音字号 = 正文字号的 60%~70%
       const computedStyle = getComputedStyle(this.engine.textBox);
       const fontSize = parseFloat(computedStyle.fontSize) || 22;
-      const pinyinSize = Math.round(fontSize * 0.8); // 17.6px
+      const pinyinSize = Math.round(fontSize * 0.8);
 
-      // 行高
       const lineHeight = parseFloat(computedStyle.lineHeight) || fontSize * 2;
-
-      // 行距 = 行高 - 字符实际高度
       const lineSpacing = lineHeight - pos.height;
-
-      // 拼音在行距空白区居中
       const pinyinTop = pos.y + lineSpacing / 2 - pinyinSize / 2;
 
       this.inputEl.style.left = containerRect.left + pos.x + "px";
@@ -332,19 +331,15 @@ export default class ChineseStrategy {
     );
     if (!charEl) return null;
 
-    // 如果字符不可见（滚动溢出），返回默认位置
     const containerRect = container.getBoundingClientRect();
     const charRect = charEl.getBoundingClientRect();
 
-    // 检查字符是否在可视区域内
     const isVisible =
       charRect.bottom > containerRect.top &&
       charRect.top < containerRect.bottom;
 
     if (!isVisible) {
-      // 字符不可见时，滚动到可见位置
       charEl.scrollIntoView({ block: "nearest", behavior: "smooth" });
-      // 返回当前位置，下一帧重新计算
       return {
         x: charRect.left - containerRect.left,
         y: charRect.bottom - containerRect.top,
@@ -386,23 +381,21 @@ export default class ChineseStrategy {
    * 完全销毁策略
    */
   destroy() {
-    if (this._statsTimer) {
-      clearInterval(this._statsTimer);
-      this._statsTimer = null;
+    this._destroyInput();
+
+    if (this._pageObserver) {
+      this._pageObserver.disconnect();
+      this._pageObserver = null;
     }
-    this.clearStrategy();
-    if (this._resizeHandler) {
-      window.removeEventListener("resize", this._resizeHandler);
-      this._resizeHandler = null;
-    }
-    if (this.selector && this._selectorHandler) {
-      this.selector.removeEventListener("change", this._selectorHandler);
-    }
-    if (this.resetBtn && this._resetHandler) {
-      this.resetBtn.removeEventListener("click", this._resetHandler);
-    }
-    if (this.stopBtn && this._stopHandler) {
-      this.stopBtn.removeEventListener("click", this._stopHandler);
-    }
+
+    const container = this.engine.textBox;
+    container.removeEventListener("click", this._handleContainerClick);
+    container.removeEventListener("scroll", this._handleScroll);
+    document.removeEventListener(
+      "visibilitychange",
+      this._handleVisibilityChange,
+    );
+
+    this._isActive = false;
   }
 }

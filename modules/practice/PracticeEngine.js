@@ -37,6 +37,7 @@ export default class PracticeEngine {
     this.textBox = null;
     this.selector = null;
     this.resetBtn = null;
+    this.stopBtn = null;
 
     // 统计元素（双页面）
     this.stats = { cn: null, en: null };
@@ -59,7 +60,7 @@ export default class PracticeEngine {
     // 峰值速度
     this._peakCpm = 0;
     this._peakWpm = 0;
-    this._lastSampleTime = 0;
+    this._keyTimestamps = [];
 
     // 策略
     this.strategy = null;
@@ -77,6 +78,7 @@ export default class PracticeEngine {
     // 计时器控制（失焦暂停/聚焦继续）
     this._timerPaused = false;
     this._timerAccumulated = 0;
+    this._effectiveElapsed = 0;
 
     // 限时模式
     this.timeLimit = 0; // 0 = 无限时
@@ -103,7 +105,7 @@ export default class PracticeEngine {
       this.textBox = document.getElementById("cnTextBox");
       this.selector = document.getElementById("cnArticleSelect");
       this.resetBtn = document.getElementById("cnResetBtn");
-      this.stopBtn = document.getElementById("cnStopBtn"); // ⭐ 新增
+      this.stopBtn = document.getElementById("cnStopBtn");
 
       this.stats.cn = {
         cpm: document.getElementById("cnCpm"),
@@ -121,7 +123,7 @@ export default class PracticeEngine {
       this.textBox = document.getElementById("enTextBox");
       this.selector = document.getElementById("enArticleSelect");
       this.resetBtn = document.getElementById("enResetBtn");
-      this.stopBtn = document.getElementById("enStopBtn"); // ⭐ 新增
+      this.stopBtn = document.getElementById("enStopBtn");
 
       this.stats.en = {
         wpm: document.getElementById("enWpm"),
@@ -236,9 +238,7 @@ export default class PracticeEngine {
    */
   setTimeLimit(seconds) {
     this.timeLimit = seconds || 0;
-    // 重置计时器显示
     this._updateTimerDisplay(0);
-    // 如果正在练习，重新启动定时器
     if (this.startTime && !this.isFinished && this._statsTimer) {
       clearInterval(this._statsTimer);
       this._statsTimer = null;
@@ -249,14 +249,10 @@ export default class PracticeEngine {
   /**
    * 手动停止练习
    */
-  /**
-   * 手动停止练习
-   */
   stopPractice() {
     if (this.isFinished) return;
     if (this.totalChars === 0) return;
 
-    // 销毁输入框，关闭输入法
     if (this.strategy && typeof this.strategy._destroyInput === "function") {
       this.strategy._destroyInput();
     }
@@ -276,6 +272,7 @@ export default class PracticeEngine {
       this.onComplete(stats);
     }
   }
+
   focus() {
     if (this.strategy && typeof this.strategy.focus === "function") {
       this.strategy.focus();
@@ -304,6 +301,9 @@ export default class PracticeEngine {
     }
     if (this.resetBtn && this._resetHandler) {
       this.resetBtn.removeEventListener("click", this._resetHandler);
+    }
+    if (this.stopBtn && this._stopHandler) {
+      this.stopBtn.removeEventListener("click", this._stopHandler);
     }
   }
 
@@ -375,13 +375,9 @@ export default class PracticeEngine {
   _startTimer() {
     if (this._statsTimer) return;
 
-    if (this._timerAccumulated === 0) {
-      this.startTime = Date.now();
-      this._timerStartTime = Date.now();
-    } else {
-      this.startTime = Date.now() - this._timerAccumulated * 1000;
-      this._timerStartTime = Date.now() - this._timerAccumulated * 1000;
-    }
+    // 重置 startTime 为当前时间，有效时间由 _effectiveElapsed 累计
+    this.startTime = Date.now();
+    this._timerStartTime = Date.now();
 
     this._timerPaused = false;
     this._startStatsTimer();
@@ -390,8 +386,10 @@ export default class PracticeEngine {
   _stopTimer() {
     if (!this._statsTimer) return;
 
+    // 将当前打字时间累加到有效时间
     if (this.startTime) {
-      this._timerAccumulated = (Date.now() - this.startTime) / 1000;
+      this._effectiveElapsed += (Date.now() - this.startTime) / 1000;
+      this._timerAccumulated = this._effectiveElapsed;
     }
 
     clearInterval(this._statsTimer);
@@ -568,17 +566,18 @@ export default class PracticeEngine {
         return;
       }
 
-      if (this._timerStartTime) {
-        this._timerSeconds = Math.floor(
-          (Date.now() - this._timerStartTime) / 1000,
-        );
-        this._updateTimerDisplay(this._timerSeconds);
+      // 计算实际打字时间
+      let elapsed = this._effectiveElapsed;
+      if (!this._timerPaused && this.startTime) {
+        elapsed += (Date.now() - this.startTime) / 1000;
+      }
 
-        // 限时模式：检查是否超时
-        if (this.timeLimit > 0 && this._timerSeconds >= this.timeLimit) {
-          this.stopPractice();
-          return;
-        }
+      this._updateTimerDisplay(elapsed);
+
+      // 限时模式：检查是否超时（使用实际打字时间）
+      if (this.timeLimit > 0 && elapsed >= this.timeLimit) {
+        this.stopPractice();
+        return;
       }
 
       this._refreshStatsDisplay();
@@ -609,16 +608,18 @@ export default class PracticeEngine {
   }
 
   _updateTimerDisplay(seconds) {
-    // seconds 是累计秒数
-    let displaySeconds = seconds;
+    // 支持传入秒数或使用 _effectiveElapsed
+    let elapsed = seconds !== undefined ? seconds : this._effectiveElapsed;
+
+    let displaySeconds = elapsed;
     let isCountdown = false;
 
     if (this.timeLimit > 0) {
-      displaySeconds = Math.max(0, this.timeLimit - seconds);
+      displaySeconds = Math.max(0, this.timeLimit - elapsed);
       isCountdown = true;
     }
 
-    const timerText = formatTime(displaySeconds);
+    const timerText = formatTime(Math.floor(displaySeconds));
     const isWarning = isCountdown && displaySeconds < 10;
 
     const cnTimer = document.getElementById("cnTimer");
@@ -648,15 +649,12 @@ export default class PracticeEngine {
   }
 
   _calcStats() {
-    let elapsed = 0;
-    if (this._timerPaused) {
-      elapsed = this._timerAccumulated;
-    } else if (this.startTime) {
-      elapsed = (Date.now() - this.startTime) / 1000;
-      if (this._timerAccumulated > 0) {
-        elapsed += this._timerAccumulated;
-      }
+    // 统一计算实际打字时间（不含暂停）
+    let elapsed = this._effectiveElapsed;
+    if (!this._timerPaused && this.startTime) {
+      elapsed += (Date.now() - this.startTime) / 1000;
     }
+
     const minutes = elapsed / 60;
     const processed = this.correct + this.errors + this.fixed;
 
@@ -714,29 +712,55 @@ export default class PracticeEngine {
     return this._calcStats();
   }
 
+  /**
+   * 采样峰值速度（轻量版）
+   * 每次按键时记录时间戳，计算最近按键的平均速度
+   */
+
+  /**
+   * 采样峰值速度
+   * 基于实际打字进度计算，避免按键次数虚高
+   */
+
+  /**
+   * 采样峰值速度（主流方案）
+   * 使用滑动窗口，基于有效字符数计算
+   */
   _samplePeakSpeed() {
     if (!this.startTime) return;
 
-    const elapsed = (Date.now() - this.startTime) / 1000;
-    if (elapsed < 15) return;
-
     const now = Date.now();
-    if (now - this._lastSampleTime < 10000) return;
+    const isChinese = this.currentMode === "chinese";
 
-    const stats = this._calcStats();
+    // 计算当前总有效打字时间（不含暂停）
+    let totalElapsed = this._effectiveElapsed;
+    if (!this._timerPaused && this.startTime) {
+      totalElapsed += (now - this.startTime) / 1000;
+    }
 
-    if (this.currentMode === "chinese") {
-      const speed = stats.netCpm;
-      if (speed > this._peakCpm) {
-        this._peakCpm = speed;
+    // 至少 10 秒后才采样（排除启动波动）
+    if (totalElapsed < 10) return;
+
+    // 有效字符数 = 正确 + 改正（不含错误）
+    const effectiveChars = this.correct + this.fixed;
+    if (effectiveChars < 5) return;
+
+    // 计算当前净速度：有效字符数 / 总有效时间
+    const minutes = totalElapsed / 60;
+    const netCpm = Math.round(effectiveChars / minutes);
+
+    // 更新峰值
+    if (isChinese) {
+      if (netCpm > this._peakCpm) {
+        this._peakCpm = netCpm;
       }
     } else {
-      const speed = stats.netWpm;
-      if (speed > this._peakWpm) {
-        this._peakWpm = speed;
+      // 英文：CPM → WPM
+      const netWpm = Math.round(netCpm / 5);
+      if (netWpm > this._peakWpm) {
+        this._peakWpm = netWpm;
       }
     }
-    this._lastSampleTime = now;
   }
 
   // ============================================
@@ -767,7 +791,7 @@ export default class PracticeEngine {
     this.currentCharIndex = 0;
     this._peakCpm = 0;
     this._peakWpm = 0;
-    this._lastSampleTime = 0;
+    this._keyTimestamps = [];
     this.chars = [];
     this.totalChars = 0;
 
@@ -777,8 +801,8 @@ export default class PracticeEngine {
     this._instantStartTime = null;
     this._timerPaused = false;
     this._timerAccumulated = 0;
+    this._effectiveElapsed = 0;
 
-    // 重置限时模式显示
     this._updateTimerDisplay(0);
 
     if (this._statsTimer) {
@@ -845,13 +869,11 @@ export default class PracticeEngine {
     this._resetHandler = async () => {
       const type = this.currentMode;
 
-      // 已完成或未开始或无进度 → 直接重置
       if (this.isFinished || !this.startTime) {
         this.reset(type);
         return;
       }
 
-      // 有进度 → 确认
       if (
         await Modal.confirm(
           "确定要重新开始吗？当前进度将丢失。",
