@@ -4,6 +4,7 @@
 
 import RecordsModel from "./RecordsModel.js";
 import RecordsView from "./RecordsView.js";
+import Modal from "../../modules/Modal.js";
 
 export default class RecordsPresenter {
   constructor(options = {}) {
@@ -106,9 +107,9 @@ export default class RecordsPresenter {
     this._loadRecordDetail(recordId);
   }
 
-  _handleCopy() {
+  async _handleCopy() {
     if (!this.selectedRecord) {
-      alert("请先选择一条记录");
+      await Modal.alert('请先选择一条记录');
       return;
     }
 
@@ -137,19 +138,19 @@ export default class RecordsPresenter {
       ta.select();
       document.execCommand("copy");
       ta.remove();
-      alert("📋 结果已复制到剪贴板！");
+      await Modal.alert('结果已复制到剪贴板！', '📋 复制成功');
     } catch (e) {
       console.error("复制失败:", e);
-      alert("复制失败，请手动复制");
+      await Modal.alert('复制失败，请手动复制', '❌ 复制失败');
     }
   }
 
-  _handleExport() {
+  async _handleExport() {
     const user = this.userService?.getCurrent();
     if (!user) return;
     const csv = this.model.exportCSV(user.id);
     if (!csv) {
-      alert("暂无历史记录可导出");
+      await Modal.alert('暂无历史记录可导出');
       return;
     }
     const blob = new Blob(["\uFEFF" + csv], {
@@ -162,21 +163,21 @@ export default class RecordsPresenter {
     URL.revokeObjectURL(link.href);
   }
 
-  _handleDelete() {
+  async _handleDelete() {
     if (!this.selectedRecord) {
-      alert("请先选择一条记录");
+      await Modal.alert('请先选择一条记录');
       return;
     }
-    if (!confirm("确定要删除这条记录吗？")) return;
+    if (!await Modal.confirm('确定要删除这条记录吗？')) return;
     this.model.delete(this.selectedRecord.id);
     // ⭐ 删除后刷新，不传 highlightId，自动选第一条（如果有）
     this.refresh();
   }
 
-  _handleClear() {
+  async _handleClear() {
     const user = this.userService?.getCurrent();
     if (!user) return;
-    if (!confirm("确定要清空所有历史记录吗？此操作不可恢复！")) return;
+    if (!await Modal.confirm('确定要清空所有历史记录吗？此操作不可恢复！')) return;
     this.model.clearByUser(user.id);
     // ⭐ 清空后刷新
     this.refresh();

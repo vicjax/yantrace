@@ -138,8 +138,15 @@ export default class ResultToast {
 
     // 标题
     if (this.title) {
-      this.title.textContent = saved ? "🎉 练习完成！" : "📉 练习未达标";
-      this.title.style.color = saved ? "" : "#f59e0b";
+      if (stats.stopped) {
+        this.title.textContent = saved
+          ? "⏹️ 练习已停止"
+          : "⏹️ 练习未达标（已停止）";
+        this.title.style.color = "#f59e0b";
+      } else {
+        this.title.textContent = saved ? "🎉 练习完成！" : "📉 练习未达标";
+        this.title.style.color = saved ? "" : "#f59e0b";
+      }
     }
 
     // 速度

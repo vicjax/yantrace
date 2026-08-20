@@ -91,7 +91,7 @@ class App {
 
   _initStorage() {
     if (!Storage.isAvailable()) {
-      Modal.alert('localStorage 不可用，请检查浏览器设置', '⚠️ 存储错误');
+      Modal.alert("localStorage 不可用，请检查浏览器设置", "⚠️ 存储错误");
       throw new Error("localStorage is not available");
     }
     console.log("📦 存储初始化完成");
@@ -285,62 +285,39 @@ class App {
   // 页面事件绑定
   // ============================================
 
-  _bindPageEvents(pageId) {
-    // 首页按钮
-    if (pageId === "home") {
-      document.querySelectorAll(".home-btn").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const target = btn.dataset.target;
-          if (target && this.navigator) {
-            this.navigator.goTo(target);
-          }
-        });
+ _bindPageEvents(pageId) {
+  // 首页按钮
+  if (pageId === "home") {
+    document.querySelectorAll(".home-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.target;
+        if (target && this.navigator) {
+          this.navigator.goTo(target);
+        }
+      });
+    });
+  }
+
+  if (pageId === "practice-cn" || pageId === "practice-en") {
+    // ⭐ 重置和停止按钮由 PracticeEngine._bindUIEvents() 统一管理
+    // 这里只保留限时模式下拉（需要保存到 settingsService）
+    const timeSelect = document.getElementById(
+      pageId === "practice-cn" ? "cnTimeLimitSelect" : "enTimeLimitSelect",
+    );
+    if (timeSelect) {
+      timeSelect.addEventListener("change", () => {
+        const seconds = parseInt(timeSelect.value) || 0;
+        const currentMode = this.practiceEngine?.currentMode || "chinese";
+        this.practiceEngine?.setTimeLimit(seconds);
+        this.practiceEngine?.reset(currentMode);
+        const user = this.userService?.getCurrent();
+        if (user) {
+          this.settingsService?.setItem(user.id, "timeLimit", seconds);
+        }
       });
     }
-
-    if (pageId === "practice-cn" || pageId === "practice-en") {
-      // 重置按钮
-      const resetBtn = document.getElementById(
-        pageId === "practice-cn" ? "cnResetBtn" : "enResetBtn",
-      );
-      if (resetBtn) {
-        resetBtn.addEventListener("click", () => {
-          const type = pageId === "practice-cn" ? "chinese" : "english";
-          this.practiceEngine?.reset(type);
-        });
-      }
-
-      // 停止按钮
-      const stopBtn = document.getElementById(
-        pageId === "practice-cn" ? "cnStopBtn" : "enStopBtn",
-      );
-      if (stopBtn) {
-        stopBtn.addEventListener("click", () => {
-          if (this.practiceEngine?.isFinished) return;
-          if (!this.practiceEngine?.startTime) return;
-          this.practiceEngine?.stopPractice();
-          stopBtn.blur();
-        });
-      }
-
-      // 限时模式下拉选择
-      const timeSelect = document.getElementById(
-        pageId === "practice-cn" ? "cnTimeLimitSelect" : "enTimeLimitSelect",
-      );
-      if (timeSelect) {
-        timeSelect.addEventListener("change", () => {
-          const seconds = parseInt(timeSelect.value) || 0;
-          const currentMode = this.practiceEngine?.currentMode || "chinese";
-          this.practiceEngine?.setTimeLimit(seconds);
-          this.practiceEngine?.reset(currentMode);
-          const user = this.userService?.getCurrent();
-          if (user) {
-            this.settingsService?.setItem(user.id, "timeLimit", seconds);
-          }
-        });
-      }
-    }
   }
+}
 
   // ============================================
   // 全局事件

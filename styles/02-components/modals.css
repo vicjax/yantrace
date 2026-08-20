@@ -340,3 +340,135 @@
 .result-overlay.show {
   display: flex !important;
 }
+
+/* ============================================
+   Modal 弹窗 - 优化样式（v0.10.0 新增）
+   ============================================ */
+
+/* ----- 优化：Alert/Confirm 专用样式 ----- */
+
+/* 内容卡片优化 */
+.modal-content--sm {
+  max-width: 420px;
+  padding: 28px 32px 24px;
+  border-radius: 12px;
+  background: var(--bg-container);
+  box-shadow: var(--shadow-modal);
+  border: 1px solid var(--border-default);
+}
+
+/* 标题优化 */
+.modal-content--sm .modal-header {
+  margin-bottom: 8px;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.modal-content--sm .modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+/* 内容优化 */
+.modal-content--sm .modal-body {
+  margin-bottom: 20px;
+}
+
+.modal-content--sm .modal-message {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+/* 底部按钮优化 */
+.modal-content--sm .modal-footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+/* 按钮通用优化 */
+.modal-content--sm .modal-btn {
+  padding: 8px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  min-width: 80px;
+  transition: var(--transition-base);
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+}
+
+/* 主按钮 */
+.modal-content--sm .btn-primary {
+  background: var(--color-accent);
+  color: var(--text-inverse);
+}
+
+.modal-content--sm .btn-primary:hover {
+  background: var(--color-accent-hover);
+}
+
+/* 幽灵按钮（取消） */
+.modal-content--sm .btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+}
+
+.modal-content--sm .btn-ghost:hover {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+/* alert 模式：单个按钮居中 */
+.modal-overlay[data-type="alert"] .modal-footer {
+  justify-content: center;
+}
+
+/* confirm 模式：两个按钮右对齐 */
+.modal-overlay[data-type="confirm"] .modal-footer {
+  justify-content: flex-end;
+}
+
+/* ===== 响应式适配 ===== */
+
+@media (max-width: 480px) {
+  .modal-content--sm {
+    max-width: 94%;
+    padding: 20px 20px 18px;
+    border-radius: 10px;
+  }
+
+  .modal-content--sm .modal-title {
+    font-size: 16px;
+  }
+
+  .modal-content--sm .modal-message {
+    font-size: 14px;
+  }
+
+  .modal-content--sm .modal-btn {
+    padding: 6px 18px;
+    font-size: 13px;
+    min-width: 64px;
+  }
+
+  .modal-overlay[data-type="confirm"] .modal-footer {
+    flex-wrap: wrap;
+    justify-content: stretch;
+  }
+
+  .modal-overlay[data-type="confirm"] .modal-btn {
+    flex: 1;
+    min-width: 60px;
+    text-align: center;
+  }
+}

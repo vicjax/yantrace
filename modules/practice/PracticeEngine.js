@@ -19,6 +19,7 @@
 import ChineseStrategy from "./ChineseStrategy.js";
 import EnglishStrategy from "./EnglishStrategy.js";
 import { calcPracticeStats, formatTime } from "../../utils/stats.js";
+import Modal from "../Modal.js";
 
 const STATUS = {
   PENDING: "pending",
@@ -102,6 +103,7 @@ export default class PracticeEngine {
       this.textBox = document.getElementById("cnTextBox");
       this.selector = document.getElementById("cnArticleSelect");
       this.resetBtn = document.getElementById("cnResetBtn");
+      this.stopBtn = document.getElementById("cnStopBtn"); // ⭐ 新增
 
       this.stats.cn = {
         cpm: document.getElementById("cnCpm"),
@@ -119,6 +121,7 @@ export default class PracticeEngine {
       this.textBox = document.getElementById("enTextBox");
       this.selector = document.getElementById("enArticleSelect");
       this.resetBtn = document.getElementById("enResetBtn");
+      this.stopBtn = document.getElementById("enStopBtn"); // ⭐ 新增
 
       this.stats.en = {
         wpm: document.getElementById("enWpm"),
@@ -246,6 +249,9 @@ export default class PracticeEngine {
   /**
    * 手动停止练习
    */
+  /**
+   * 手动停止练习
+   */
   stopPractice() {
     if (this.isFinished) return;
     if (this.totalChars === 0) return;
@@ -265,10 +271,11 @@ export default class PracticeEngine {
     this._refreshStatsDisplay();
 
     if (this.onComplete) {
-      this.onComplete(this.getStats());
+      const stats = this.getStats();
+      stats.stopped = true;
+      this.onComplete(stats);
     }
   }
-
   focus() {
     if (this.strategy && typeof this.strategy.focus === "function") {
       this.strategy.focus();
@@ -563,7 +570,7 @@ export default class PracticeEngine {
 
       if (this._timerStartTime) {
         this._timerSeconds = Math.floor(
-          (Date.now() - this._timerStartTime) / 1000
+          (Date.now() - this._timerStartTime) / 1000,
         );
         this._updateTimerDisplay(this._timerSeconds);
 
@@ -815,11 +822,9 @@ export default class PracticeEngine {
   // ============================================
 
   _bindUIEvents() {
+    // === 1. 文章下拉切换 ===
     if (this.selector && this._selectorHandler) {
       this.selector.removeEventListener("change", this._selectorHandler);
-    }
-    if (this.resetBtn && this._resetHandler) {
-      this.resetBtn.removeEventListener("click", this._resetHandler);
     }
 
     this._selectorHandler = () => {
@@ -827,15 +832,65 @@ export default class PracticeEngine {
         this.loadArticle(this.currentMode, this.selector.value);
       }
     };
-    this._resetHandler = () => {
-      this.reset(this.currentMode);
-    };
 
     if (this.selector) {
       this.selector.addEventListener("change", this._selectorHandler);
     }
+
+    // === 2. 重置按钮 ===
+    if (this.resetBtn && this._resetHandler) {
+      this.resetBtn.removeEventListener("click", this._resetHandler);
+    }
+
+    this._resetHandler = async () => {
+      const type = this.currentMode;
+
+      // 已完成或未开始或无进度 → 直接重置
+      if (this.isFinished || !this.startTime) {
+        this.reset(type);
+        return;
+      }
+
+      // 有进度 → 确认
+      if (
+        await Modal.confirm(
+          "确定要重新开始吗？当前进度将丢失。",
+          "🔄 重新开始",
+          "重新开始",
+          "取消",
+        )
+      ) {
+        this.reset(type);
+      }
+    };
+
     if (this.resetBtn) {
       this.resetBtn.addEventListener("click", this._resetHandler);
+    }
+
+    // === 3. 停止按钮 ===
+    if (this.stopBtn && this._stopHandler) {
+      this.stopBtn.removeEventListener("click", this._stopHandler);
+    }
+
+    this._stopHandler = async () => {
+      if (this.isFinished || !this.startTime) return;
+
+      if (
+        await Modal.confirm(
+          "确定要停止当前练习吗？当前进度将保存为记录。",
+          "⏹️ 停止练习",
+          "确认停止",
+          "继续练习",
+        )
+      ) {
+        this.stopPractice();
+      }
+      this.stopBtn?.blur();
+    };
+
+    if (this.stopBtn) {
+      this.stopBtn.addEventListener("click", this._stopHandler);
     }
   }
 

@@ -386,21 +386,23 @@ export default class ChineseStrategy {
    * 完全销毁策略
    */
   destroy() {
-    this._destroyInput();
-
-    if (this._pageObserver) {
-      this._pageObserver.disconnect();
-      this._pageObserver = null;
+    if (this._statsTimer) {
+      clearInterval(this._statsTimer);
+      this._statsTimer = null;
     }
-
-    const container = this.engine.textBox;
-    container.removeEventListener("click", this._handleContainerClick);
-    container.removeEventListener("scroll", this._handleScroll);
-    document.removeEventListener(
-      "visibilitychange",
-      this._handleVisibilityChange,
-    );
-
-    this._isActive = false;
+    this.clearStrategy();
+    if (this._resizeHandler) {
+      window.removeEventListener("resize", this._resizeHandler);
+      this._resizeHandler = null;
+    }
+    if (this.selector && this._selectorHandler) {
+      this.selector.removeEventListener("change", this._selectorHandler);
+    }
+    if (this.resetBtn && this._resetHandler) {
+      this.resetBtn.removeEventListener("click", this._resetHandler);
+    }
+    if (this.stopBtn && this._stopHandler) {
+      this.stopBtn.removeEventListener("click", this._stopHandler);
+    }
   }
 }
