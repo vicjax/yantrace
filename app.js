@@ -20,6 +20,7 @@ import {
   getPracticeCnHtml,
   getPracticeEnHtml,
   getPracticePhraseHtml,
+  getPracticePhraseEnHtml,
 } from "./modules/PageTemplates.js";
 
 // Model 层
@@ -272,6 +273,9 @@ class App {
       case "practice-phrase":
         html = getPracticePhraseHtml();
         break;
+      case "practice-phrase-en":
+        html = getPracticePhraseEnHtml();
+        break;
       case "user":
       case "history":
       case "article-management":
@@ -309,11 +313,14 @@ class App {
     if (
       pageId === "practice-cn" ||
       pageId === "practice-en" ||
-      pageId === "practice-phrase"
+      pageId === "practice-phrase" ||
+      pageId === "practice-phrase-en"
     ) {
-      // 限时模式下拉（中英文分别获取）
+      // 限时模式下拉
       const timeSelect = document.getElementById(
-        pageId === "practice-en" ? "enTimeLimitSelect" : "cnTimeLimitSelect",
+        pageId === "practice-en" || pageId === "practice-phrase-en"
+          ? "enTimeLimitSelect"
+          : "cnTimeLimitSelect",
       );
       if (timeSelect) {
         timeSelect.addEventListener("change", () => {
@@ -381,7 +388,12 @@ class App {
   }
 
   _leavePage(pageId) {
-    if (pageId === "practice-cn" || pageId === "practice-en") {
+    if (
+      pageId === "practice-cn" ||
+      pageId === "practice-en" ||
+      pageId === "practice-phrase" ||
+      pageId === "practice-phrase-en"
+    ) {
       this.practiceEngine?.leave(pageId);
     }
     if (pageId === "article-management") {
@@ -402,7 +414,8 @@ class App {
     if (
       pageId === "practice-cn" ||
       pageId === "practice-en" ||
-      pageId === "practice-phrase"
+      pageId === "practice-phrase" ||
+      pageId === "practice-phrase-en"
     ) {
       // 加载限时模式设置
       const settings = this._getCurrentSettings();
@@ -488,9 +501,17 @@ class App {
 
   _onResultRestart() {
     const currentPage = this.currentPageId;
-    if (currentPage === "practice-cn" || currentPage === "practice-en") {
-      const type = currentPage === "practice-cn" ? "chinese" : "english";
-      this.practiceEngine.loadFirstArticle(type);
+    if (
+      currentPage === "practice-cn" ||
+      currentPage === "practice-en" ||
+      currentPage === "practice-phrase" ||
+      currentPage === "practice-phrase-en"
+    ) {
+      const type =
+        currentPage === "practice-en" || currentPage === "practice-phrase-en"
+          ? "english"
+          : "chinese";
+      this.practiceEngine.reset(type);
     }
   }
 }

@@ -135,7 +135,9 @@ export default class RecordsModel {
           ? "中文练习"
           : r.mode === "practice-en"
             ? "英文练习"
-            : r.mode,
+            : r.mode === "practice-phrase"
+              ? "词组练习"
+              : r.mode,
         r.articleTitle || "",
         speed,
         netSpeed,

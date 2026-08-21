@@ -17,14 +17,21 @@ export default class PracticeView {
   /**
    * 绑定 DOM 元素
    */
+
   bind(pageId, elements) {
-    const isChinese = pageId === "practice-cn";
+    const isChinese =
+      pageId === "practice-cn" ||
+      pageId === "practice-phrase" ||
+      pageId === "practice-phrase-cn";
     const prefix = isChinese ? "cn" : "en";
 
     this.textBox = elements.textBox;
 
     this.statsEl = {
-      speed: elements[`${prefix}Speed`] || elements[`${prefix}Cpm`] || elements[`${prefix}Wpm`],
+      speed:
+        elements[`${prefix}Speed`] ||
+        elements[`${prefix}Cpm`] ||
+        elements[`${prefix}Wpm`],
       kpm: elements[`${prefix}Kpm`],
       kspc: elements[`${prefix}Kspc`],
       accuracy: elements[`${prefix}Accuracy`],
@@ -178,9 +185,7 @@ export default class PracticeView {
    */
   getCharPosition(index) {
     if (!this.textBox) return null;
-    const charEl = this.textBox.querySelector(
-      `.char[data-index="${index}"]`
-    );
+    const charEl = this.textBox.querySelector(`.char[data-index="${index}"]`);
     if (!charEl) return null;
 
     const rect = charEl.getBoundingClientRect();
@@ -206,9 +211,7 @@ export default class PracticeView {
    */
   scrollToChar(index) {
     if (!this.textBox) return;
-    const charEl = this.textBox.querySelector(
-      `.char[data-index="${index}"]`
-    );
+    const charEl = this.textBox.querySelector(`.char[data-index="${index}"]`);
     if (!charEl) return;
 
     const containerRect = this.textBox.getBoundingClientRect();

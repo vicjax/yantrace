@@ -24,6 +24,13 @@ export const MENU_CONFIG = {
           label: "英文练习",
           desc: "Start Typing",
         },
+        // 在 practice 分组中添加
+        {
+          id: "practice-phrase-en",
+          icon: "🔤",
+          label: "英文词组",
+          desc: "Word · Phrase",
+        },
       ],
     },
     {

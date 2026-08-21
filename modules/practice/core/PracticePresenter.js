@@ -100,19 +100,18 @@ export default class PracticePresenter {
     let type = "chinese";
     let contentType = "article";
 
-    if (pageId === "practice-cn" || pageId === "practice-phrase") {
+    if (pageId === "practice-cn" || pageId === "practice-phrase-cn") {
       type = "chinese";
-      contentType = pageId === "practice-phrase" ? "phrase" : "article";
-    } else if (pageId === "practice-en") {
+      contentType = pageId === "practice-phrase-cn" ? "phrase" : "article";
+    } else if (pageId === "practice-en" || pageId === "practice-phrase-en") {
       type = "english";
-      contentType = "article";
+      contentType = pageId === "practice-phrase-en" ? "phrase" : "article";
     }
 
     this.currentContentType = contentType;
     this._setPageDom(pageId);
     this.loadFirstContent(type, contentType);
   }
-
   leave() {
     this._clearStrategy();
   }
@@ -397,11 +396,14 @@ export default class PracticePresenter {
 
   _setPageDom(pageId) {
     // 判断语言
-    const isChinese = pageId === "practice-cn" || pageId === "practice-phrase";
-    const prefix = isChinese ? "cn" : "en";
+    // 第 399 行
+    const prefix =
+      pageId === "practice-en" || pageId === "practice-phrase-en" ? "en" : "cn";
 
     const textBox = document.getElementById(`${prefix}TextBox`);
-    this.selector = document.getElementById(`${prefix}Select`);
+    this.selector =
+      document.getElementById(`${prefix}ArticleSelect`) ||
+      document.getElementById(`${prefix}Select`);
     this.resetBtn = document.getElementById(`${prefix}ResetBtn`);
     this.stopBtn = document.getElementById(`${prefix}StopBtn`);
 
