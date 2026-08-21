@@ -164,6 +164,9 @@ class App {
       },
     );
 
+    // 在 init 方法中，启动时确保没有残留时钟
+    this._clockInterval = null;
+
     // 设置 Presenter
     this.settingsPresenter = new SettingsPresenter({
       settingsService: this.settingsService,
@@ -171,12 +174,7 @@ class App {
     });
 
     // 用户管理 Presenter
-    this.userPresenter = new UserPresenter({
-      userService: this.userService,
-      settingsService: this.settingsService,
-      historyService: this.historyService,
-      onUserChanged: () => {},
-    });
+    this.userPresenter = this._getUserPresenter();
     this.userPresenter.updateTopbar();
     this.userPresenter.setCurrentPage("home");
 
@@ -204,6 +202,7 @@ class App {
         onUserChanged: () => {
           this.currentUser = this.userService.getCurrent();
           this.userPresenter?.updateTopbar();
+          this._applyUserSettings();
         },
       });
     }
@@ -275,6 +274,23 @@ class App {
     this._applyUserSettings();
     this._bindPageEvents(pageId);
     this.currentPageId = pageId;
+    if (pageId === "home") {
+      this._startHomeClock();
+    }
+  }
+
+  /**
+   * 首页时钟更新
+   */
+  _startHomeClock() {
+    const el = document.getElementById("homeDateTime");
+    if (!el) return;
+    const update = () => {
+      el.textContent = new Date().toLocaleString("zh-CN");
+    };
+    update();
+    if (this._clockInterval) clearInterval(this._clockInterval);
+    this._clockInterval = setInterval(update, 10000);
   }
 
   // ============================================
@@ -336,6 +352,22 @@ class App {
         if (this.settingsPresenter) {
           this.settingsPresenter.open();
         }
+      });
+    }
+
+    // ⭐ 新增：文库按钮 → 文章管理
+    const articleBtn = document.getElementById("topbarArticleBtn");
+    if (articleBtn) {
+      articleBtn.addEventListener("click", () => {
+        this.navigator.goTo("article-management");
+      });
+    }
+
+    // ⭐ 新增：墨痕按钮 → 历史记录
+    const historyBtn = document.getElementById("topbarHistoryBtn");
+    if (historyBtn) {
+      historyBtn.addEventListener("click", () => {
+        this.navigator.goTo("history");
       });
     }
   }

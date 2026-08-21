@@ -1,10 +1,10 @@
 /* ============================================
    砚迹（YanTrace）- 首页网格布局
    ============================================ */
-
+/* 修改：自适应列数 */
 .home-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: var(--spacing-md);
   margin-bottom: 28px;
 }
@@ -55,11 +55,24 @@
   padding-left: var(--spacing-xs);
 }
 
-/* ----- 练习区卡片（大卡片） ----- */
+/* 首页练习区垂直居中 */
+.home-section-practice {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 55vh;
+}
+
+/* ----- 练习区卡片（修改：缩小尺寸） ----- */
 .home-section-practice .home-btn {
-  padding: 48px 20px;
-  font-size: var(--font-size-lg);
+  padding: 24px 12px;
+  font-size: var(--font-size-base);
   border-width: 2px;
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .home-section-practice .home-btn:hover {
@@ -68,11 +81,12 @@
 }
 
 .home-section-practice .home-btn .home-btn-icon {
-  font-size: 52px;
+  font-size: 32px;
+  margin-bottom: var(--spacing-xs);
 }
 
 .home-section-practice .home-btn .home-btn-label {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-md);
   font-weight: 600;
 }
 
@@ -82,50 +96,4 @@
   color: var(--text-dim);
   margin-top: var(--spacing-xs);
   font-weight: 400;
-}
-
-/* ----- 管理区卡片（小卡片） ----- */
-.home-section-management .home-grid {
-  display: flex;
-  gap: var(--spacing-sm);
-  flex-wrap: wrap;
-}
-
-.home-section-management .home-btn {
-  flex: 1;
-  min-width: 80px;
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: transparent;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: var(--transition-base);
-  color: var(--text-muted);
-  font-family: inherit;
-  text-align: center;
-}
-
-.home-section-management .home-btn:hover {
-  background: var(--bg-surface-hover);
-  border-color: var(--color-accent);
-  color: var(--text-primary);
-}
-
-.home-section-management .home-btn .home-btn-icon {
-  display: block;
-  font-size: 20px;
-  margin-bottom: 2px;
-}
-
-.home-section-management .home-btn .home-btn-label {
-  font-size: var(--font-size-sm);
-}
-
-.home-section-management .home-section-title {
-  font-size: var(--font-size-sm);
-  color: #444466;
-  letter-spacing: 1px;
-  border-top: 1px solid var(--border-default);
-  padding-top: 20px;
-  margin-top: var(--spacing-sm);
 }

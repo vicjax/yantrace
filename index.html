@@ -12,15 +12,14 @@
       <!-- ===== 顶部栏（所有页面共用） ===== -->
       <header class="topbar">
         <div class="topbar-left">
-          <span class="logo">砚迹</span>
+          <span class="logo" id="homeLogo">砚迹</span>
         </div>
         <div class="topbar-right">
-          <button class="settings-gear" id="settingsGearBtn" title="设置">
-            ⚙️
-          </button>
-          <span class="user-name" id="userName" title="点击切换用户">
-            👤 <span id="userNameText">未登录</span>
-            <span id="userNameArrow" class="user-name-arrow">▼</span>
+          <button class="topbar-btn" id="topbarArticleBtn">🏯 文库</button>
+          <button class="topbar-btn" id="topbarHistoryBtn">⏳ 墨痕</button>
+          <button class="topbar-btn" id="settingsGearBtn">⚙️ 设置</button>
+          <span class="topbar-user" id="userName">
+            👤 <span id="userNameText">砚客</span>
           </span>
         </div>
       </header>

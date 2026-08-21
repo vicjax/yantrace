@@ -10,7 +10,6 @@ export const MENU_CONFIG = {
           label: "中文·词句",
           desc: "词语/短句/长句",
         },
-        
         {
           id: "practice-phrase-en",
           icon: "✒️",
@@ -19,7 +18,7 @@ export const MENU_CONFIG = {
         },
         {
           id: "practice-cn",
-          icon: "📜 ",
+          icon: "📜",
           label: "中文·文章",
           desc: "短篇/长篇/古诗",
         },
@@ -29,14 +28,6 @@ export const MENU_CONFIG = {
           label: "英文·文章",
           desc: "Short/Long/Poetry",
         },
-      ],
-    },
-    {
-      id: "management",
-      title: "📂 管理",
-      items: [
-        { id: "article-management", icon: "📄", label: "文章管理" },
-        { id: "history", icon: "📊", label: "历史记录" },
       ],
     },
   ],

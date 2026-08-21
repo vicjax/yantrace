@@ -5,13 +5,12 @@
 
 import { MENU_CONFIG } from "../../config/menu.js";
 
-
 // ============================================================
 // 首页模板
 // ============================================================
 
 export function getHomeHtml() {
-  let html = "";
+  let html = `<div class="home-content">`;
 
   MENU_CONFIG.sections.forEach((section) => {
     const sectionClass =
@@ -38,6 +37,7 @@ export function getHomeHtml() {
     html += `</div></div>`;
   });
 
+  html += `</div>`;
   return html;
 }
 
