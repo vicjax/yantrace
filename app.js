@@ -12,16 +12,14 @@ import * as Helpers from "./utils/helpers.js";
 
 import Navigator from "./modules/navigator.js";
 import PracticeEngine from "./modules/practice/index.js";
-import ResultToast from "./modules/ResultToast.js";
+import ResultToast from "./modules/practice/ResultToast.js";
 import Modal from "./modules/Modal.js";
 
 import {
   getHomeHtml,
-  getPracticeCnHtml,
-  getPracticeEnHtml,
-  getPracticePhraseHtml,
-  getPracticePhraseEnHtml,
-} from "./modules/PageTemplates.js";
+  getPracticeHtml,
+  PRACTICE_PAGES,
+} from "./modules/practice/PageTemplates.js";
 
 // Model 层
 import { ArticleModel } from "./features/article/index.js";
@@ -260,30 +258,17 @@ class App {
 
     let html = "";
 
-    switch (pageId) {
-      case "home":
-        html = getHomeHtml();
-        break;
-      case "practice-cn":
-        html = getPracticeCnHtml();
-        break;
-      case "practice-en":
-        html = getPracticeEnHtml();
-        break;
-      case "practice-phrase":
-        html = getPracticePhraseHtml();
-        break;
-      case "practice-phrase-en":
-        html = getPracticePhraseEnHtml();
-        break;
-      case "user":
-      case "history":
-      case "article-management":
-      case "settings":
+    if (pageId === "home") {
+      html = getHomeHtml();
+    } else {
+      // 查找练习页面配置
+      const config = PRACTICE_PAGES.find((p) => p.id === pageId);
+      if (config) {
+        html = getPracticeHtml(config);
+      } else {
+        // 非练习页面（文章管理、历史记录等）
         html = "";
-        break;
-      default:
-        html = '<p class="placeholder">页面不存在</p>';
+      }
     }
 
     container.innerHTML = html;
@@ -313,7 +298,7 @@ class App {
     if (
       pageId === "practice-cn" ||
       pageId === "practice-en" ||
-      pageId === "practice-phrase" ||
+      pageId === "practice-phrase-cn" ||
       pageId === "practice-phrase-en"
     ) {
       // 限时模式下拉
@@ -391,7 +376,7 @@ class App {
     if (
       pageId === "practice-cn" ||
       pageId === "practice-en" ||
-      pageId === "practice-phrase" ||
+      pageId === "practice-phrase-cn" ||
       pageId === "practice-phrase-en"
     ) {
       this.practiceEngine?.leave(pageId);
@@ -414,7 +399,7 @@ class App {
     if (
       pageId === "practice-cn" ||
       pageId === "practice-en" ||
-      pageId === "practice-phrase" ||
+      pageId === "practice-phrase-cn" ||
       pageId === "practice-phrase-en"
     ) {
       // 加载限时模式设置
@@ -504,7 +489,7 @@ class App {
     if (
       currentPage === "practice-cn" ||
       currentPage === "practice-en" ||
-      currentPage === "practice-phrase" ||
+      currentPage === "practice-phrase-cn" ||
       currentPage === "practice-phrase-en"
     ) {
       const type =

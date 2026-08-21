@@ -4,32 +4,30 @@ export const MENU_CONFIG = {
       id: "practice",
       title: "🎯 练习",
       items: [
-        // ⭐ 新增词组入口
         {
-          id: "practice-phrase",
-          icon: "📝",
-          label: "词组练习",
-          desc: "二字词 · 三字词 · 成语 · 短句 · 长句",
+          id: "practice-phrase-cn",
+          icon: "🖌️",
+          label: "中文·词句",
+          desc: "词语/短句/长句",
         },
-        // 原有的中文/英文练习保持不变
+        
+        {
+          id: "practice-phrase-en",
+          icon: "✒️",
+          label: "英文·词句",
+          desc: "Words/Phrases/Sentences",
+        },
         {
           id: "practice-cn",
-          icon: "✍️",
-          label: "中文练习",
-          desc: "开始打字",
+          icon: "📜 ",
+          label: "中文·文章",
+          desc: "短篇/长篇/古诗",
         },
         {
           id: "practice-en",
-          icon: "🔤",
-          label: "英文练习",
-          desc: "Start Typing",
-        },
-        // 在 practice 分组中添加
-        {
-          id: "practice-phrase-en",
-          icon: "🔤",
-          label: "英文词组",
-          desc: "Word · Phrase",
+          icon: "📰",
+          label: "英文·文章",
+          desc: "Short/Long/Poetry",
         },
       ],
     },

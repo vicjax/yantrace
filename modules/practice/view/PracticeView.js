@@ -21,7 +21,7 @@ export default class PracticeView {
   bind(pageId, elements) {
     const isChinese =
       pageId === "practice-cn" ||
-      pageId === "practice-phrase" ||
+      pageId === "practice-phrase-cn" ||
       pageId === "practice-phrase-cn";
     const prefix = isChinese ? "cn" : "en";
 

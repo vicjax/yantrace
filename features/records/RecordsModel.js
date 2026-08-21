@@ -135,7 +135,7 @@ export default class RecordsModel {
           ? "中文练习"
           : r.mode === "practice-en"
             ? "英文练习"
-            : r.mode === "practice-phrase"
+            : r.mode === "practice-phrase-cn"
               ? "词组练习"
               : r.mode,
         r.articleTitle || "",

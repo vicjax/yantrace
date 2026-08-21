@@ -148,7 +148,7 @@ export default class RecordsView {
         ? "中文练习"
         : data.mode === "practice-en"
           ? "英文练习"
-          : data.mode === "practice-phrase"
+          : data.mode === "practice-phrase-cn"
             ? "词组练习"
             : data.mode;
     const totalChars = data.correct + data.errors + data.fixed;
