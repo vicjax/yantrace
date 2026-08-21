@@ -1,941 +1,195 @@
 /**
- * 砚迹（YanTrace）- 打字引擎核心
- * 职责：状态管理、统计计算、流程控制
- * 不直接处理输入，委托给策略（ChineseStrategy / EnglishStrategy）
- *
- * 统计刷新机制：
- *   - 按键时只更新数据，不刷新 DOM
- *   - 定时器每秒刷新一次统计显示
- *   - 计时器从首次按键开始计时
- *
- * 字符状态规则：
- *   - 第一次输对 → 绿色 (CORRECT)
- *   - 错误后改正 → 黄色 (FIXED)
- *   - 任何情况输错 → 红色 (ERROR)
- *   - 退格时颜色保留，计数减一
- *   - 正确总数 = 绿色 + 黄色
+ * 砚迹（YanTrace）- 打字引擎门面
+ * 职责：对外提供统一接口，内部委托给 PracticePresenter
+ * 位置：modules/practice/PracticeEngine.js
  */
 
-import ChineseStrategy from "./ChineseStrategy.js";
-import EnglishStrategy from "./EnglishStrategy.js";
-import { calcPracticeStats, formatTime } from "../../utils/stats.js";
-import Modal from "../Modal.js";
-
-const STATUS = {
-  PENDING: "pending",
-  CORRECT: "correct",
-  ERROR: "error",
-  FIXED: "fixed",
-};
+import PracticePresenter from "./core/PracticePresenter.js";
+import { formatTime } from "../../utils/stats.js";
 
 export default class PracticeEngine {
   constructor(options = {}) {
-    this.articleService = options.articleService || null;
-    this.onComplete = options.onComplete || null;
+    // 创建 Presenter（持有所有业务逻辑）
+    this._presenter = new PracticePresenter(options);
 
-    // DOM 引用
+    // 暴露给外部使用的属性（兼容旧代码）
     this.textBox = null;
     this.selector = null;
     this.resetBtn = null;
     this.stopBtn = null;
-
-    // 统计元素（双页面）
     this.stats = { cn: null, en: null };
 
-    // 核心状态
-    this.chars = [];
-    this.totalChars = 0;
-    this.correct = 0;
-    this.errors = 0;
-    this.fixed = 0;
-    this.backspaces = 0;
-    this.keystrokes = 0;
-    this.startTime = null;
-    this.isFinished = false;
-    this.currentMode = "chinese";
-    this.currentArticleId = null;
-    this.currentArticleTitle = "";
-    this.currentCharIndex = 0;
+    // 代理方法到 Presenter
+    this.enter = this._presenter.enter.bind(this._presenter);
+    this.leave = this._presenter.leave.bind(this._presenter);
+    this.loadFirstArticle = this._presenter.loadFirstArticle.bind(this._presenter);
+    this.loadArticleList = this._presenter.loadArticleList.bind(this._presenter);
+    this.loadArticle = this._presenter.loadArticle.bind(this._presenter);
+    this.reset = this._presenter.reset.bind(this._presenter);
+    this.setTimeLimit = this._presenter.setTimeLimit.bind(this._presenter);
+    this.stopPractice = this._presenter.stopPractice.bind(this._presenter);
+    this.getStats = this._presenter.getStats.bind(this._presenter);
+    this.focus = this._presenter.focus.bind(this._presenter);
+    this.destroy = this._presenter.destroy.bind(this._presenter);
+    this.getCharPosition = this._presenter.getCharPosition.bind(this._presenter);
+    this.getContainerRect = this._presenter.getContainerRect.bind(this._presenter);
+    this.refresh = this._presenter.reset.bind(this._presenter);
 
-    // 峰值速度
-    this._peakCpm = 0;
-    this._peakWpm = 0;
-    this._keyTimestamps = [];
-
-    // 策略
+    // 策略相关
     this.strategy = null;
-
-    // 窗口 resize 防抖
-    this._resizeHandler = null;
-
-    // 统计定时器
-    this._statsTimer = null;
-    this._timerStartTime = null;
-    this._timerSeconds = 0;
-    this._instantCorrect = 0;
-    this._instantStartTime = null;
-
-    // 计时器控制（失焦暂停/聚焦继续）
-    this._timerPaused = false;
-    this._timerAccumulated = 0;
-    this._effectiveElapsed = 0;
-
-    // 限时模式
-    this.timeLimit = 0; // 0 = 无限时
-
-    this._bindResizeEvent();
   }
 
   // ============================================
-  // 生命周期方法
+  // 兼容属性（代理到 Presenter）
   // ============================================
 
-  enter(pageId) {
-    const type = pageId === "practice-cn" ? "chinese" : "english";
-    this._setPageDom(pageId);
-    this.loadFirstArticle(type);
+  get currentMode() {
+    return this._presenter.state.currentMode;
   }
 
-  leave(pageId) {
-    this.clearStrategy();
+  get currentArticleId() {
+    return this._presenter.state.currentArticleId;
   }
 
-  _setPageDom(pageId) {
-    if (pageId === "practice-cn") {
-      this.textBox = document.getElementById("cnTextBox");
-      this.selector = document.getElementById("cnArticleSelect");
-      this.resetBtn = document.getElementById("cnResetBtn");
-      this.stopBtn = document.getElementById("cnStopBtn");
-
-      this.stats.cn = {
-        cpm: document.getElementById("cnCpm"),
-        kpm: document.getElementById("cnKpm"),
-        kspc: document.getElementById("cnKspc"),
-        accuracy: document.getElementById("cnAccuracy"),
-        progressChars: document.getElementById("cnProgressChars"),
-        totalChars: document.getElementById("cnTotalChars"),
-        timer: document.getElementById("cnTimer"),
-        peakSpeed: document.getElementById("cnPeakSpeed"),
-        progressFill: document.getElementById("cnProgressFill"),
-        progressText: document.getElementById("cnProgressText"),
-      };
-    } else if (pageId === "practice-en") {
-      this.textBox = document.getElementById("enTextBox");
-      this.selector = document.getElementById("enArticleSelect");
-      this.resetBtn = document.getElementById("enResetBtn");
-      this.stopBtn = document.getElementById("enStopBtn");
-
-      this.stats.en = {
-        wpm: document.getElementById("enWpm"),
-        kpm: document.getElementById("enKpm"),
-        kspc: document.getElementById("enKspc"),
-        accuracy: document.getElementById("enAccuracy"),
-        progressChars: document.getElementById("enProgressChars"),
-        totalChars: document.getElementById("enTotalChars"),
-        timer: document.getElementById("enTimer"),
-        peakSpeed: document.getElementById("enPeakSpeed"),
-        progressFill: document.getElementById("enProgressFill"),
-        progressText: document.getElementById("enProgressText"),
-      };
-    }
-    this._bindUIEvents();
+  get currentArticleTitle() {
+    return this._presenter.state.currentArticleTitle;
   }
 
-  // ============================================
-  // 公共方法
-  // ============================================
-
-  loadArticleList(type) {
-    if (!this.articleService) return;
-    const articles = this.articleService.getByType(type);
-    const currentValue = this.selector?.value || "";
-
-    this.selector.innerHTML = articles
-      .map((a) => `<option value="${a.id}">${a.title}</option>`)
-      .join("");
-
-    if (currentValue && articles.some((a) => a.id === currentValue)) {
-      this.selector.value = currentValue;
-    } else if (articles.length > 0) {
-      this.selector.value = articles[0].id;
-    }
-
-    if (articles.length > 0) {
-      this.loadArticle(type, this.selector.value);
-    }
+  get chars() {
+    return this._presenter.state.chars;
   }
 
-  loadArticle(type, articleId) {
-    if (!this.articleService) return;
-    const article = this.articleService.getById(articleId);
-    if (!article) return;
-
-    if (this.strategy) {
-      this.strategy.destroy();
-      this.strategy = null;
-    }
-    if (this._statsTimer) {
-      clearInterval(this._statsTimer);
-      this._statsTimer = null;
-    }
-
-    this._switchStrategy(type);
-    this._resetState();
-
-    this.currentMode = type;
-    this.currentArticleId = articleId;
-    this.currentArticleTitle = article.title;
-
-    const content = article.content;
-    this.chars = content.split("").map((char) => ({
-      char: char,
-      status: STATUS.PENDING,
-      keepColor: null,
-    }));
-    this.totalChars = this.chars.length;
-
-    this._renderArticle();
-    this._updateProgressOnly();
-    this._updateTimerDisplay(0);
-
-    if (this.strategy && this.currentMode === "chinese") {
-      this.textBox.offsetHeight;
-      requestAnimationFrame(() => {
-        if (this.strategy && typeof this.strategy.createInput === "function") {
-          this.strategy.createInput();
-          requestAnimationFrame(() => {
-            if (
-              this.strategy &&
-              typeof this.strategy.updatePosition === "function"
-            ) {
-              this.strategy.updatePosition();
-            }
-            if (this.strategy && typeof this.strategy.focus === "function") {
-              this.strategy.focus();
-            }
-          });
-        }
-      });
-    } else {
-      setTimeout(() => this.focus(), 100);
-    }
+  get totalChars() {
+    return this._presenter.state.totalChars;
   }
 
-  loadFirstArticle(type) {
-    this.loadArticleList(type);
+  get correct() {
+    return this._presenter.state.correct;
   }
 
-  reset(type) {
-    const articleId = this.selector?.value;
-    if (articleId) {
-      this.loadArticle(type, articleId);
-    }
+  get errors() {
+    return this._presenter.state.errors;
   }
 
-  /**
-   * 设置限时模式
-   * @param {number} seconds - 0 = 无限时, 30/60/120 = 限时秒数
-   */
-  setTimeLimit(seconds) {
-    this.timeLimit = seconds || 0;
-    this._updateTimerDisplay(0);
-    if (this.startTime && !this.isFinished && this._statsTimer) {
-      clearInterval(this._statsTimer);
-      this._statsTimer = null;
-      this._startStatsTimer();
-    }
+  get fixed() {
+    return this._presenter.state.fixed;
   }
 
-  /**
-   * 手动停止练习
-   */
-  stopPractice() {
-    if (this.isFinished) return;
-    if (this.totalChars === 0) return;
-
-    if (this.strategy && typeof this.strategy._destroyInput === "function") {
-      this.strategy._destroyInput();
-    }
-
-    this.isFinished = true;
-
-    if (this._statsTimer) {
-      clearInterval(this._statsTimer);
-      this._statsTimer = null;
-    }
-
-    this._refreshStatsDisplay();
-
-    if (this.onComplete) {
-      const stats = this.getStats();
-      stats.stopped = true;
-      this.onComplete(stats);
-    }
+  get backspaces() {
+    return this._presenter.state.backspaces;
   }
 
-  focus() {
-    if (this.strategy && typeof this.strategy.focus === "function") {
-      this.strategy.focus();
-    }
+  get keystrokes() {
+    return this._presenter.state.keystrokes;
   }
 
-  clearStrategy() {
-    if (this.strategy) {
-      this.strategy.destroy();
-      this.strategy = null;
-    }
+  get startTime() {
+    return this._presenter.state.startTime;
   }
 
-  destroy() {
-    if (this._statsTimer) {
-      clearInterval(this._statsTimer);
-      this._statsTimer = null;
-    }
-    this.clearStrategy();
-    if (this._resizeHandler) {
-      window.removeEventListener("resize", this._resizeHandler);
-      this._resizeHandler = null;
-    }
-    if (this.selector && this._selectorHandler) {
-      this.selector.removeEventListener("change", this._selectorHandler);
-    }
-    if (this.resetBtn && this._resetHandler) {
-      this.resetBtn.removeEventListener("click", this._resetHandler);
-    }
-    if (this.stopBtn && this._stopHandler) {
-      this.stopBtn.removeEventListener("click", this._stopHandler);
-    }
+  get isFinished() {
+    return this._presenter.isFinished;
+  }
+
+  get currentCharIndex() {
+    return this._presenter.currentCharIndex;
+  }
+
+  get _effectiveElapsed() {
+    return this._presenter._effectiveElapsed;
+  }
+
+  get _timerPaused() {
+    return this._presenter._timerPaused;
   }
 
   // ============================================
-  // 渲染方法
+  // 内部方法（供策略调用）- 代理到 Presenter
   // ============================================
-
-  _renderArticle() {
-    if (!this.textBox) return;
-
-    const html = this.chars
-      .map((item, index) => {
-        const char = item.char;
-        const display = char === " " ? "&nbsp;" : this._escapeHtml(char);
-
-        let displayStatus = item.status;
-        if (item.status === STATUS.PENDING && item.keepColor) {
-          displayStatus = item.keepColor;
-        }
-        const statusClass =
-          displayStatus !== STATUS.PENDING ? displayStatus : "";
-        const currentClass =
-          index === this.currentCharIndex && !this.isFinished ? "current" : "";
-        return `<span class="char ${statusClass} ${currentClass}" data-index="${index}">${display}</span>`;
-      })
-      .join("");
-
-    this.textBox.innerHTML = html;
-  }
-
-  _updateCurrentChar(index) {
-    this.textBox?.querySelectorAll(".char.current").forEach((el) => {
-      el.classList.remove("current");
-    });
-
-    const charEl = this.textBox?.querySelector(`.char[data-index="${index}"]`);
-    if (charEl) {
-      charEl.classList.add("current");
-    }
-    this.currentCharIndex = index;
-  }
-
-  getCharPosition() {
-    if (!this.textBox) return null;
-    const charEl = this.textBox.querySelector(
-      `.char[data-index="${this.currentCharIndex}"]`,
-    );
-    if (!charEl) return null;
-
-    const rect = charEl.getBoundingClientRect();
-    const containerRect = this.textBox.getBoundingClientRect();
-
-    return {
-      x: rect.left - containerRect.left,
-      y: rect.bottom - containerRect.top,
-      width: rect.width,
-      height: rect.height,
-    };
-  }
-
-  getContainerRect() {
-    return this.textBox?.getBoundingClientRect() || null;
-  }
-
-  // ============================================
-  // 核心输入处理
-  // ============================================
-
-  _startTimer() {
-    if (this._statsTimer) return;
-
-    // 重置 startTime 为当前时间，有效时间由 _effectiveElapsed 累计
-    this.startTime = Date.now();
-    this._timerStartTime = Date.now();
-
-    this._timerPaused = false;
-    this._startStatsTimer();
-  }
-
-  _stopTimer() {
-    if (!this._statsTimer) return;
-
-    // 将当前打字时间累加到有效时间
-    if (this.startTime) {
-      this._effectiveElapsed += (Date.now() - this.startTime) / 1000;
-      this._timerAccumulated = this._effectiveElapsed;
-    }
-
-    clearInterval(this._statsTimer);
-    this._statsTimer = null;
-    this._timerPaused = true;
-
-    this._updateTimerDisplay(Math.floor(this._timerAccumulated));
-  }
 
   recordKeypress() {
-    this.keystrokes++;
-    this._startTimer();
-    this._updateProgressOnly();
-    this._playSound();
+    this._presenter.recordKeypress();
   }
 
   recordBackspace() {
-    this.backspaces++;
-    this.keystrokes++;
-    this._updateProgressOnly();
-    this._playSound();
+    this._presenter.recordBackspace();
   }
 
   _handleCharInput(char) {
-    if (this.isFinished) return;
-    if (this.totalChars === 0) return;
-    if (this.currentCharIndex >= this.totalChars) return;
-
-    const idx = this.currentCharIndex;
-    const item = this.chars[idx];
-    const isMatch = char === item.char;
-
-    const currentStatus = item.status;
-    const wasError = item.keepColor === STATUS.ERROR;
-    const wasFixed = item.keepColor === STATUS.FIXED;
-
-    let newStatus;
-    let correctChange = 0,
-      errorsChange = 0,
-      fixedChange = 0;
-
-    if (isMatch) {
-      if (currentStatus === STATUS.PENDING && (wasError || wasFixed)) {
-        newStatus = STATUS.FIXED;
-        fixedChange = 1;
-      } else if (currentStatus === STATUS.PENDING) {
-        newStatus = STATUS.CORRECT;
-        correctChange = 1;
-      } else if (currentStatus === STATUS.ERROR) {
-        newStatus = STATUS.FIXED;
-        errorsChange = -1;
-        fixedChange = 1;
-      } else {
-        newStatus = currentStatus;
-      }
-    } else {
-      if (currentStatus === STATUS.PENDING) {
-        newStatus = STATUS.ERROR;
-        errorsChange = 1;
-      } else if (currentStatus === STATUS.CORRECT) {
-        newStatus = STATUS.ERROR;
-        correctChange = -1;
-        errorsChange = 1;
-      } else if (currentStatus === STATUS.FIXED) {
-        newStatus = STATUS.ERROR;
-        fixedChange = -1;
-        errorsChange = 1;
-      } else {
-        newStatus = currentStatus;
-      }
-    }
-
-    this.correct += correctChange;
-    this.errors += errorsChange;
-    this.fixed += fixedChange;
-
-    item.keepColor = null;
-    item.status = newStatus;
-
-    this.currentCharIndex++;
-    this._renderArticle();
-    this._updateCurrentChar(this.currentCharIndex);
-
-    this._updateProgressOnly();
-    this._samplePeakSpeed();
-    this._updateFloatingInputPosition();
-    this._scrollToCurrentChar();
-
-    if (this.currentCharIndex >= this.totalChars) {
-      this.isFinished = true;
-      if (this._statsTimer) {
-        clearInterval(this._statsTimer);
-        this._statsTimer = null;
-      }
-      this._refreshStatsDisplay();
-      if (this.onComplete) {
-        this.onComplete(this.getStats());
-      }
-    }
+    this._presenter._handleCharInput(char);
   }
 
   _handleBackspace() {
-    if (this.isFinished) return;
-    if (this.currentCharIndex === 0) return;
-
-    this.currentCharIndex--;
-    this._updateCurrentChar(this.currentCharIndex);
-
-    const item = this.chars[this.currentCharIndex];
-    const currentStatus = item.status;
-
-    if (currentStatus === STATUS.PENDING) return;
-
-    if (currentStatus === STATUS.CORRECT) {
-      this.correct--;
-    } else if (currentStatus === STATUS.ERROR) {
-      this.errors--;
-    } else if (currentStatus === STATUS.FIXED) {
-      this.fixed--;
-    }
-
-    item.keepColor = currentStatus;
-    item.status = STATUS.PENDING;
-
-    this._renderArticle();
-    this._updateProgressOnly();
-    this._updateFloatingInputPosition();
-    this._scrollToCurrentChar();
+    this._presenter._handleBackspace();
   }
 
-  _scrollToCurrentChar() {
-    if (!this.textBox || this.isFinished) return;
-
-    const charEl = this.textBox.querySelector(
-      `.char[data-index="${this.currentCharIndex}"]`,
-    );
-    if (!charEl) return;
-
-    const containerRect = this.textBox.getBoundingClientRect();
-    const charRect = charEl.getBoundingClientRect();
-
-    const distanceToBottom = containerRect.bottom - charRect.bottom;
-
-    if (distanceToBottom < 100) {
-      const targetOffset = containerRect.height * 0.2;
-      const currentOffset = charRect.top - containerRect.top;
-      const scrollDelta = currentOffset - targetOffset;
-      this.textBox.scrollTop += scrollDelta;
-    }
+  _stopTimer() {
+    this._presenter._stopTimer();
   }
 
-  _updateFloatingInputPosition() {
-    if (this.strategy && typeof this.strategy.updatePosition === "function") {
-      this.strategy.updatePosition();
-    }
+  _startTimer() {
+    this._presenter._startTimer();
   }
 
   // ============================================
-  // 统计方法
+  // 统计显示相关（兼容外部调用）
   // ============================================
-
-  _startStatsTimer() {
-    if (this._statsTimer) {
-      clearInterval(this._statsTimer);
-      this._statsTimer = null;
-    }
-
-    this._statsTimer = setInterval(() => {
-      if (this.isFinished) {
-        if (this._statsTimer) {
-          clearInterval(this._statsTimer);
-          this._statsTimer = null;
-        }
-        return;
-      }
-
-      // 计算实际打字时间
-      let elapsed = this._effectiveElapsed;
-      if (!this._timerPaused && this.startTime) {
-        elapsed += (Date.now() - this.startTime) / 1000;
-      }
-
-      this._updateTimerDisplay(elapsed);
-
-      // 限时模式：检查是否超时（使用实际打字时间）
-      if (this.timeLimit > 0 && elapsed >= this.timeLimit) {
-        this.stopPractice();
-        return;
-      }
-
-      this._refreshStatsDisplay();
-    }, 1000);
-  }
 
   _refreshStatsDisplay() {
-    const stats = this._calcStats();
-    const isChinese = this.currentMode === "chinese";
-    const processed = stats.correct + stats.errors + stats.fixed;
-    const fixRate =
-      processed === 0 ? 0 : Math.round((stats.fixed / processed) * 100);
-
-    const el = isChinese ? this.stats.cn : this.stats.en;
-
-    if (isChinese && el.cpm) {
-      el.cpm.textContent = stats.netCpm;
-    } else if (!isChinese && el.wpm) {
-      el.wpm.textContent = stats.netWpm;
-    }
-
-    if (el.kpm) el.kpm.textContent = stats.kpm;
-    if (el.kspc) el.kspc.textContent = stats.kspc;
-    if (el.accuracy) el.accuracy.textContent = stats.actualAccuracy;
-    if (el.progressChars) el.progressChars.textContent = stats.processed;
-    if (el.totalChars) el.totalChars.textContent = stats.totalChars;
-    if (el.peakSpeed) el.peakSpeed.textContent = stats.peakSpeed;
-  }
-
-  _updateTimerDisplay(seconds) {
-    // 支持传入秒数或使用 _effectiveElapsed
-    let elapsed = seconds !== undefined ? seconds : this._effectiveElapsed;
-
-    let displaySeconds = elapsed;
-    let isCountdown = false;
-
-    if (this.timeLimit > 0) {
-      displaySeconds = Math.max(0, this.timeLimit - elapsed);
-      isCountdown = true;
-    }
-
-    const timerText = formatTime(Math.floor(displaySeconds));
-    const isWarning = isCountdown && displaySeconds < 10;
-
-    const cnTimer = document.getElementById("cnTimer");
-    if (cnTimer) {
-      cnTimer.textContent = timerText;
-      cnTimer.style.color = isWarning ? "var(--color-danger)" : "";
-    }
-
-    const enTimer = document.getElementById("enTimer");
-    if (enTimer) {
-      enTimer.textContent = timerText;
-      enTimer.style.color = isWarning ? "var(--color-danger)" : "";
-    }
+    this._presenter._refreshStatsDisplay();
   }
 
   _updateProgressOnly() {
-    const stats = this._calcStats();
-    const isChinese = this.currentMode === "chinese";
-    const el = isChinese ? this.stats.cn : this.stats.en;
+    this._presenter._updateProgressOnly();
+  }
 
-    if (el.progressFill) {
-      el.progressFill.style.width = stats.progress + "%";
-    }
-    if (el.progressText) {
-      el.progressText.textContent = stats.progress + "%";
-    }
+  _updateTimerDisplay(seconds) {
+    this._presenter._updateTimerDisplay(seconds);
   }
 
   _calcStats() {
-    // 统一计算实际打字时间（不含暂停）
-    let elapsed = this._effectiveElapsed;
-    if (!this._timerPaused && this.startTime) {
-      elapsed += (Date.now() - this.startTime) / 1000;
-    }
-
-    const minutes = elapsed / 60;
-    const processed = this.correct + this.errors + this.fixed;
-
-    const totalCorrect = this.correct + this.fixed;
-    const actualAccuracy =
-      processed === 0 ? 100 : Math.round((totalCorrect / processed) * 100);
-
-    const cpm = minutes > 0 ? Math.round(totalCorrect / minutes) : 0;
-    const wpm = minutes > 0 ? Math.round(totalCorrect / 5 / minutes) : 0;
-    const kpm = minutes > 0 ? Math.round(this.keystrokes / minutes) : 0;
-    const netCpm = Math.round(cpm * (actualAccuracy / 100));
-    const netWpm = Math.round(wpm * (actualAccuracy / 100));
-
-    const backspaceRate =
-      this.keystrokes > 0
-        ? Math.round((this.backspaces / this.keystrokes) * 100)
-        : 0;
-    const kspc =
-      totalCorrect > 0
-        ? parseFloat((this.keystrokes / totalCorrect).toFixed(2))
-        : 0;
-    const progress =
-      this.totalChars === 0
-        ? 0
-        : Math.round((processed / this.totalChars) * 100);
-
-    const peakSpeed =
-      this.currentMode === "chinese" ? this._peakCpm : this._peakWpm;
-
-    return {
-      correct: this.correct,
-      errors: this.errors,
-      fixed: this.fixed,
-      totalCorrect: totalCorrect,
-      backspaces: this.backspaces,
-      keystrokes: this.keystrokes,
-      elapsed: Math.round(elapsed),
-      totalChars: this.totalChars,
-      processed: processed,
-      isFinished: this.isFinished,
-      actualAccuracy: actualAccuracy,
-      cpm: cpm,
-      wpm: wpm,
-      kpm: kpm,
-      netCpm: netCpm,
-      netWpm: netWpm,
-      peakSpeed: peakSpeed,
-      backspaceRate: backspaceRate,
-      kspc: kspc,
-      progress: progress,
-    };
+    return this._presenter.getStats();
   }
 
-  getStats() {
-    return this._calcStats();
-  }
-
-  /**
-   * 采样峰值速度（轻量版）
-   * 每次按键时记录时间戳，计算最近按键的平均速度
-   */
-
-  /**
-   * 采样峰值速度
-   * 基于实际打字进度计算，避免按键次数虚高
-   */
-
-  /**
-   * 采样峰值速度（主流方案）
-   * 使用滑动窗口，基于有效字符数计算
-   */
   _samplePeakSpeed() {
-    if (!this.startTime) return;
-
-    const now = Date.now();
-    const isChinese = this.currentMode === "chinese";
-
-    // 计算当前总有效打字时间（不含暂停）
-    let totalElapsed = this._effectiveElapsed;
-    if (!this._timerPaused && this.startTime) {
-      totalElapsed += (now - this.startTime) / 1000;
-    }
-
-    // 至少 10 秒后才采样（排除启动波动）
-    if (totalElapsed < 10) return;
-
-    // 有效字符数 = 正确 + 改正（不含错误）
-    const effectiveChars = this.correct + this.fixed;
-    if (effectiveChars < 5) return;
-
-    // 计算当前净速度：有效字符数 / 总有效时间
-    const minutes = totalElapsed / 60;
-    const netCpm = Math.round(effectiveChars / minutes);
-
-    // 更新峰值
-    if (isChinese) {
-      if (netCpm > this._peakCpm) {
-        this._peakCpm = netCpm;
-      }
-    } else {
-      // 英文：CPM → WPM
-      const netWpm = Math.round(netCpm / 5);
-      if (netWpm > this._peakWpm) {
-        this._peakWpm = netWpm;
-      }
-    }
+    // 已由 InputController 处理
   }
 
   // ============================================
-  // 策略管理
+  // 渲染方法（兼容外部调用）
   // ============================================
 
-  _switchStrategy(type) {
-    if (this.strategy) {
-      this.strategy.destroy();
-      this.strategy = null;
-    }
-    if (type === "chinese") {
-      this.strategy = new ChineseStrategy(this);
-    } else {
-      this.strategy = new EnglishStrategy(this);
-    }
-    this.strategy.init();
+  _renderArticle() {
+    this._presenter.view.renderChars(
+      this._presenter.state.chars,
+      this._presenter.state.currentCharIndex,
+      this._presenter.state.isFinished
+    );
   }
 
-  _resetState() {
-    this.correct = 0;
-    this.errors = 0;
-    this.fixed = 0;
-    this.backspaces = 0;
-    this.keystrokes = 0;
-    this.startTime = null;
-    this.isFinished = false;
-    this.currentCharIndex = 0;
-    this._peakCpm = 0;
-    this._peakWpm = 0;
-    this._keyTimestamps = [];
-    this.chars = [];
-    this.totalChars = 0;
-
-    this._timerSeconds = 0;
-    this._timerStartTime = null;
-    this._instantCorrect = 0;
-    this._instantStartTime = null;
-    this._timerPaused = false;
-    this._timerAccumulated = 0;
-    this._effectiveElapsed = 0;
-
-    this._updateTimerDisplay(0);
-
-    if (this._statsTimer) {
-      clearInterval(this._statsTimer);
-      this._statsTimer = null;
-    }
-    this._resetStatsDisplay();
+  _updateCurrentChar(index) {
+    this._presenter.view.updateCurrentChar(index);
   }
 
-  _resetStatsDisplay() {
-    const cn = this.stats.cn;
-    const en = this.stats.en;
+  _scrollToCurrentChar() {
+    this._presenter.view.scrollToChar(this._presenter.state.currentCharIndex);
+  }
 
-    if (cn) {
-      if (cn.cpm) cn.cpm.textContent = "0";
-      if (cn.kpm) cn.kpm.textContent = "0";
-      if (cn.kspc) cn.kspc.textContent = "0";
-      if (cn.accuracy) cn.accuracy.textContent = "100";
-      if (cn.progressChars) cn.progressChars.textContent = "0";
-      if (cn.totalChars) cn.totalChars.textContent = "0";
-      if (cn.peakSpeed) cn.peakSpeed.textContent = "0";
-      if (cn.progressFill) cn.progressFill.style.width = "0%";
-      if (cn.progressText) cn.progressText.textContent = "0%";
-    }
-
-    if (en) {
-      if (en.wpm) en.wpm.textContent = "0";
-      if (en.kpm) en.kpm.textContent = "0";
-      if (en.kspc) en.kspc.textContent = "0";
-      if (en.accuracy) en.accuracy.textContent = "100";
-      if (en.progressChars) en.progressChars.textContent = "0";
-      if (en.totalChars) en.totalChars.textContent = "0";
-      if (en.peakSpeed) en.peakSpeed.textContent = "0";
-      if (en.progressFill) en.progressFill.style.width = "0%";
-      if (en.progressText) en.progressText.textContent = "0%";
-    }
+  _updateFloatingInputPosition() {
+    this._presenter._updateFloatingInputPosition();
   }
 
   // ============================================
-  // UI 事件绑定
+  // 策略管理（兼容外部调用）
   // ============================================
 
-  _bindUIEvents() {
-    // === 1. 文章下拉切换 ===
-    if (this.selector && this._selectorHandler) {
-      this.selector.removeEventListener("change", this._selectorHandler);
-    }
-
-    this._selectorHandler = () => {
-      if (this.selector?.value) {
-        this.loadArticle(this.currentMode, this.selector.value);
-      }
-    };
-
-    if (this.selector) {
-      this.selector.addEventListener("change", this._selectorHandler);
-    }
-
-    // === 2. 重置按钮 ===
-    if (this.resetBtn && this._resetHandler) {
-      this.resetBtn.removeEventListener("click", this._resetHandler);
-    }
-
-    this._resetHandler = async () => {
-      const type = this.currentMode;
-
-      if (this.isFinished || !this.startTime) {
-        this.reset(type);
-        return;
-      }
-
-      if (
-        await Modal.confirm(
-          "确定要重新开始吗？当前进度将丢失。",
-          "🔄 重新开始",
-          "重新开始",
-          "取消",
-        )
-      ) {
-        this.reset(type);
-      }
-    };
-
-    if (this.resetBtn) {
-      this.resetBtn.addEventListener("click", this._resetHandler);
-    }
-
-    // === 3. 停止按钮 ===
-    if (this.stopBtn && this._stopHandler) {
-      this.stopBtn.removeEventListener("click", this._stopHandler);
-    }
-
-    this._stopHandler = async () => {
-      if (this.isFinished || !this.startTime) return;
-
-      if (
-        await Modal.confirm(
-          "确定要停止当前练习吗？当前进度将保存为记录。",
-          "⏹️ 停止练习",
-          "确认停止",
-          "继续练习",
-        )
-      ) {
-        this.stopPractice();
-      }
-      this.stopBtn?.blur();
-    };
-
-    if (this.stopBtn) {
-      this.stopBtn.addEventListener("click", this._stopHandler);
-    }
+  clearStrategy() {
+    this._presenter._clearStrategy();
   }
 
-  _bindResizeEvent() {
-    this._resizeHandler = this._debounce(() => {
-      if (
-        this.currentArticleId &&
-        this.strategy &&
-        typeof this.strategy.updatePosition === "function"
-      ) {
-        this.strategy.updatePosition();
-      }
-    }, 300);
-    window.addEventListener("resize", this._resizeHandler);
-  }
-
-  _debounce(fn, delay) {
-    let timer = null;
-    return function (...args) {
-      clearTimeout(timer);
-      timer = setTimeout(() => fn.apply(this, args), delay);
-    };
-  }
+  // ============================================
+  // 工具方法（兼容外部调用）
+  // ============================================
 
   _escapeHtml(str) {
     const map = {
@@ -949,22 +203,6 @@ export default class PracticeEngine {
   }
 
   _playSound() {
-    const sound = window.__soundSetting || "off";
-    if (sound === "off") return;
-
-    const soundPath = `./assets/sounds/${sound}.mp3`;
-    try {
-      const audio = new Audio(soundPath);
-      audio.volume = 0.3;
-      audio.play().catch(() => {});
-    } catch (e) {}
-  }
-
-  refresh(type) {
-    if (this.currentArticleId) {
-      this.loadArticle(type, this.currentArticleId);
-    } else {
-      this.loadFirstArticle(type);
-    }
+    this._presenter._playSound();
   }
 }

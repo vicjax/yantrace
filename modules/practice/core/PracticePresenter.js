@@ -6,14 +6,15 @@
 
 import PracticeState from "../model/PracticeState.js";
 import PracticeView from "../view/PracticeView.js";
-import ContentLoader from "../model/ContentLoader.js";
 import TimerController from "../controller/TimerController.js";
 import InputController from "../controller/InputController.js";
-import ChineseStrategy from "../strategies/ChineseStrategy.js";
-import EnglishStrategy from "../strategies/EnglishStrategy.js";
+import ContentFactory from "../strategies/ContentFactory.js";
+
 import Modal from "../../Modal.js";
 import { calcStats } from "../model/StatsEngine.js";
 
+import ChineseStrategy from "../input/ChineseStrategy.js";
+import EnglishStrategy from "../input/EnglishStrategy.js";
 
 const STATUS = {
   PENDING: "pending",
@@ -25,15 +26,27 @@ const STATUS = {
 export default class PracticePresenter {
   constructor(options = {}) {
     this.articleService = options.articleService || null;
+    this.phraseService = options.phraseService || null;
     this.onComplete = options.onComplete || null;
 
     // 核心组件
     this.state = new PracticeState();
     this.view = new PracticeView();
-    this.loader = new ContentLoader(this.articleService);
+
+    // 内容策略
+    this.contentFactory = new ContentFactory(
+      this.articleService,
+      this.phraseService,
+    );
+    this.contentStrategy = null; // 当前内容策略（文章/词组）
+    this.currentContentType = "article"; // 当前内容类型
+
+    // 输入策略（中文/英文输入处理）
+    this.strategy = null;
 
     // 控制器
     this.timer = new TimerController(this.state, this.view);
+    this.timer.onTick(() => this._refreshStatsDisplay()); // 监听 tick 刷新统计
     this.timer.onTimeout(() => this.stopPractice());
 
     this.input = new InputController(
@@ -43,11 +56,8 @@ export default class PracticePresenter {
       (stats) => {
         stats.stopped = false;
         if (this.onComplete) this.onComplete(stats);
-      }
+      },
     );
-
-    // 策略
-    this.strategy = null;
 
     // DOM 引用
     this.selector = null;
@@ -59,7 +69,7 @@ export default class PracticePresenter {
   }
 
   // ============================================
-  // 策略访问接口
+  // 策略访问接口（供 ChineseStrategy/EnglishStrategy 调用）
   // ============================================
 
   get textBox() {
@@ -87,21 +97,35 @@ export default class PracticePresenter {
   // ============================================
 
   enter(pageId) {
-    const type = pageId === "practice-cn" ? "chinese" : "english";
+    // 根据页面 ID 确定语言和内容类型
+    let type = "chinese";
+    let contentType = "article";
+
+    if (pageId === "practice-cn" || pageId === "practice-phrase-cn") {
+      type = "chinese";
+      contentType = pageId === "practice-phrase-cn" ? "phrase" : "article";
+    } else if (pageId === "practice-en" || pageId === "practice-phrase-en") {
+      type = "english";
+      contentType = pageId === "practice-phrase-en" ? "phrase" : "article";
+    }
+
+    this.currentContentType = contentType;
     this._setPageDom(pageId);
-    this.loadFirstArticle(type);
+    this.loadFirstContent(type, contentType);
   }
 
   leave() {
     this._clearStrategy();
   }
 
-  loadFirstArticle(type) {
-    this.loadArticleList(type);
+  loadFirstContent(type, contentType) {
+    this.loadContentList(type, contentType);
   }
 
-  loadArticleList(type) {
-    const list = this.loader.getList(type);
+  loadContentList(type, contentType) {
+    // 创建内容策略
+    this.contentStrategy = this.contentFactory.create(type, contentType);
+    const list = this.contentStrategy.getList();
     const currentValue = this.selector?.value || "";
 
     this.selector.innerHTML = list
@@ -115,40 +139,72 @@ export default class PracticePresenter {
     }
 
     if (list.length > 0) {
-      this.loadArticle(type, this.selector.value);
+      this.loadContent(type, contentType, this.selector.value);
     }
   }
 
-  loadArticle(type, articleId) {
-    const data = this.loader.load(type, articleId);
-    if (!data) return;
+  async loadContent(type, contentType, contentId) {
+    // ============================================
+    // 1. 加载内容数据
+    // ============================================
+    if (!this.contentStrategy || this.contentStrategy.getLanguage() !== type) {
+      this.contentStrategy = this.contentFactory.create(type, contentType);
+    }
+    await this.contentStrategy.load(contentId);
 
+    // ============================================
+    // 2. 清理旧策略
+    // ============================================
     if (this.strategy) {
       this.strategy.destroy();
       this.strategy = null;
     }
-    this.timer.destroy();
 
+    // ============================================
+    // 3. 重置所有数据（先不刷新视图）
+    // ============================================
+    // 切换输入策略
     this._switchStrategy(type);
+
+    // 重置状态
     this.state.reset();
     this.input.resetPeak();
 
+    // 设置新状态
     this.state.currentMode = type;
-    this.state.currentArticleId = articleId;
-    this.state.currentArticleTitle = data.title;
+    this.state.currentArticleId = contentId;
+    this.state.currentArticleTitle = this.contentStrategy.getTitle();
 
+    const chars = this.contentStrategy.getChars();
     this.state.setChars(
-      data.content.split("").map((char) => ({
+      chars.map((char) => ({
         char: char,
         status: STATUS.PENDING,
         keepColor: null,
-      }))
+      })),
     );
 
+    // 重置计时器（归零，保留监听器）
+    this.timer.reinit();
+
+    // ============================================
+    // 4. 统一刷新视图
+    // ============================================
+    // 渲染字符
     this.view.renderChars(this.state.chars, 0, false);
+
+    // 更新进度（归零）
     this.view.updateProgress(0);
+
+    // 更新计时器（归零）
     this.view.updateTimer(0, this.timeLimit);
 
+    // ⭐ 最后统一刷新统计（归零状态）
+    this._refreshStatsDisplay();
+
+    // ============================================
+    // 5. 创建输入框
+    // ============================================
     if (this.strategy && this.state.currentMode === "chinese") {
       const textBox = this.view.textBox;
       textBox.offsetHeight;
@@ -156,7 +212,10 @@ export default class PracticePresenter {
         if (this.strategy && typeof this.strategy.createInput === "function") {
           this.strategy.createInput();
           requestAnimationFrame(() => {
-            if (this.strategy && typeof this.strategy.updatePosition === "function") {
+            if (
+              this.strategy &&
+              typeof this.strategy.updatePosition === "function"
+            ) {
               this.strategy.updatePosition();
             }
             if (this.strategy && typeof this.strategy.focus === "function") {
@@ -170,10 +229,26 @@ export default class PracticePresenter {
     }
   }
 
+  // ============================================
+  // 兼容旧方法（app.js 调用）
+  // ============================================
+
+  loadFirstArticle(type) {
+    this.loadFirstContent(type, "article");
+  }
+
+  loadArticleList(type) {
+    this.loadContentList(type, "article");
+  }
+
+  loadArticle(type, articleId) {
+    this.loadContent(type, "article", articleId);
+  }
+
   reset(type) {
-    const articleId = this.selector?.value;
-    if (articleId) {
-      this.loadArticle(type, articleId);
+    const contentId = this.selector?.value;
+    if (contentId) {
+      this.loadContent(type, this.currentContentType || "article", contentId);
     }
   }
 
@@ -181,7 +256,6 @@ export default class PracticePresenter {
     this.timeLimit = seconds || 0;
     this.timer.setTimeLimit(seconds);
   }
-
   stopPractice() {
     if (this.state.isFinished) return;
     if (this.state.totalChars === 0) return;
@@ -191,7 +265,9 @@ export default class PracticePresenter {
     }
 
     this.state.isFinished = true;
-    this.timer.destroy();
+
+    // ⭐ 暂停计时（保留监听器）
+    this.timer.pause();
 
     if (this.onComplete) {
       const stats = this.getStats();
@@ -199,7 +275,6 @@ export default class PracticePresenter {
       this.onComplete(stats);
     }
   }
-
   getStats() {
     const elapsed = this.timer.getEffectiveElapsed();
     const peakSpeed = this.input.getPeakSpeed();
@@ -248,6 +323,14 @@ export default class PracticePresenter {
 
   _handleBackspace() {
     this.input.handleBackspace();
+  }
+
+  _startTimer() {
+    this.timer.start();
+  }
+
+  _stopTimer() {
+    this.timer.pause();
   }
 
   // ============================================
@@ -314,7 +397,8 @@ export default class PracticePresenter {
   // ============================================
 
   _setPageDom(pageId) {
-    const isChinese = pageId === "practice-cn";
+    const isChinese =
+      pageId === "practice-cn" || pageId === "practice-phrase-cn";
     const prefix = isChinese ? "cn" : "en";
 
     const textBox = document.getElementById(`${prefix}TextBox`);
@@ -324,18 +408,25 @@ export default class PracticePresenter {
 
     const elements = {
       textBox: textBox,
-      [`${prefix}Speed`]: document.getElementById(`${prefix}Cpm`) ||
+      [`${prefix}Speed`]:
+        document.getElementById(`${prefix}Cpm`) ||
         document.getElementById(`${prefix}Wpm`),
       [`${prefix}Cpm`]: document.getElementById(`${prefix}Cpm`),
       [`${prefix}Wpm`]: document.getElementById(`${prefix}Wpm`),
       [`${prefix}Kpm`]: document.getElementById(`${prefix}Kpm`),
       [`${prefix}Kspc`]: document.getElementById(`${prefix}Kspc`),
       [`${prefix}Accuracy`]: document.getElementById(`${prefix}Accuracy`),
-      [`${prefix}ProgressChars`]: document.getElementById(`${prefix}ProgressChars`),
+      [`${prefix}ProgressChars`]: document.getElementById(
+        `${prefix}ProgressChars`,
+      ),
       [`${prefix}TotalChars`]: document.getElementById(`${prefix}TotalChars`),
       [`${prefix}PeakSpeed`]: document.getElementById(`${prefix}PeakSpeed`),
-      [`${prefix}ProgressFill`]: document.getElementById(`${prefix}ProgressFill`),
-      [`${prefix}ProgressText`]: document.getElementById(`${prefix}ProgressText`),
+      [`${prefix}ProgressFill`]: document.getElementById(
+        `${prefix}ProgressFill`,
+      ),
+      [`${prefix}ProgressText`]: document.getElementById(
+        `${prefix}ProgressText`,
+      ),
       [`${prefix}Timer`]: document.getElementById(`${prefix}Timer`),
     };
 
@@ -357,7 +448,9 @@ export default class PracticePresenter {
     if (!this._selectorHandler) {
       this._selectorHandler = () => {
         if (this.selector?.value) {
-          this.loadArticle(this.state.currentMode, this.selector.value);
+          const type = this.state.currentMode;
+          const contentType = this.currentContentType || "article";
+          this.loadContent(type, contentType, this.selector.value);
         }
       };
     }
@@ -376,7 +469,7 @@ export default class PracticePresenter {
             "确定要重新开始吗？当前进度将丢失。",
             "🔄 重新开始",
             "重新开始",
-            "取消"
+            "取消",
           )
         ) {
           this.reset(type);
@@ -393,7 +486,7 @@ export default class PracticePresenter {
             "确定要停止当前练习吗？当前进度将保存为记录。",
             "⏹️ 停止练习",
             "确认停止",
-            "继续练习"
+            "继续练习",
           )
         ) {
           this.stopPractice();
@@ -432,5 +525,17 @@ export default class PracticePresenter {
       clearTimeout(timer);
       timer = setTimeout(() => fn.apply(this, args), delay);
     };
+  }
+
+  _playSound() {
+    const sound = window.__soundSetting || "off";
+    if (sound === "off") return;
+
+    const soundPath = `./assets/sounds/${sound}.mp3`;
+    try {
+      const audio = new Audio(soundPath);
+      audio.volume = 0.3;
+      audio.play().catch(() => {});
+    } catch (e) {}
   }
 }
