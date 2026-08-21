@@ -4,7 +4,7 @@
  * 位置：modules/practice/PracticeEngine.js
  */
 
-import PracticePresenter from "./core/PracticePresenter.js";
+import PracticePresenter from "./PracticePresenter.js";
 import { formatTime } from "../../utils/stats.js";
 
 export default class PracticeEngine {

@@ -4,7 +4,7 @@
  * 位置：modules/practice/controller/InputController.js
  */
 
-import { calcStats } from "../model/StatsEngine.js";
+import { calcStats } from "./StatsEngine.js";
 
 const STATUS = {
   PENDING: "pending",

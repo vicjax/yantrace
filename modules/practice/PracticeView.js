@@ -4,7 +4,7 @@
  * 位置：modules/practice/view/PracticeView.js
  */
 
-import { formatTime } from "../../../utils/stats.js";
+import { formatTime } from "../../utils/stats.js";
 
 export default class PracticeView {
   constructor() {

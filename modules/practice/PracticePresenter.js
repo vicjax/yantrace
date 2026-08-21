@@ -4,17 +4,16 @@
  * 位置：modules/practice/core/PracticePresenter.js
  */
 
-import PracticeState from "../model/PracticeState.js";
-import PracticeView from "../view/PracticeView.js";
-import TimerController from "../controller/TimerController.js";
-import InputController from "../controller/InputController.js";
-import ContentFactory from "../strategies/ContentFactory.js";
+import PracticeState from "./PracticeState.js";
+import PracticeView from "./PracticeView.js";
+import TimerController from "./TimerController.js";
+import InputController from "./InputController.js";
+import ContentFactory from "./ContentFactory.js";
+import { calcStats } from "./StatsEngine.js";
+import ChineseStrategy from "./ChineseStrategy.js";
+import EnglishStrategy from "./EnglishStrategy.js";
 
-import Modal from "../../Modal.js";
-import { calcStats } from "../model/StatsEngine.js";
-
-import ChineseStrategy from "../input/ChineseStrategy.js";
-import EnglishStrategy from "../input/EnglishStrategy.js";
+import Modal from "../Modal.js";
 
 const STATUS = {
   PENDING: "pending",
