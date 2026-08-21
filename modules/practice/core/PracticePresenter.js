@@ -97,16 +97,15 @@ export default class PracticePresenter {
   // ============================================
 
   enter(pageId) {
-    // 根据页面 ID 确定语言和内容类型
     let type = "chinese";
     let contentType = "article";
 
-    if (pageId === "practice-cn" || pageId === "practice-phrase-cn") {
+    if (pageId === "practice-cn" || pageId === "practice-phrase") {
       type = "chinese";
-      contentType = pageId === "practice-phrase-cn" ? "phrase" : "article";
-    } else if (pageId === "practice-en" || pageId === "practice-phrase-en") {
+      contentType = pageId === "practice-phrase" ? "phrase" : "article";
+    } else if (pageId === "practice-en") {
       type = "english";
-      contentType = pageId === "practice-phrase-en" ? "phrase" : "article";
+      contentType = "article";
     }
 
     this.currentContentType = contentType;
@@ -397,22 +396,21 @@ export default class PracticePresenter {
   // ============================================
 
   _setPageDom(pageId) {
-    const isChinese =
-      pageId === "practice-cn" || pageId === "practice-phrase-cn";
+    // 判断语言
+    const isChinese = pageId === "practice-cn" || pageId === "practice-phrase";
     const prefix = isChinese ? "cn" : "en";
 
     const textBox = document.getElementById(`${prefix}TextBox`);
-    this.selector = document.getElementById(`${prefix}ArticleSelect`);
+    this.selector = document.getElementById(`${prefix}Select`);
     this.resetBtn = document.getElementById(`${prefix}ResetBtn`);
     this.stopBtn = document.getElementById(`${prefix}StopBtn`);
 
     const elements = {
       textBox: textBox,
       [`${prefix}Speed`]:
+        document.getElementById(`${prefix}Speed`) ||
         document.getElementById(`${prefix}Cpm`) ||
         document.getElementById(`${prefix}Wpm`),
-      [`${prefix}Cpm`]: document.getElementById(`${prefix}Cpm`),
-      [`${prefix}Wpm`]: document.getElementById(`${prefix}Wpm`),
       [`${prefix}Kpm`]: document.getElementById(`${prefix}Kpm`),
       [`${prefix}Kspc`]: document.getElementById(`${prefix}Kspc`),
       [`${prefix}Accuracy`]: document.getElementById(`${prefix}Accuracy`),
@@ -433,7 +431,6 @@ export default class PracticePresenter {
     this.view.bind(pageId, elements);
     this._bindUIEvents();
   }
-
   _bindUIEvents() {
     if (this.selector && this._selectorHandler) {
       this.selector.removeEventListener("change", this._selectorHandler);

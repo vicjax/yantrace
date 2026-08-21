@@ -19,6 +19,7 @@ import {
   getHomeHtml,
   getPracticeCnHtml,
   getPracticeEnHtml,
+  getPracticePhraseHtml,
 } from "./modules/PageTemplates.js";
 
 // Model 层
@@ -26,6 +27,7 @@ import { ArticleModel } from "./features/article/index.js";
 import { UserModel } from "./features/user/index.js";
 import { SettingsModel } from "./features/settings/index.js";
 import { RecordsModel } from "./features/records/index.js";
+import { PhraseModel } from "./features/phrase/index.js";
 
 // Presenter 层
 import UserPresenter from "./features/user/index.js";
@@ -102,6 +104,7 @@ class App {
     this.userService = new UserModel();
     this.historyService = new RecordsModel();
     this.settingsService = new SettingsModel();
+    this.phraseService = new PhraseModel();
     console.log("📚 服务层初始化完成");
   }
 
@@ -139,6 +142,7 @@ class App {
     // 打字引擎
     this.practiceEngine = new PracticeEngine({
       articleService: this.articleService,
+      phraseService: this.phraseService,
       onComplete: (stats) => this._onPracticeComplete(stats),
       getSettings: () => this._getCurrentSettings(),
     });
@@ -265,6 +269,9 @@ class App {
       case "practice-en":
         html = getPracticeEnHtml();
         break;
+      case "practice-phrase":
+        html = getPracticePhraseHtml();
+        break;
       case "user":
       case "history":
       case "article-management":
@@ -285,39 +292,45 @@ class App {
   // 页面事件绑定
   // ============================================
 
- _bindPageEvents(pageId) {
-  // 首页按钮
-  if (pageId === "home") {
-    document.querySelectorAll(".home-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const target = btn.dataset.target;
-        if (target && this.navigator) {
-          this.navigator.goTo(target);
-        }
-      });
-    });
-  }
-
-  if (pageId === "practice-cn" || pageId === "practice-en") {
-    // ⭐ 重置和停止按钮由 PracticeEngine._bindUIEvents() 统一管理
-    // 这里只保留限时模式下拉（需要保存到 settingsService）
-    const timeSelect = document.getElementById(
-      pageId === "practice-cn" ? "cnTimeLimitSelect" : "enTimeLimitSelect",
-    );
-    if (timeSelect) {
-      timeSelect.addEventListener("change", () => {
-        const seconds = parseInt(timeSelect.value) || 0;
-        const currentMode = this.practiceEngine?.currentMode || "chinese";
-        this.practiceEngine?.setTimeLimit(seconds);
-        this.practiceEngine?.reset(currentMode);
-        const user = this.userService?.getCurrent();
-        if (user) {
-          this.settingsService?.setItem(user.id, "timeLimit", seconds);
-        }
+  _bindPageEvents(pageId) {
+    // 首页按钮
+    if (pageId === "home") {
+      document.querySelectorAll(".home-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          if (target && this.navigator) {
+            this.navigator.goTo(target);
+          }
+        });
       });
     }
+
+    // 所有练习页面统一处理
+    if (
+      pageId === "practice-cn" ||
+      pageId === "practice-en" ||
+      pageId === "practice-phrase"
+    ) {
+      // 限时模式下拉（中英文分别获取）
+      const timeSelect = document.getElementById(
+        pageId === "practice-en" ? "enTimeLimitSelect" : "cnTimeLimitSelect",
+      );
+      if (timeSelect) {
+        timeSelect.addEventListener("change", () => {
+          const seconds = parseInt(timeSelect.value) || 0;
+          const currentMode = this.practiceEngine?.currentMode || "chinese";
+          this.practiceEngine?.setTimeLimit(seconds);
+          this.practiceEngine?.reset(currentMode);
+          const user = this.userService?.getCurrent();
+          if (user) {
+            this.settingsService?.setItem(user.id, "timeLimit", seconds);
+          }
+        });
+      }
+
+      // 重置和停止按钮由 PracticeEngine 统一管理，不需要在这里绑定
+    }
   }
-}
 
   // ============================================
   // 全局事件
@@ -386,7 +399,11 @@ class App {
     const container = document.getElementById("pageContainer");
     if (!container) return;
 
-    if (pageId === "practice-cn" || pageId === "practice-en") {
+    if (
+      pageId === "practice-cn" ||
+      pageId === "practice-en" ||
+      pageId === "practice-phrase"
+    ) {
       // 加载限时模式设置
       const settings = this._getCurrentSettings();
       if (settings && settings.timeLimit !== undefined) {
