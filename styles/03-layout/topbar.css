@@ -1,14 +1,15 @@
 /* ============================================
-   砚迹（YanTrace）- 顶部栏布局
+   砚迹（YanTrace）- 顶部栏
    ============================================ */
 
 .topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing-lg);
   padding-bottom: var(--spacing-md);
   border-bottom: 1px solid var(--border-default);
+  margin-bottom: var(--spacing-lg);
+  flex-shrink: 0;
 }
 
 .topbar-left {
@@ -22,7 +23,6 @@
   gap: var(--spacing-xs);
 }
 
-/* ----- Logo ----- */
 .logo {
   font-size: 22px;
   font-weight: 300;
@@ -32,7 +32,7 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-/* ----- 顶部栏导航按钮（文库/墨痕/设置/用户） ----- */
+
 .topbar-btn {
   background: transparent;
   border: none;
@@ -53,7 +53,6 @@
   background: var(--bg-surface-hover);
 }
 
-/* ----- 用户（保持相同样式） ----- */
 .topbar-user {
   background: transparent;
   border: none;
@@ -74,7 +73,6 @@
   background: var(--bg-surface-hover);
 }
 
-/* ----- 分隔符（可选） ----- */
 .topbar-separator {
   width: 1px;
   height: 20px;

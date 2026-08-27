@@ -14,7 +14,7 @@ const STORAGE_KEY = 'yantrace_settings';
 // 默认设置
 const DEFAULT_SETTINGS = {
     fontSize: 22,
-    pageHeight: 550,
+    pageSize: 'medium',   // 'small' | 'medium' | 'large'
     theme: 'dark',
     sound: 'off',
     timeLimit: 0,  // 0 = 无限时, 30, 60, 120

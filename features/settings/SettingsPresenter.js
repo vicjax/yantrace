@@ -6,6 +6,14 @@ import BasePresenter from "../../core/BasePresenter.js";
 import SettingsView from "./SettingsView.js";
 import Modal from "../../modules/Modal.js";
 
+const SIZE_PRESETS = {
+    small:  { width: 640, height: 480 },
+    medium: { width: 880, height: 620 },
+    large:  { width: 1100, height: 760 },
+};
+
+
+
 export default class SettingsPresenter extends BasePresenter {
   constructor(options = {}) {
     super(options);
@@ -149,21 +157,30 @@ export default class SettingsPresenter extends BasePresenter {
       console.warn("音效播放失败:", e);
     }
   }
+  
 
   /**
    * 应用设置到页面
    */
   applySettings(settings) {
     const fontSize = settings.fontSize || 22;
-    const pageHeight = settings.pageHeight || 550;
     const theme = settings.theme || "dark";
+    const pageSize = settings.pageSize || "medium";
+    const size = SIZE_PRESETS[pageSize];
 
-    // 1. CSS 变量
+    // 1. 字体
     document.documentElement.style.setProperty("--font-size", fontSize + "px");
 
-    // 2. 文章区高度
+    // 2. 页面尺寸
+    const app = document.getElementById("app");
+    if (app) {
+      app.style.maxWidth = size.width + "px";
+      app.style.minHeight = size.height + "px";
+    }
+
+    // 3. 文章区高度
     const fixedHeight = 166;
-    const textBoxHeight = Math.max(pageHeight - fixedHeight, 200);
+    const textBoxHeight = Math.max(size.height - fixedHeight, 200);
 
     document.querySelectorAll(".text-box").forEach((el) => {
       el.style.fontSize = fontSize + "px";
@@ -176,21 +193,12 @@ export default class SettingsPresenter extends BasePresenter {
       el.style.lineHeight = lineHeight / fontSize;
     });
 
-    // 3. 页面容器
-    const container = document.querySelector(".page-container");
-    if (container) {
-      container.style.minHeight = pageHeight + "px";
-    }
-
     // 4. 主题
-    // 4. 主题（支持多主题）
-    // 清除所有主题类
     document.body.classList.remove(
       "light-theme",
       "eye-care-theme",
       "warm-yellow-theme",
     );
-    // 根据主题名称添加对应类
     if (theme === "light") {
       document.body.classList.add("light-theme");
     } else if (theme === "eye-care") {
@@ -198,11 +206,11 @@ export default class SettingsPresenter extends BasePresenter {
     } else if (theme === "warm-yellow") {
       document.body.classList.add("warm-yellow-theme");
     }
-    // theme === "dark" 时，移除所有主题类（默认暗色）
-    // 5. 音效设置
+
+    // 5. 音效
     window.__soundSetting = settings.sound || "off";
 
-    // 6. 更新浮动输入框位置
+    // 6. 浮动输入框
     if (window.app?.practiceEngine?.strategy?.updatePosition) {
       setTimeout(() => {
         window.app.practiceEngine.strategy.updatePosition();

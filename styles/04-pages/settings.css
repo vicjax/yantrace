@@ -136,6 +136,45 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* ============================================
+   设置页 - 尺寸选择器
+   ============================================ */
+
+.size-selector {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-surface-strong);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  border: 1px solid var(--border-default);
+}
+
+.size-btn {
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 4px 14px;
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  font-family: inherit;
+  font-weight: 500;
+}
+
+.size-btn:hover {
+  color: var(--text-primary);
+}
+
+.size-btn.active {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.size-btn.active:hover {
+  background: var(--color-accent-hover);
+}
+
 /* ----- 音效下拉 + 试听按钮 ----- */
 .settings-control select {
   padding: 6px 12px;

@@ -1,12 +1,14 @@
 /* ============================================
-   砚迹（YanTrace）- 首页网格布局
+   砚迹（YanTrace）- 首页网格组件
    ============================================ */
-/* 修改：自适应列数 */
+
 .home-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: var(--spacing-md);
-  margin-bottom: 28px;
+  max-width: 550px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .home-btn {
@@ -19,6 +21,11 @@
   text-align: center;
   color: var(--text-primary);
   font-family: inherit;
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .home-btn:hover {
@@ -30,13 +37,21 @@
 
 .home-btn-icon {
   display: block;
-  font-size: 40px;
-  margin-bottom: var(--spacing-sm);
+  font-size: 32px;
+  margin-bottom: var(--spacing-xs);
 }
 
 .home-btn-label {
   font-size: var(--font-size-md);
-  font-weight: 500;
+  font-weight: 600;
+}
+
+.home-btn-desc {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--text-dim);
+  margin-top: var(--spacing-xs);
+  font-weight: 400;
 }
 
 .home-section {
@@ -55,45 +70,9 @@
   padding-left: var(--spacing-xs);
 }
 
-/* 首页练习区垂直居中 */
 .home-section-practice {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 55vh;
-}
-
-/* ----- 练习区卡片（修改：缩小尺寸） ----- */
-.home-section-practice .home-btn {
-  padding: 24px 12px;
-  font-size: var(--font-size-base);
-  border-width: 2px;
-  min-height: 110px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.home-section-practice .home-btn:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-card-hover, 0 8px 30px rgba(79, 70, 229, 0.25));
-}
-
-.home-section-practice .home-btn .home-btn-icon {
-  font-size: 32px;
-  margin-bottom: var(--spacing-xs);
-}
-
-.home-section-practice .home-btn .home-btn-label {
-  font-size: var(--font-size-md);
-  font-weight: 600;
-}
-
-.home-section-practice .home-btn .home-btn-desc {
-  display: block;
-  font-size: var(--font-size-sm);
-  color: var(--text-dim);
-  margin-top: var(--spacing-xs);
-  font-weight: 400;
+  /* 高度由父容器控制 */
 }
