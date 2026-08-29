@@ -4,7 +4,7 @@
  * 位置：modules/practice/controller/InputController.js
  */
 
-import { calcStats } from "../model/StatsEngine.js";
+import { calcStats } from "./StatsEngine.js";
 
 const STATUS = {
   PENDING: "pending",
@@ -88,7 +88,7 @@ export default class InputController {
     this._view.renderChars(
       this._state.chars,
       this._state.currentCharIndex,
-      this._state.isFinished
+      this._state.isFinished,
     );
     this._view.updateCurrentChar(this._state.currentCharIndex);
 
@@ -137,7 +137,7 @@ export default class InputController {
     this._view.renderChars(
       this._state.chars,
       this._state.currentCharIndex,
-      this._state.isFinished
+      this._state.isFinished,
     );
     this._updateProgress();
     this._view.scrollToChar(this._state.currentCharIndex);
@@ -150,6 +150,7 @@ export default class InputController {
     this._state.keystrokes++;
     this._timer.start();
     this._updateProgress();
+    this._playSound();
   }
 
   /**
@@ -159,13 +160,16 @@ export default class InputController {
     this._state.backspaces++;
     this._state.keystrokes++;
     this._updateProgress();
+    this._playSound();
   }
 
   /**
    * 获取峰值速度
    */
   getPeakSpeed() {
-    return this._state.currentMode === "chinese" ? this._peakCpm : this._peakWpm;
+    return this._state.currentMode === "chinese"
+      ? this._peakCpm
+      : this._peakWpm;
   }
 
   /**
@@ -211,11 +215,17 @@ export default class InputController {
 
   _getStats() {
     const elapsed = this._timer.getEffectiveElapsed();
-    return calcStats(
-      this._state,
-      elapsed,
-      this._peakCpm,
-      this._peakWpm
-    );
+    return calcStats(this._state, elapsed, this._peakCpm, this._peakWpm);
+  }
+  _playSound() {
+    const sound = window.__soundSetting || "off";
+    if (sound === "off") return;
+
+    const soundPath = `./assets/sounds/${sound}.mp3`;
+    try {
+      const audio = new Audio(soundPath);
+      audio.volume = 0.3;
+      audio.play().catch(() => {});
+    } catch (e) {}
   }
 }

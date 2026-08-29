@@ -1,53 +1,58 @@
 # 砚迹（YanTrace）
 
-> 本地运行、开箱即用的打字练习软件
+本地运行、零依赖的打字练习工具。
 
-## 项目简介
 
-砚迹是一款纯前端、本地运行的中英文打字练习工具。打开浏览器即可使用，所有数据存储在本地，无需网络，无需安装，无广告。
+## 功能
 
-## 功能概览
+- 文章练习（中文·英文）
+- 词组练习（中文·英文）
+- 文章管理 · 历史记录
+- 多主题 · 音效 · 多用户
 
-- 🀄 中文打字练习
-- 🔤 英文打字练习
-- 📄 文章管理
-- 📊 历史记录
-- ⚙️ 设置（弹窗）
-- 👤 用户管理（下拉菜单）
 
 ## 技术栈
 
-| 项目 | 选型                        |
-| ---- | --------------------------- |
-| 语言 | 原生 JavaScript (ES Module) |
-| 样式 | 原生 CSS                    |
-| 存储 | localStorage                |
-| 框架 | 无                          |
-| 依赖 | 无                          |
+原生 JavaScript (ES Module) · CSS 模块化 · localStorage · 零依赖
+
 
 ## 快速开始
 
-### 方式一：VS Code Live Server（推荐）
+Live Server → `index.html`
 
-1. 安装 Live Server 插件
-2. 右键 `index.html` → Open with Live Server
-
-### 方式二：直接打开
-
-双击 `index.html` 用浏览器打开（部分功能可能受限）
 
 ## 数据存储
 
-所有数据存储在浏览器 localStorage 中，不经过任何服务器。
+| Key | 内容 |
+|-----|------|
+| `yantrace_articles` | 文章 |
+| `yantrace_phrases` | 词组 |
+| `yantrace_users` | 用户 |
+| `yantrace_history` | 历史 |
+| `yantrace_settings` | 设置 |
 
-| Key                 | 存储内容     |
-| ------------------- | ------------ |
-| `yantrace_articles` | 所有文章     |
-| `yantrace_users`    | 所有用户     |
-| `yantrace_history`  | 所有历史记录 |
-| `yantrace_settings` | 所有用户设置 |
+
+## 开发规范
+
+### 命名
+| 类型 | 规范 | 示例 |
+|------|------|------|
+| 文件名 | 小写 | `practice.js` |
+| 类名 | PascalCase | `PracticeEngine` |
+| 方法/函数 | camelCase | `getArticles()` |
+| 常量 | UPPER_SNAKE_CASE | `STORAGE_KEY` |
+| 导出 | 主类默认导出，工具函数具名导出 | `export default` / `export function` |
+
+### 模板与 DOM
+- 所有练习页面共用模板，通过参数区分
+- DOM ID 统一不加前缀
+
+### 模块通信
+- 模块间通过事件或接口通信，不直接操作内部状态
+- 新增内容类型走策略模式，不改引擎核心
+
 
 ## 文档
 
-- 详细设计：[ARCHITECTURE.md](./ARCHITECTURE.md)
-- 版本状态：[CHANGELOG.md](./CHANGELOG.md)
+- [架构设计](./ARCHITECTURE.md)
+- [版本状态](./CHANGELOG.md)

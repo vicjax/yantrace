@@ -9,69 +9,58 @@
 
   <body>
     <div id="app">
-      <!-- ===== 顶部栏（所有页面共用） ===== -->
+      <!-- ===== 顶部栏 ===== -->
       <header class="topbar">
         <div class="topbar-left">
-          <span class="logo">砚迹</span>
+          <span class="logo" id="homeLogo">砚迹</span>
         </div>
         <div class="topbar-right">
-          <button class="settings-gear" id="settingsGearBtn" title="设置">
-            ⚙️
-          </button>
-          <span class="user-name" id="userName" title="点击切换用户">
-            👤 <span id="userNameText">未登录</span>
-            <span id="userNameArrow" class="user-name-arrow">▼</span>
+          <button class="topbar-btn" id="topbarArticleBtn">🏯 文库</button>
+          <button class="topbar-btn" id="topbarHistoryBtn">⏳ 墨痕</button>
+          <button class="topbar-btn" id="settingsGearBtn">⚙️ 设置</button>
+          <span class="topbar-user" id="userName">
+            👤 <span id="userNameText">砚客</span>
           </span>
         </div>
       </header>
 
-      <!-- ===== 页面容器（动态渲染） ===== -->
+      <!-- ===== 页面容器 ===== -->
       <div id="pageContainer" class="page-container"></div>
+    </div>
 
-      <!-- ===== 设置弹窗 ===== -->
-      <div id="settingsModal" class="settings-modal" style="display: none">
-        <div class="settings-modal-overlay"></div>
-        <div class="settings-modal-content">
-          <!-- 由 SettingsView 渲染 -->
+    <!-- ===== 设置弹窗 ===== -->
+    <div id="settingsModal" class="settings-modal" style="display: none">
+      <div class="settings-modal-overlay"></div>
+      <div class="settings-modal-content"></div>
+    </div>
+
+    <!-- ===== 结果弹窗 ===== -->
+    <div class="result-overlay" id="resultOverlay">
+      <div class="result-card">
+        <h2 id="resultTitle">🎉 练习完成！</h2>
+        <div class="result-main">
+          <span class="result-number" id="resultMainNumber">0</span>
+          <span class="result-label" id="resultMainLabel">CPM</span>
         </div>
-      </div>
-
-      <!-- ===== 结果弹窗 ===== -->
-      <div class="result-overlay" id="resultOverlay">
-        <div class="result-card">
-          <h2 id="resultTitle">🎉 练习完成！</h2>
-
-          <!-- 主速度 -->
-          <div class="result-main">
-            <span class="result-number" id="resultMainNumber">0</span>
-            <span class="result-label" id="resultMainLabel">CPM</span>
-          </div>
-
-          <!-- 简略数据 -->
-          <div class="result-summary">
-            <span>准确率 <b id="resultAccuracy">0%</b></span>
-            <span>用时 <b id="resultTime">0s</b></span>
-          </div>
-
-          <!-- 统计网格（隐藏，仅详细模式使用） -->
-          <div class="result-grid" id="resultGrid" style="display: none"></div>
-
-          <!-- 按钮 -->
-          <div class="result-actions">
-            <button class="result-btn restart" id="resultRestartBtn">
-              🔄 再来一次
-            </button>
-            <button class="result-btn detail" id="resultDetailBtn">
-              📊 查看详细数据
-            </button>
-            <button class="result-btn home" id="resultHomeBtn">
-              🏠 返回首页
-            </button>
-          </div>
+        <div class="result-summary">
+          <span>准确率 <b id="resultAccuracy">0%</b></span>
+          <span>用时 <b id="resultTime">0s</b></span>
+        </div>
+        <div class="result-grid" id="resultGrid" style="display: none"></div>
+        <div class="result-actions">
+          <button class="result-btn restart" id="resultRestartBtn">
+            🔄 再来一次
+          </button>
+          <button class="result-btn detail" id="resultDetailBtn">
+            📊 查看详细数据
+          </button>
+          <button class="result-btn home" id="resultHomeBtn">
+            🏠 返回首页
+          </button>
         </div>
       </div>
     </div>
-
+    <script src="https://sdk.jinrishici.com/v2/browser/jinrishici.js"></script>
     <script type="module" src="app.js"></script>
   </body>
 </html>

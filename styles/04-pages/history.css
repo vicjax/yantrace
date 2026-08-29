@@ -212,12 +212,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center; /* 添加：垂直居中 */
   padding: var(--spacing-sm) 0;
 }
 
 .records-detail-speed {
   display: flex;
-  align-items: baseline;
+  align-items: center; /* 改为 center，替代 baseline */
   justify-content: center;
   gap: 6px;
   padding: var(--spacing-sm) 0;
@@ -227,9 +228,8 @@
   font-size: var(--font-size-xl);
   font-weight: 700;
   color: #60a5fa;
-  line-height: 1;
+  line-height: 1.2; /* 从 1 改为 1.2，增加一点底部空间 */
 }
-
 .records-detail-label {
   font-size: var(--font-size-lg);
   color: var(--text-muted);

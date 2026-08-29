@@ -26,10 +26,12 @@ export default class SettingsView {
   }
 
   getSettings() {
+    const activeBtn = this.sizeSelector?.querySelector(".size-btn.active");
+    const pageSize = activeBtn?.dataset.size || "medium";
     return {
       fontSize: parseInt(this.fontSizeSlider?.value) || 22,
-      pageHeight: parseInt(this.pageHeightSlider?.value) || 550,
-      theme: this.themeSelect?.value || "dark", // ← 直接读取下拉框值
+      pageSize: pageSize,
+      theme: this.themeSelect?.value || "dark",
       sound: this.soundSelect?.value || "off",
     };
   }
@@ -77,17 +79,21 @@ export default class SettingsView {
                 </div>
 
                 <!-- 布局 -->
-                <div class="settings-section">
-                    <div class="section-label">📐 布局</div>
+                
+                  <div class="settings-section">
+                      <div class="section-label">📐 布局</div>
 
-                    <div class="settings-row">
-                        <span class="settings-label">页面高度</span>
-                        <div class="settings-control">
-                            <input type="range" id="pageHeightSlider" min="400" max="800" step="10" />
-                            <span class="settings-value" id="pageHeightValue">550px</span>
-                        </div>
-                    </div>
-                </div>
+                      <div class="settings-row">
+                          <span class="settings-label">页面尺寸</span>
+                          <div class="settings-control">
+                              <div class="size-selector" id="sizeSelector">
+                                  <button class="size-btn" data-size="small">小</button>
+                                  <button class="size-btn active" data-size="medium">中</button>
+                                  <button class="size-btn" data-size="large">大</button>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
 
                 <!-- 声音 -->
                 <div class="settings-section">
@@ -133,6 +139,7 @@ export default class SettingsView {
     this.saveBtn = document.getElementById("settingsSaveBtn");
     this.resetBtn = document.getElementById("settingsResetBtn");
     this.closeBtn = document.getElementById("settingsCloseBtn");
+    this.sizeSelector = document.getElementById("sizeSelector");
   }
 
   _bindEvents() {
@@ -157,6 +164,18 @@ export default class SettingsView {
       this.pageHeightSlider.addEventListener("input", () => {
         const val = this.pageHeightSlider.value;
         this.pageHeightValue.textContent = val + "px";
+      });
+    }
+    // 尺寸选择事件
+    if (this.sizeSelector) {
+      this.sizeSelector.addEventListener("click", (e) => {
+        const btn = e.target.closest(".size-btn");
+        if (!btn) return;
+        this.sizeSelector
+          .querySelectorAll(".size-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        if (this.onSave) this.onSave();
       });
     }
 
@@ -211,26 +230,24 @@ export default class SettingsView {
   _populateForm() {
     const s = this.settings;
 
-    // 主题 - 改为下拉选择
     if (this.themeSelect) {
       this.themeSelect.value = s.theme || "dark";
     }
 
-    // 字体
     const fontSize = s.fontSize || 22;
     if (this.fontSizeSlider) {
       this.fontSizeSlider.value = fontSize;
       this.fontSizeValue.textContent = fontSize + "px";
     }
 
-    // 页面高度
-    const pageHeight = s.pageHeight || 550;
-    if (this.pageHeightSlider) {
-      this.pageHeightSlider.value = pageHeight;
-      this.pageHeightValue.textContent = pageHeight + "px";
+    // 尺寸选中
+    const size = s.pageSize || "medium";
+    if (this.sizeSelector) {
+      this.sizeSelector.querySelectorAll(".size-btn").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.size === size);
+      });
     }
 
-    // 音效
     if (this.soundSelect) {
       this.soundSelect.value = s.sound || "off";
     }

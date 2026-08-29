@@ -142,12 +142,15 @@ export default class RecordsView {
     const dateStr = this._formatDate(data.createdAt);
     const rankText =
       comparison.total > 0 ? `${comparison.rank}/${comparison.total}` : "--";
+    // 第 145-150 行
     const modeLabel =
       data.mode === "practice-cn"
         ? "中文练习"
         : data.mode === "practice-en"
           ? "英文练习"
-          : data.mode;
+          : data.mode === "practice-phrase-cn"
+            ? "词组练习"
+            : data.mode;
     const totalChars = data.correct + data.errors + data.fixed;
 
     return `

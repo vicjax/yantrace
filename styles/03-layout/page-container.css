@@ -2,9 +2,15 @@
    砚迹（YanTrace）- 页面容器
    ============================================ */
 
+/* ============================================
+   砚迹（YanTrace）- 页面容器
+   ============================================ */
+
 .page-container {
+  flex: 1;
   display: flex;
   flex-direction: column;
+  overflow: hidden; /* 防止内容溢出 */
   animation: fadeIn 0.25s ease;
 }
 
@@ -15,6 +21,7 @@
   gap: var(--spacing-sm);
   margin-bottom: var(--spacing-md);
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .mode-header h2 {
@@ -24,10 +31,7 @@
   flex: 1;
 }
 
-/* ============================================
-   限时模式切换容器
-   ============================================ */
-
+/* ----- 限时模式切换 ----- */
 .time-limit-toggle {
   display: flex;
   gap: 2px;

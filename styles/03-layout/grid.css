@@ -1,24 +1,32 @@
 /* ============================================
-   砚迹（YanTrace）- 首页网格布局
+   砚迹（YanTrace）- 首页网格组件
    ============================================ */
 
 .home-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: var(--spacing-md);
-  margin-bottom: 28px;
+  max-width: 700px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .home-btn {
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
-  padding: var(--spacing-xl) 20px;
+  padding: var(--spacing-md) var(--spacing-sm);
   cursor: pointer;
   transition: var(--transition-slow);
   text-align: center;
   color: var(--text-primary);
   font-family: inherit;
+  width: 100%;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .home-btn:hover {
@@ -30,13 +38,21 @@
 
 .home-btn-icon {
   display: block;
-  font-size: 40px;
-  margin-bottom: var(--spacing-sm);
+  font-size: 32px;
+  margin-bottom: var(--spacing-xs);
 }
 
 .home-btn-label {
   font-size: var(--font-size-md);
-  font-weight: 500;
+  font-weight: 600;
+}
+
+.home-btn-desc {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--text-dim);
+  margin-top: var(--spacing-xs);
+  font-weight: 400;
 }
 
 .home-section {
@@ -55,77 +71,8 @@
   padding-left: var(--spacing-xs);
 }
 
-/* ----- 练习区卡片（大卡片） ----- */
-.home-section-practice .home-btn {
-  padding: 48px 20px;
-  font-size: var(--font-size-lg);
-  border-width: 2px;
-}
-
-.home-section-practice .home-btn:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-card-hover, 0 8px 30px rgba(79, 70, 229, 0.25));
-}
-
-.home-section-practice .home-btn .home-btn-icon {
-  font-size: 52px;
-}
-
-.home-section-practice .home-btn .home-btn-label {
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-}
-
-.home-section-practice .home-btn .home-btn-desc {
-  display: block;
-  font-size: var(--font-size-sm);
-  color: var(--text-dim);
-  margin-top: var(--spacing-xs);
-  font-weight: 400;
-}
-
-/* ----- 管理区卡片（小卡片） ----- */
-.home-section-management .home-grid {
+.home-section-practice {
   display: flex;
-  gap: var(--spacing-sm);
-  flex-wrap: wrap;
-}
-
-.home-section-management .home-btn {
-  flex: 1;
-  min-width: 80px;
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: transparent;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: var(--transition-base);
-  color: var(--text-muted);
-  font-family: inherit;
-  text-align: center;
-}
-
-.home-section-management .home-btn:hover {
-  background: var(--bg-surface-hover);
-  border-color: var(--color-accent);
-  color: var(--text-primary);
-}
-
-.home-section-management .home-btn .home-btn-icon {
-  display: block;
-  font-size: 20px;
-  margin-bottom: 2px;
-}
-
-.home-section-management .home-btn .home-btn-label {
-  font-size: var(--font-size-sm);
-}
-
-.home-section-management .home-section-title {
-  font-size: var(--font-size-sm);
-  color: #444466;
-  letter-spacing: 1px;
-  border-top: 1px solid var(--border-default);
-  padding-top: 20px;
-  margin-top: var(--spacing-sm);
+  flex-direction: column;
+  justify-content: center;
 }

@@ -12,13 +12,14 @@ import * as Helpers from "./utils/helpers.js";
 
 import Navigator from "./modules/navigator.js";
 import PracticeEngine from "./modules/practice/index.js";
-import ResultToast from "./modules/ResultToast.js";
+import ResultToast from "./modules/practice/ResultToast.js";
 import Modal from "./modules/Modal.js";
 
 import {
   getHomeHtml,
-  getPracticeCnHtml,
-  getPracticeEnHtml,
+  getPracticeHtml,
+  PRACTICE_PAGES,
+  fetchSlogan,
 } from "./modules/PageTemplates.js";
 
 // Model 层
@@ -26,6 +27,7 @@ import { ArticleModel } from "./features/article/index.js";
 import { UserModel } from "./features/user/index.js";
 import { SettingsModel } from "./features/settings/index.js";
 import { RecordsModel } from "./features/records/index.js";
+import { PhraseModel } from "./features/phrase/index.js";
 
 // Presenter 层
 import UserPresenter from "./features/user/index.js";
@@ -102,6 +104,7 @@ class App {
     this.userService = new UserModel();
     this.historyService = new RecordsModel();
     this.settingsService = new SettingsModel();
+    this.phraseService = new PhraseModel();
     console.log("📚 服务层初始化完成");
   }
 
@@ -139,6 +142,7 @@ class App {
     // 打字引擎
     this.practiceEngine = new PracticeEngine({
       articleService: this.articleService,
+      phraseService: this.phraseService,
       onComplete: (stats) => this._onPracticeComplete(stats),
       getSettings: () => this._getCurrentSettings(),
     });
@@ -161,6 +165,9 @@ class App {
       },
     );
 
+    // 在 init 方法中，启动时确保没有残留时钟
+    this._clockInterval = null;
+
     // 设置 Presenter
     this.settingsPresenter = new SettingsPresenter({
       settingsService: this.settingsService,
@@ -168,12 +175,7 @@ class App {
     });
 
     // 用户管理 Presenter
-    this.userPresenter = new UserPresenter({
-      userService: this.userService,
-      settingsService: this.settingsService,
-      historyService: this.historyService,
-      onUserChanged: () => {},
-    });
+    this.userPresenter = this._getUserPresenter();
     this.userPresenter.updateTopbar();
     this.userPresenter.setCurrentPage("home");
 
@@ -201,6 +203,7 @@ class App {
         onUserChanged: () => {
           this.currentUser = this.userService.getCurrent();
           this.userPresenter?.updateTopbar();
+          this._applyUserSettings();
         },
       });
     }
@@ -253,71 +256,115 @@ class App {
     const container = document.getElementById("pageContainer");
     if (!container) return;
 
-    let html = "";
-
-    switch (pageId) {
-      case "home":
-        html = getHomeHtml();
-        break;
-      case "practice-cn":
-        html = getPracticeCnHtml();
-        break;
-      case "practice-en":
-        html = getPracticeEnHtml();
-        break;
-      case "user":
-      case "history":
-      case "article-management":
-      case "settings":
-        html = "";
-        break;
-      default:
-        html = '<p class="placeholder">页面不存在</p>';
+    if (pageId === "home") {
+      container.innerHTML = getHomeHtml(null);
+      this._applyUserSettings();
+      this._bindPageEvents(pageId);
+      this.currentPageId = pageId;
+      this._startHomeClock();
+      this._fetchAndUpdateSlogan();
+      return;
     }
 
-    container.innerHTML = html;
-    this._applyUserSettings();
-    this._bindPageEvents(pageId);
+    const config = PRACTICE_PAGES.find((p) => p.id === pageId);
+    if (config) {
+      container.innerHTML = getPracticeHtml(config);
+      this._applyUserSettings();
+      this._bindPageEvents(pageId);
+      this.currentPageId = pageId;
+      return;
+    }
+
+    container.innerHTML = "";
     this.currentPageId = pageId;
+  }
+
+  async _fetchAndUpdateSlogan() {
+    try {
+      const sloganData = await fetchSlogan();
+      const sloganText = document.getElementById("homeSloganText");
+      if (sloganText) {
+        sloganText.textContent = sloganData.content;
+      }
+      const sourceEl = document.getElementById("homeSloganSource");
+      if (sourceEl) {
+        sourceEl.textContent = sloganData.source
+          ? `—— ${sloganData.source}`
+          : "";
+      }
+    } catch (e) {
+      console.warn("获取诗词失败:", e);
+    }
+  }
+
+  /**
+   * 首页时钟更新
+   */
+  _startHomeClock() {
+    const el = document.getElementById("homeDateTime");
+    if (!el) return;
+    const update = () => {
+      el.textContent = new Date().toLocaleString("zh-CN");
+    };
+    update();
+    if (this._clockInterval) clearInterval(this._clockInterval);
+    this._clockInterval = setInterval(update, 10000);
   }
 
   // ============================================
   // 页面事件绑定
   // ============================================
 
- _bindPageEvents(pageId) {
-  // 首页按钮
-  if (pageId === "home") {
-    document.querySelectorAll(".home-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const target = btn.dataset.target;
-        if (target && this.navigator) {
-          this.navigator.goTo(target);
-        }
+  _bindPageEvents(pageId) {
+    // 首页按钮
+    if (pageId === "home") {
+      document.querySelectorAll(".home-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          if (target && this.navigator) {
+            this.navigator.goTo(target);
+          }
+        });
       });
-    });
-  }
 
-  if (pageId === "practice-cn" || pageId === "practice-en") {
-    // ⭐ 重置和停止按钮由 PracticeEngine._bindUIEvents() 统一管理
-    // 这里只保留限时模式下拉（需要保存到 settingsService）
-    const timeSelect = document.getElementById(
-      pageId === "practice-cn" ? "cnTimeLimitSelect" : "enTimeLimitSelect",
-    );
-    if (timeSelect) {
-      timeSelect.addEventListener("change", () => {
-        const seconds = parseInt(timeSelect.value) || 0;
-        const currentMode = this.practiceEngine?.currentMode || "chinese";
-        this.practiceEngine?.setTimeLimit(seconds);
-        this.practiceEngine?.reset(currentMode);
-        const user = this.userService?.getCurrent();
-        if (user) {
-          this.settingsService?.setItem(user.id, "timeLimit", seconds);
-        }
-      });
+      // 刷新标语按钮
+      const refreshBtn = document.getElementById("homeSloganRefresh");
+      if (refreshBtn) {
+        refreshBtn.addEventListener("click", () => {
+          this._fetchAndUpdateSlogan();
+        });
+      }
+    }
+
+    // 所有练习页面统一处理
+    if (
+      pageId === "practice-cn" ||
+      pageId === "practice-en" ||
+      pageId === "practice-phrase-cn" ||
+      pageId === "practice-phrase-en"
+    ) {
+      // 限时模式下拉
+      const timeSelect = document.getElementById(
+        pageId === "practice-en" || pageId === "practice-phrase-en"
+          ? "enTimeLimitSelect"
+          : "cnTimeLimitSelect",
+      );
+      if (timeSelect) {
+        timeSelect.addEventListener("change", () => {
+          const seconds = parseInt(timeSelect.value) || 0;
+          const currentMode = this.practiceEngine?.currentMode || "chinese";
+          this.practiceEngine?.setTimeLimit(seconds);
+          this.practiceEngine?.reset(currentMode);
+          const user = this.userService?.getCurrent();
+          if (user) {
+            this.settingsService?.setItem(user.id, "timeLimit", seconds);
+          }
+        });
+      }
+
+      // 重置和停止按钮由 PracticeEngine 统一管理，不需要在这里绑定
     }
   }
-}
 
   // ============================================
   // 全局事件
@@ -331,6 +378,22 @@ class App {
         if (this.settingsPresenter) {
           this.settingsPresenter.open();
         }
+      });
+    }
+
+    // ⭐ 新增：文库按钮 → 文章管理
+    const articleBtn = document.getElementById("topbarArticleBtn");
+    if (articleBtn) {
+      articleBtn.addEventListener("click", () => {
+        this.navigator.goTo("article-management");
+      });
+    }
+
+    // ⭐ 新增：墨痕按钮 → 历史记录
+    const historyBtn = document.getElementById("topbarHistoryBtn");
+    if (historyBtn) {
+      historyBtn.addEventListener("click", () => {
+        this.navigator.goTo("history");
       });
     }
   }
@@ -368,7 +431,12 @@ class App {
   }
 
   _leavePage(pageId) {
-    if (pageId === "practice-cn" || pageId === "practice-en") {
+    if (
+      pageId === "practice-cn" ||
+      pageId === "practice-en" ||
+      pageId === "practice-phrase-cn" ||
+      pageId === "practice-phrase-en"
+    ) {
       this.practiceEngine?.leave(pageId);
     }
     if (pageId === "article-management") {
@@ -386,7 +454,12 @@ class App {
     const container = document.getElementById("pageContainer");
     if (!container) return;
 
-    if (pageId === "practice-cn" || pageId === "practice-en") {
+    if (
+      pageId === "practice-cn" ||
+      pageId === "practice-en" ||
+      pageId === "practice-phrase-cn" ||
+      pageId === "practice-phrase-en"
+    ) {
       // 加载限时模式设置
       const settings = this._getCurrentSettings();
       if (settings && settings.timeLimit !== undefined) {
@@ -471,9 +544,17 @@ class App {
 
   _onResultRestart() {
     const currentPage = this.currentPageId;
-    if (currentPage === "practice-cn" || currentPage === "practice-en") {
-      const type = currentPage === "practice-cn" ? "chinese" : "english";
-      this.practiceEngine.loadFirstArticle(type);
+    if (
+      currentPage === "practice-cn" ||
+      currentPage === "practice-en" ||
+      currentPage === "practice-phrase-cn" ||
+      currentPage === "practice-phrase-en"
+    ) {
+      const type =
+        currentPage === "practice-en" || currentPage === "practice-phrase-en"
+          ? "english"
+          : "chinese";
+      this.practiceEngine.reset(type);
     }
   }
 }
