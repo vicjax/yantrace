@@ -31,7 +31,7 @@
 /* 名言居中 */
 .home-slogan-wrapper {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: center;
   gap: 4px;
   margin-bottom: 2px;
@@ -141,7 +141,7 @@
 }
 
 .home-footer a {
-  color: var(--text-muted);
+  color: var(--text-dim);
   text-decoration: none;
   transition: var(--transition-base);
 }

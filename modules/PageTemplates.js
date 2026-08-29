@@ -217,9 +217,7 @@ export function getHomeHtml(sloganData) {
 
   html += `
   <div class="home-footer">
-    <a href="https://github.com/vicjax/yantrace" target="_blank" rel="noopener noreferrer">
-      © 2026 GitHub
-    </a>
+    © 2026 <a href="https://github.com/vicjax/yantrace" target="_blank" rel="noopener noreferrer">YanTrace | GitHub</a>
   </div>
 `;
 
