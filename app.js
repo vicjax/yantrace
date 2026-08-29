@@ -19,7 +19,8 @@ import {
   getHomeHtml,
   getPracticeHtml,
   PRACTICE_PAGES,
-} from "./modules/practice/PageTemplates.js";
+  fetchSlogan,
+} from "./modules/PageTemplates.js";
 
 // Model 层
 import { ArticleModel } from "./features/article/index.js";
@@ -255,27 +256,44 @@ class App {
     const container = document.getElementById("pageContainer");
     if (!container) return;
 
-    let html = "";
-
     if (pageId === "home") {
-      html = getHomeHtml();
-    } else {
-      // 查找练习页面配置
-      const config = PRACTICE_PAGES.find((p) => p.id === pageId);
-      if (config) {
-        html = getPracticeHtml(config);
-      } else {
-        // 非练习页面（文章管理、历史记录等）
-        html = "";
-      }
+      container.innerHTML = getHomeHtml(null);
+      this._applyUserSettings();
+      this._bindPageEvents(pageId);
+      this.currentPageId = pageId;
+      this._startHomeClock();
+      this._fetchAndUpdateSlogan();
+      return;
     }
 
-    container.innerHTML = html;
-    this._applyUserSettings();
-    this._bindPageEvents(pageId);
+    const config = PRACTICE_PAGES.find((p) => p.id === pageId);
+    if (config) {
+      container.innerHTML = getPracticeHtml(config);
+      this._applyUserSettings();
+      this._bindPageEvents(pageId);
+      this.currentPageId = pageId;
+      return;
+    }
+
+    container.innerHTML = "";
     this.currentPageId = pageId;
-    if (pageId === "home") {
-      this._startHomeClock();
+  }
+
+  async _fetchAndUpdateSlogan() {
+    try {
+      const sloganData = await fetchSlogan();
+      const sloganText = document.getElementById("homeSloganText");
+      if (sloganText) {
+        sloganText.textContent = sloganData.content;
+      }
+      const sourceEl = document.getElementById("homeSloganSource");
+      if (sourceEl) {
+        sourceEl.textContent = sloganData.source
+          ? `—— ${sloganData.source}`
+          : "";
+      }
+    } catch (e) {
+      console.warn("获取诗词失败:", e);
     }
   }
 
@@ -308,6 +326,14 @@ class App {
           }
         });
       });
+
+      // 刷新标语按钮
+      const refreshBtn = document.getElementById("homeSloganRefresh");
+      if (refreshBtn) {
+        refreshBtn.addEventListener("click", () => {
+          this._fetchAndUpdateSlogan();
+        });
+      }
     }
 
     // 所有练习页面统一处理

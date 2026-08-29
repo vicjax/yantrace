@@ -2,20 +2,106 @@
    砚迹（YanTrace）- 首页特定样式
    ============================================ */
 
-/* 练习区：由父容器 .page-container 控制高度，不设置固定 min-height */
+/* ----- 欢迎标语区 ----- */
+.home-welcome {
+  min-height: 140px;
+  padding: var(--spacing-md) 0;
+}
+
+.home-greeting {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-sm);
+  text-align: left;
+  padding-left: 4px;
+}
+
+.home-time-icon {
+  margin-right: 4px;
+}
+
+.home-date {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+
+/* 名言居中 */
+.home-slogan-wrapper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 2px;
+  padding: 0 4px;
+}
+
+.home-quote-mark {
+  font-size: 24px;
+  color: var(--text-dim);
+  font-family: Georgia, serif;
+  line-height: 1.6;
+  opacity: 0.4;
+  flex-shrink: 0;
+}
+
+.home-slogan {
+  font-size: 18px;
+  font-weight: 300;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin: 0;
+  font-style: italic;
+  text-align: center;
+}
+
+/* 出处靠右 + 刷新按钮 */
+.home-slogan-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  padding-right: 4px;
+  margin-top: 4px;
+}
+
+.home-slogan-source {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.home-slogan-refresh {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px 6px;
+  transition: var(--transition-base);
+  font-family: inherit;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+}
+
+.home-slogan-refresh:hover {
+  color: var(--text-primary);
+  background: var(--bg-surface-hover);
+}
+
+/* ----- 练习区 ----- */
 .home-section-practice {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  /* 高度由 SettingsPresenter 统一控制 */
 }
 
-/* 练习区卡片样式（首页专属） */
 .home-section-practice .home-btn {
   padding: 24px 12px;
   font-size: var(--font-size-base);
   border-width: 2px;
-  min-height: 180px;
+  min-height: 120px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -43,14 +129,4 @@
   color: var(--text-dim);
   margin-top: var(--spacing-xs);
   font-weight: 400;
-}
-
-/* 管理区标题（首页专属） */
-.home-section-management .home-section-title {
-  font-size: var(--font-size-sm);
-  color: #444466;
-  letter-spacing: 1px;
-  border-top: 1px solid var(--border-default);
-  padding-top: 20px;
-  margin-top: var(--spacing-sm);
 }

@@ -11,17 +11,18 @@ export const MENU_CONFIG = {
           desc: "词语/短句/长句",
         },
         {
-          id: "practice-phrase-en",
-          icon: "✒️",
-          label: "英文·词句",
-          desc: "Words/Phrases/Sentences",
-        },
-        {
           id: "practice-cn",
           icon: "📜",
           label: "中文·文章",
           desc: "短篇/长篇/古诗",
         },
+        {
+          id: "practice-phrase-en",
+          icon: "✒️",
+          label: "英文·词句",
+          desc: "Words/Phrases/Sentences",
+        },
+
         {
           id: "practice-en",
           icon: "📰",
