@@ -130,3 +130,22 @@
   margin-top: var(--spacing-xs);
   font-weight: 400;
 }
+
+/* ----- 底部压脚 ----- */
+.home-footer {
+  text-align: right;
+  padding-top: var(--spacing-md);
+  margin-top: auto;
+  font-size: var(--font-size-sm);
+  color: var(--text-dim);
+}
+
+.home-footer a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: var(--transition-base);
+}
+
+.home-footer a:hover {
+  color: var(--text-primary);
+}

@@ -13,40 +13,52 @@ import { MENU_CONFIG } from "../config/menu.js";
 function getFallbackSloganData() {
   const fallbacks = [
     // 经典诗词
-    { content: '学而不思则罔，思而不学则殆', source: '《论语》' },
-    { content: '温故而知新，可以为师矣', source: '《论语》' },
-    { content: '三人行，必有我师焉', source: '《论语》' },
-    { content: '工欲善其事，必先利其器', source: '《论语》' },
-    { content: '岁寒，然后知松柏之后凋也', source: '《论语》' },
-    { content: '路漫漫其修远兮，吾将上下而求索', source: '屈原《离骚》' },
-    { content: '举世皆浊我独清，众人皆醉我独醒', source: '屈原《渔父》' },
-    { content: '采菊东篱下，悠然见南山', source: '陶渊明《饮酒》' },
-    { content: '此中有真意，欲辨已忘言', source: '陶渊明《饮酒》' },
-    { content: '长风破浪会有时，直挂云帆济沧海', source: '李白《行路难》' },
-    { content: '天生我材必有用，千金散尽还复来', source: '李白《将进酒》' },
-    { content: '安得广厦千万间，大庇天下寒士俱欢颜', source: '杜甫《茅屋为秋风所破歌》' },
-    { content: '欲穷千里目，更上一层楼', source: '王之涣《登鹳雀楼》' },
-    { content: '海上生明月，天涯共此时', source: '张九龄《望月怀远》' },
-    { content: '独在异乡为异客，每逢佳节倍思亲', source: '王维《九月九日忆山东兄弟》' },
-    { content: '劝君更尽一杯酒，西出阳关无故人', source: '王维《送元二使安西》' },
-    { content: '山重水复疑无路，柳暗花明又一村', source: '陆游《游山西村》' },
-    { content: '纸上得来终觉浅，绝知此事要躬行', source: '陆游《冬夜读书示子聿》' },
-    { content: '问渠那得清如许，为有源头活水来', source: '朱熹《观书有感》' },
-    { content: '不畏浮云遮望眼，自缘身在最高层', source: '王安石《登飞来峰》' },
-    { content: '千磨万击还坚劲，任尔东西南北风', source: '郑燮《竹石》' },
-    { content: '海内存知己，天涯若比邻', source: '王勃《送杜少府之任蜀州》' },
-    { content: '大漠孤烟直，长河落日圆', source: '王维《使至塞上》' },
-    { content: '春蚕到死丝方尽，蜡炬成灰泪始干', source: '李商隐《无题》' },
-    { content: '身无彩凤双飞翼，心有灵犀一点通', source: '李商隐《无题》' },
+    { content: "学而不思则罔，思而不学则殆", source: "《论语》" },
+    { content: "温故而知新，可以为师矣", source: "《论语》" },
+    { content: "三人行，必有我师焉", source: "《论语》" },
+    { content: "工欲善其事，必先利其器", source: "《论语》" },
+    { content: "岁寒，然后知松柏之后凋也", source: "《论语》" },
+    { content: "路漫漫其修远兮，吾将上下而求索", source: "屈原《离骚》" },
+    { content: "举世皆浊我独清，众人皆醉我独醒", source: "屈原《渔父》" },
+    { content: "采菊东篱下，悠然见南山", source: "陶渊明《饮酒》" },
+    { content: "此中有真意，欲辨已忘言", source: "陶渊明《饮酒》" },
+    { content: "长风破浪会有时，直挂云帆济沧海", source: "李白《行路难》" },
+    { content: "天生我材必有用，千金散尽还复来", source: "李白《将进酒》" },
+    {
+      content: "安得广厦千万间，大庇天下寒士俱欢颜",
+      source: "杜甫《茅屋为秋风所破歌》",
+    },
+    { content: "欲穷千里目，更上一层楼", source: "王之涣《登鹳雀楼》" },
+    { content: "海上生明月，天涯共此时", source: "张九龄《望月怀远》" },
+    {
+      content: "独在异乡为异客，每逢佳节倍思亲",
+      source: "王维《九月九日忆山东兄弟》",
+    },
+    {
+      content: "劝君更尽一杯酒，西出阳关无故人",
+      source: "王维《送元二使安西》",
+    },
+    { content: "山重水复疑无路，柳暗花明又一村", source: "陆游《游山西村》" },
+    {
+      content: "纸上得来终觉浅，绝知此事要躬行",
+      source: "陆游《冬夜读书示子聿》",
+    },
+    { content: "问渠那得清如许，为有源头活水来", source: "朱熹《观书有感》" },
+    { content: "不畏浮云遮望眼，自缘身在最高层", source: "王安石《登飞来峰》" },
+    { content: "千磨万击还坚劲，任尔东西南北风", source: "郑燮《竹石》" },
+    { content: "海内存知己，天涯若比邻", source: "王勃《送杜少府之任蜀州》" },
+    { content: "大漠孤烟直，长河落日圆", source: "王维《使至塞上》" },
+    { content: "春蚕到死丝方尽，蜡炬成灰泪始干", source: "李商隐《无题》" },
+    { content: "身无彩凤双飞翼，心有灵犀一点通", source: "李商隐《无题》" },
     // 砚迹专属
-    { content: '砚台虽小，可书天下', source: '' },
-    { content: '一笔一画，皆是修行', source: '' },
-    { content: '慢下来，好好打字', source: '' },
-    { content: '字里行间，遇见自己', source: '' },
-    { content: '键盘如砚，字字如墨', source: '' },
-    { content: '以字为舟，以砚为海', source: '' },
-    { content: '行云流水，皆在指尖', source: '' },
-    { content: '练字练心，字如其人', source: '' },
+    { content: "砚台虽小，可书天下", source: "" },
+    { content: "一笔一画，皆是修行", source: "" },
+    { content: "慢下来，好好打字", source: "" },
+    { content: "字里行间，遇见自己", source: "" },
+    { content: "键盘如砚，字字如墨", source: "" },
+    { content: "以字为舟，以砚为海", source: "" },
+    { content: "行云流水，皆在指尖", source: "" },
+    { content: "练字练心，字如其人", source: "" },
   ];
   const data = fallbacks[Math.floor(Math.random() * fallbacks.length)];
   return {
@@ -160,7 +172,7 @@ export function getHomeHtml(sloganData) {
   const content = data.content || "砚台虽小，可书天下";
   const sourceText = data.source ? `—— ${data.source}` : "";
 
-  let html = `<div class="home-content">`;
+  let html = ``;
 
   // 欢迎标语区
   html += `
@@ -202,6 +214,14 @@ export function getHomeHtml(sloganData) {
       html += `</div></div>`;
     }
   });
+
+  html += `
+  <div class="home-footer">
+    <a href="https://github.com/vicjax/yantrace" target="_blank" rel="noopener noreferrer">
+      © 2026 GitHub
+    </a>
+  </div>
+`;
 
   html += `</div>`;
   return html;
