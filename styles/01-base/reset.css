@@ -24,7 +24,7 @@ body {
   max-width: 880px; /* 默认中档，由 JS 覆盖 */
   background: var(--bg-container);
   border-radius: var(--radius-xl);
-  padding: var(--spacing-lg) var(--spacing-xl) 36px;
+  padding: var(--spacing-lg) var(--spacing-xl) var(--spacing-lg);
   box-shadow: var(--shadow-app);
   display: flex;
   flex-direction: column;

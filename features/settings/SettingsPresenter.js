@@ -7,12 +7,10 @@ import SettingsView from "./SettingsView.js";
 import Modal from "../../modules/Modal.js";
 
 const SIZE_PRESETS = {
-    small:  { width: 640, height: 480 },
-    medium: { width: 880, height: 620 },
-    large:  { width: 1100, height: 760 },
+  small: { width: 640, height: 480 },
+  medium: { width: 880, height: 620 },
+  large: { width: 1100, height: 760 },
 };
-
-
 
 export default class SettingsPresenter extends BasePresenter {
   constructor(options = {}) {
@@ -157,7 +155,6 @@ export default class SettingsPresenter extends BasePresenter {
       console.warn("音效播放失败:", e);
     }
   }
-  
 
   /**
    * 应用设置到页面
@@ -172,20 +169,20 @@ export default class SettingsPresenter extends BasePresenter {
     document.documentElement.style.setProperty("--font-size", fontSize + "px");
 
     // 2. 页面尺寸
+    // 在 applySettings 方法中
     const app = document.getElementById("app");
     if (app) {
       app.style.maxWidth = size.width + "px";
-      app.style.minHeight = size.height + "px";
+      app.style.height = size.height + "px"; // ← 关键：固定高度
+      app.style.overflow = "hidden"; // ← 关键：防止溢出
+      app.style.minHeight = ""; // ← 清除可能的干扰
     }
 
     // 3. 文章区高度
-    const fixedHeight = 166;
-    const textBoxHeight = Math.max(size.height - fixedHeight, 200);
-
+    // 3. 文章区 — 只控制字体和样式，不控制高度
     document.querySelectorAll(".text-box").forEach((el) => {
       el.style.fontSize = fontSize + "px";
-      el.style.minHeight = textBoxHeight + "px";
-      el.style.maxHeight = textBoxHeight + "px";
+      el.style.overflowY = "auto";
 
       const pinyinSize = Math.max(fontSize - 4, 12);
       const lineSpacing = pinyinSize + 2;
