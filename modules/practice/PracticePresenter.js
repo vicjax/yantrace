@@ -62,6 +62,7 @@ export default class PracticePresenter {
     this.selector = null;
     this.resetBtn = null;
     this.stopBtn = null;
+    this.categorySelect = null; // 新增：分类下拉
     this.timeLimit = 0;
 
     this._bindResizeEvent();
@@ -95,7 +96,7 @@ export default class PracticePresenter {
   // 公共方法
   // ============================================
 
-  enter(pageId) {
+  async enter(pageId) {
     let type = "chinese";
     let contentType = "article";
 
@@ -109,20 +110,41 @@ export default class PracticePresenter {
 
     this.currentContentType = contentType;
     this._setPageDom(pageId);
-    this.loadFirstContent(type, contentType);
+    if (this.categorySelect && !this.categorySelect.value) {
+      this.categorySelect.value = "prose";
+    }
+
+    await this.loadFirstContent(type, contentType);
   }
   leave() {
     this._clearStrategy();
   }
 
-  loadFirstContent(type, contentType) {
-    this.loadContentList(type, contentType);
+  async loadFirstContent(type, contentType) {
+    await this.loadContentList(type, contentType);
   }
 
-  loadContentList(type, contentType) {
-    // 创建内容策略
+  /**
+   * 加载内容列表（支持分类过滤）
+   */
+
+  async loadContentList(type, contentType, category) {
+    // 如果 category 未传，从下拉框读取
+    if (!category && this.categorySelect) {
+      category = this.categorySelect.value;
+    }
+
+    // 默认值
+    if (!category) {
+      category = "prose";
+    }
+
     this.contentStrategy = this.contentFactory.create(type, contentType);
-    const list = this.contentStrategy.getList();
+
+    // 确保数据加载完成
+    await this.contentStrategy.loadList();
+
+    const list = this.contentStrategy.getList(category);
     const currentValue = this.selector?.value || "";
 
     this.selector.innerHTML = list
@@ -136,7 +158,7 @@ export default class PracticePresenter {
     }
 
     if (list.length > 0) {
-      this.loadContent(type, contentType, this.selector.value);
+      await this.loadContent(type, contentType, this.selector.value);
     }
   }
 
@@ -393,6 +415,9 @@ export default class PracticePresenter {
   // 私有方法
   // ============================================
 
+  /**
+   * 设置 DOM 引用（新增 categorySelect）
+   */
   _setPageDom(pageId) {
     // 判断语言
     // 第 399 行
@@ -405,6 +430,7 @@ export default class PracticePresenter {
       document.getElementById(`${prefix}Select`);
     this.resetBtn = document.getElementById(`${prefix}ResetBtn`);
     this.stopBtn = document.getElementById(`${prefix}StopBtn`);
+    this.categorySelect = document.getElementById(`${prefix}CategorySelect`); // 新增
 
     const elements = {
       textBox: textBox,
@@ -432,7 +458,12 @@ export default class PracticePresenter {
     this.view.bind(pageId, elements);
     this._bindUIEvents();
   }
+
+  /**
+   * 绑定 UI 事件（新增分类切换）
+   */
   _bindUIEvents() {
+    // 移除旧监听器
     if (this.selector && this._selectorHandler) {
       this.selector.removeEventListener("change", this._selectorHandler);
     }
@@ -442,26 +473,30 @@ export default class PracticePresenter {
     if (this.stopBtn && this._stopHandler) {
       this.stopBtn.removeEventListener("click", this._stopHandler);
     }
+    if (this.categorySelect && this._categoryHandler) {
+      this.categorySelect.removeEventListener("change", this._categoryHandler);
+    }
 
+    // 文章选择
     if (!this._selectorHandler) {
-      this._selectorHandler = () => {
+      this._selectorHandler = async () => {
         if (this.selector?.value) {
           const type = this.state.currentMode;
           const contentType = this.currentContentType || "article";
-          this.loadContent(type, contentType, this.selector.value);
+          const category = this.categorySelect?.value || "prose";
+          await this.loadContent(type, contentType, this.selector.value);
         }
       };
     }
 
+    // 重置按钮
     if (!this._resetHandler) {
       this._resetHandler = async () => {
         const type = this.state.currentMode;
-
         if (this.state.isFinished || !this.state.startTime) {
           this.reset(type);
           return;
         }
-
         if (
           await Modal.confirm(
             "确定要重新开始吗？当前进度将丢失。",
@@ -475,10 +510,10 @@ export default class PracticePresenter {
       };
     }
 
+    // 停止按钮
     if (!this._stopHandler) {
       this._stopHandler = async () => {
         if (this.state.isFinished || !this.state.startTime) return;
-
         if (
           await Modal.confirm(
             "确定要停止当前练习吗？当前进度将保存为记录。",
@@ -493,6 +528,16 @@ export default class PracticePresenter {
       };
     }
 
+    // 分类切换（新增）
+    if (!this._categoryHandler) {
+      this._categoryHandler = async () => {
+        const category = this.categorySelect?.value || "prose";
+        const type = this.state.currentMode;
+        const contentType = this.currentContentType || "article";
+        await this.loadContentList(type, contentType, category);
+      };
+    }
+    // 绑定事件
     if (this.selector) {
       this.selector.addEventListener("change", this._selectorHandler);
     }
@@ -501,6 +546,9 @@ export default class PracticePresenter {
     }
     if (this.stopBtn) {
       this.stopBtn.addEventListener("click", this._stopHandler);
+    }
+    if (this.categorySelect) {
+      this.categorySelect.addEventListener("change", this._categoryHandler);
     }
   }
 

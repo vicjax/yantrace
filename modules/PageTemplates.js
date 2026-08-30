@@ -74,21 +74,12 @@ function getFallbackSloganData() {
 // 获取诗词（今日诗词 API）
 // ============================================================
 
-/**
- * 从今日诗词 API 获取诗句（REST API 方式，每次随机）
- */
-/**
- * 获取名言/诗词（优先使用 API，失败时使用备用列表）
- */
 export async function fetchSlogan() {
-  // 1. 尝试获取 API 数据
   try {
-    // 使用 "一言" API（稳定，支持诗词）
     const response = await fetch("https://v1.hitokoto.cn/?c=i");
     if (!response.ok) throw new Error("API 请求失败");
     const data = await response.json();
 
-    // 如果返回了有效内容
     if (data && data.hitokoto) {
       const content = data.hitokoto;
       const author = data.from_who || "";
@@ -145,6 +136,7 @@ function getDateStr() {
   const weekDay = weekdays[now.getDay()];
   return `${year}年${month}月${day}日  ·  周${weekDay}`;
 }
+
 // ============================================================
 // 首页模板
 // ============================================================
@@ -167,14 +159,12 @@ export function getHomeHtml(sloganData) {
 
   const dateStr = getDateStr();
 
-  // 使用传入的数据或备用数据
   const data = sloganData || getFallbackSloganData();
   const content = data.content || "砚台虽小，可书天下";
   const sourceText = data.source ? `—— ${data.source}` : "";
 
   let html = ``;
 
-  // 欢迎标语区
   html += `
     <div class="home-welcome">
       <p class="home-greeting">
@@ -194,7 +184,6 @@ export function getHomeHtml(sloganData) {
     </div>
   `;
 
-  // 练习网格
   MENU_CONFIG.sections.forEach((section) => {
     if (section.id === "practice") {
       html += `<div class="home-section home-section-practice">`;
@@ -221,7 +210,6 @@ export function getHomeHtml(sloganData) {
   </div>
 `;
 
-  html += `</div>`;
   return html;
 }
 
@@ -236,11 +224,37 @@ export function getHomeHtml(sloganData) {
  * @param {string} config.prefix - DOM ID 前缀
  * @param {string} config.speedLabel - 速度标签 (CPM/WPM)
  * @param {string} config.placeholder - 占位文字
- * @param {string} config.icon - 图标
- * @param {string} config.type - 内容类型 (article/phrase)
  */
 export function getPracticeHtml(config) {
   const { id, title, prefix, speedLabel, placeholder } = config;
+
+  // 判断是否是文章页面
+  const isArticlePage = id === "practice-cn" || id === "practice-en";
+  const isChinese = id === "practice-cn";
+
+  // 文章分类选项
+  const categoryOptions = isChinese
+    ? [
+        { value: "prose", label: "散文" },
+        { value: "news", label: "新闻" },
+        { value: "ancient", label: "古文" },
+        { value: "fable", label: "寓言" },
+        { value: "modern-poetry", label: "现代诗" },
+      ]
+    : [
+        { value: "prose", label: "散文" },
+        { value: "news", label: "新闻" },
+        { value: "fable", label: "寓言" },
+      ];
+
+  const categoryHtml = isArticlePage
+    ? `<select id="${prefix}CategorySelect" class="article-select">
+        ${categoryOptions
+          .map((opt) => `<option value="${opt.value}">${opt.label}</option>`)
+          .join("")}
+       </select>`
+    : "";
+
   return `
     <div id="page-${id}" class="page">
       <div class="mode-header">
@@ -253,6 +267,7 @@ export function getPracticeHtml(config) {
           <option value="60">60秒</option>
           <option value="120">120秒</option>
         </select>
+        ${categoryHtml}
         <select id="${prefix}Select" class="article-select"></select>
         <button class="btn btn-reset" id="${prefix}ResetBtn">⟳ 重新开始</button>
         <button class="btn btn-stop" id="${prefix}StopBtn">⏹ 停止</button>

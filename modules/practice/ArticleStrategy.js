@@ -1,6 +1,5 @@
 /**
  * 砚迹（YanTrace）- 文章内容策略
- * 位置：modules/practice/strategies/ArticleStrategy.js
  */
 
 import ContentStrategy from './ContentStrategy.js';
@@ -13,17 +12,32 @@ export default class ArticleStrategy extends ContentStrategy {
     this._currentArticle = null;
     this._articles = [];
     this._loaded = false;
+    this._loadPromise = null;
   }
 
-  async loadList() {
-    if (this._loaded) return;
-    this._articles = this._articleService.getByType(this._language) || [];
-    this._loaded = true;
+  /**
+   * 加载列表
+   */
+  loadList() {
+    if (this._loaded) return Promise.resolve(this._articles);
+    if (this._loadPromise) return this._loadPromise;
+
+    this._loadPromise = (async () => {
+      const result = await this._articleService.getByType(this._language);
+      this._articles = result || [];
+      this._loaded = true;
+      return this._articles;
+    })();
+
+    return this._loadPromise;
   }
 
+  /**
+   * 加载具体文章
+   */
   async load(id) {
     await this.loadList();
-    const article = this._articleService.getById(id);
+    const article = await this._articleService.getById(id);
     if (!article) {
       console.warn(`[ArticleStrategy] 文章 ${id} 不存在`);
       return;
@@ -49,12 +63,21 @@ export default class ArticleStrategy extends ContentStrategy {
     return this._language;
   }
 
-  getList() {
+  /**
+   * 获取文章列表（需先调用 loadList）
+   */
+  getList(category) {
     if (!this._loaded) {
-      this._articles = this._articleService.getByType(this._language) || [];
-      this._loaded = true;
+      console.warn('[ArticleStrategy] getList called before loadList');
+      return [];
     }
-    return this._articles.map((article) => ({
+
+    let articles = this._articles;
+    if (category) {
+      articles = articles.filter((a) => a.category === category);
+    }
+
+    return articles.map((article) => ({
       id: article.id,
       title: article.title,
       type: 'article',
