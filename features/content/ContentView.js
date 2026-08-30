@@ -2,15 +2,41 @@
  * ContentView - 统一内容管理视图
  * 职责：渲染文章/词组管理界面，处理用户交互
  *
- * 支持两种内容类型：article（文章）和 phrase（词组）
- * 通过下拉菜单选择：中文文章 / 英文文章 / 中文词组 / 英文词组
+ * 支持两级分类：
+ *   第一级：中文文章 / 英文文章 / 中文词组 / 英文单词
+ *   第二级：根据第一级动态变化
  *
  * 编辑逻辑：内容区统一使用 contentEditable，查看/编辑通过 contenteditable 切换
+ *
+ * 渲染模式：
+ *   - 所有内容统一按 \n 分段，每段用 <p> 包裹
+ *   - 首行缩进 2em 由 CSS 控制
  */
 
 export default class ContentView {
+  // 子分类配置映射
+  static SUB_OPTIONS = {
+    "chinese-article": [
+      { value: "prose", label: "散文" },
+      { value: "news", label: "新闻" },
+      { value: "ancient", label: "古文" },
+      { value: "fable", label: "寓言" },
+      { value: "modern-poetry", label: "现代诗" },
+    ],
+    "english-article": [
+      { value: "prose", label: "散文" },
+      { value: "news", label: "新闻" },
+      { value: "fable", label: "寓言" },
+    ],
+    "chinese-phrase": [
+      { value: "two-char", label: "二字词" },
+      { value: "three-char", label: "三字词" },
+      { value: "four-char", label: "四字词" },
+    ],
+    "english-phrase": [{ value: "words", label: "单词" }],
+  };
+
   constructor(options = {}) {
-    // 回调函数
     this.onSwitch = options.onSwitch || null;
     this.onSelectItem = options.onSelectItem || null;
     this.onCreateNew = options.onCreateNew || null;
@@ -18,13 +44,16 @@ export default class ContentView {
     this.onDelete = options.onDelete || null;
     this.onSave = options.onSave || null;
     this.onCancel = options.onCancel || null;
+    this.onReset = options.onReset || null;
+    this.onUpdate = options.onUpdate || null;
 
     this.container = null;
-    this.currentType = "article"; // 'article' | 'phrase'
-    this.currentLang = "chinese"; // 'chinese' | 'english'
+    this.currentType = "article";
+    this.currentLang = "chinese";
+    this.currentCategory = "prose";
     this.items = [];
     this.selectedId = null;
-    this.mode = "view"; // 'view' | 'edit' | 'new'
+    this.mode = "view";
   }
 
   render(container) {
@@ -32,6 +61,7 @@ export default class ContentView {
     container.innerHTML = this._getHtml();
     this._cacheElements();
     this._bindEvents();
+    this._updateSubOptions();
   }
 
   updateList(items, selectedId) {
@@ -136,6 +166,10 @@ export default class ContentView {
     return this.currentLang;
   }
 
+  getCurrentCategory() {
+    return this.currentCategory;
+  }
+
   destroy() {
     this.container = null;
   }
@@ -151,12 +185,22 @@ export default class ContentView {
       <div class="mode-header">
         <button class="btn btn-back back-btn" data-target="home">← 返回</button>
         <h2>📚 内容管理</h2>
-        <select id="contentTypeSelect" class="article-select">
+        
+        <!-- 第一级：主分类 -->
+        <select id="contentMainSelect" class="article-select">
           <option value="chinese-article">📄 中文文章</option>
           <option value="english-article">📄 英文文章</option>
           <option value="chinese-phrase">📝 中文词组</option>
-          <option value="english-phrase">📝 英文词组</option>
+          <option value="english-phrase">📝 英文单词</option>
         </select>
+        
+        <!-- 第二级：子分类（动态变化） -->
+        <select id="contentSubSelect" class="article-select">
+          <option value="prose">散文</option>
+        </select>
+        
+        <button class="btn btn-action" id="contentUpdateBtn">🔄 更新</button>
+        <button class="btn btn-action danger" id="contentResetBtn">↻ 重置</button>
         <button class="btn btn-new" id="contentNewBtn">➕ 新建</button>
       </div>
 
@@ -196,7 +240,8 @@ export default class ContentView {
   }
 
   _cacheElements() {
-    this.typeSelect = document.getElementById("contentTypeSelect");
+    this.mainSelect = document.getElementById("contentMainSelect");
+    this.subSelect = document.getElementById("contentSubSelect");
     this.listEl = document.getElementById("contentList");
     this.countEl = document.getElementById("contentCount");
     this.titleEl = document.getElementById("contentTitle");
@@ -210,19 +255,23 @@ export default class ContentView {
     this.saveBtn = document.getElementById("contentSaveBtn");
     this.cancelBtn = document.getElementById("contentCancelBtn");
     this.newBtn = document.getElementById("contentNewBtn");
+    this.resetBtn = document.getElementById("contentResetBtn");
+    this.updateBtn = document.getElementById("contentUpdateBtn");
   }
 
   _bindEvents() {
-    // 下拉菜单切换
-    if (this.typeSelect) {
-      this.typeSelect.addEventListener("change", () => {
-        const value = this.typeSelect.value;
-        const parts = value.split("-");
-        const lang = parts[0];
-        const type = parts[1];
-        this.currentLang = lang;
-        this.currentType = type;
-        if (this.onSwitch) this.onSwitch(type, lang);
+    // 第一级变化 → 更新第二级选项，触发切换
+    if (this.mainSelect) {
+      this.mainSelect.addEventListener("change", () => {
+        this._updateSubOptions();
+        this._triggerSwitch();
+      });
+    }
+
+    // 第二级变化 → 触发切换
+    if (this.subSelect) {
+      this.subSelect.addEventListener("change", () => {
+        this._triggerSwitch();
       });
     }
 
@@ -256,6 +305,18 @@ export default class ContentView {
       });
     }
 
+    if (this.resetBtn) {
+      this.resetBtn.addEventListener("click", () => {
+        if (this.onReset) this.onReset();
+      });
+    }
+
+    if (this.updateBtn) {
+      this.updateBtn.addEventListener("click", () => {
+        if (this.onUpdate) this.onUpdate();
+      });
+    }
+
     if (this.listEl) {
       this.listEl.addEventListener("click", (e) => {
         const item = e.target.closest(".am-list-item");
@@ -265,6 +326,40 @@ export default class ContentView {
         }
       });
     }
+  }
+
+  _updateSubOptions() {
+    const mainValue = this.mainSelect?.value || "chinese-article";
+    const options = ContentView.SUB_OPTIONS[mainValue] || [];
+
+    if (!this.subSelect) return;
+
+    const currentValue = this.subSelect.value;
+
+    this.subSelect.innerHTML = options
+      .map((opt) => `<option value="${opt.value}">${opt.label}</option>`)
+      .join("");
+
+    if (options.some((opt) => opt.value === currentValue)) {
+      this.subSelect.value = currentValue;
+    } else if (options.length > 0) {
+      this.subSelect.value = options[0].value;
+    }
+  }
+
+  _triggerSwitch() {
+    if (!this.mainSelect || !this.subSelect) return;
+
+    const parts = this.mainSelect.value.split("-");
+    const lang = parts[0];
+    const type = parts[1];
+    const category = this.subSelect.value;
+
+    this.currentLang = lang;
+    this.currentType = type;
+    this.currentCategory = category;
+
+    if (this.onSwitch) this.onSwitch(type, lang, category);
   }
 
   _renderList() {
@@ -302,17 +397,47 @@ export default class ContentView {
     }
   }
 
+  /**
+   * 设置内容 - 统一按 \n 分段，每段用 <p> 包裹
+   */
   _setContent(content) {
-    if (this.contentEl) {
-      // 移除已有的 placeholder
-      const placeholder = this.contentEl.querySelector(".placeholder");
-      if (placeholder) placeholder.remove();
+    if (!this.contentEl) return;
 
-      this.contentEl.textContent = content || "";
-      if (!content && this.mode === "view") {
+    const placeholder = this.contentEl.querySelector(".placeholder");
+    if (placeholder) placeholder.remove();
+
+    if (!content || !content.trim()) {
+      if (this.mode === "view") {
         this.contentEl.innerHTML = '<span class="placeholder">暂无内容</span>';
+      } else {
+        this.contentEl.textContent = "";
       }
+      return;
     }
+
+    // 按 \n\n 分割段落，保留空行
+    const paragraphs = content.split(/\n\n/);
+
+    const html = paragraphs
+      .map((p) => {
+        if (!p.trim()) return "<p>&nbsp;</p>"; // 空行占位
+        const lines = p.split("\n").filter((line) => line.trim() !== "");
+        if (lines.length === 0) return "<p>&nbsp;</p>";
+        return `<p>${lines.map((line) => this._escapeHtml(line)).join("<br>")}</p>`;
+      })
+      .join("");
+
+    this.contentEl.innerHTML =
+      html || '<span class="placeholder">暂无内容</span>';
+  }
+
+  /**
+   * HTML 转义（防止 XSS）
+   */
+  _escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
   }
 
   _setContentEditable(editable) {
@@ -323,12 +448,10 @@ export default class ContentView {
       );
       if (editable) {
         this.contentEl.classList.add("editing");
-        // 移除 placeholder（如果有）
         const placeholder = this.contentEl.querySelector(".placeholder");
         if (placeholder) placeholder.remove();
       } else {
         this.contentEl.classList.remove("editing");
-        // 如果内容为空，重新添加 placeholder
         if (!this.contentEl.textContent.trim()) {
           this.contentEl.innerHTML =
             '<span class="placeholder">暂无内容</span>';
@@ -336,6 +459,7 @@ export default class ContentView {
       }
     }
   }
+
   _showTitleInput() {
     if (this.titleEdit) {
       this.titleEdit.style.display = "block";
@@ -392,22 +516,66 @@ export default class ContentView {
     }
   }
 
+  // ============================================
+  // 外部设置方法
+  // ============================================
+
   setType(type) {
     this.currentType = type;
-    if (this.typeSelect) {
+    if (this.mainSelect) {
       const value = `${this.currentLang}-${type}`;
-      if (this.typeSelect.querySelector(`option[value="${value}"]`)) {
-        this.typeSelect.value = value;
+      const option = this.mainSelect.querySelector(`option[value="${value}"]`);
+      if (option) {
+        this.mainSelect.value = value;
+        this._updateSubOptions();
       }
     }
   }
 
   setLang(lang) {
     this.currentLang = lang;
-    if (this.typeSelect) {
+    if (this.mainSelect) {
       const value = `${lang}-${this.currentType}`;
-      if (this.typeSelect.querySelector(`option[value="${value}"]`)) {
-        this.typeSelect.value = value;
+      const option = this.mainSelect.querySelector(`option[value="${value}"]`);
+      if (option) {
+        this.mainSelect.value = value;
+        this._updateSubOptions();
+      }
+    }
+  }
+
+  setCategory(category) {
+    this.currentCategory = category;
+    if (this.subSelect) {
+      const option = this.subSelect.querySelector(
+        `option[value="${category}"]`,
+      );
+      if (option) {
+        this.subSelect.value = category;
+      }
+    }
+  }
+
+  setSelection(type, lang, category) {
+    this.currentType = type;
+    this.currentLang = lang;
+    this.currentCategory = category;
+
+    if (this.mainSelect) {
+      const value = `${lang}-${type}`;
+      const option = this.mainSelect.querySelector(`option[value="${value}"]`);
+      if (option) {
+        this.mainSelect.value = value;
+        this._updateSubOptions();
+      }
+    }
+
+    if (this.subSelect) {
+      const option = this.subSelect.querySelector(
+        `option[value="${category}"]`,
+      );
+      if (option) {
+        this.subSelect.value = category;
       }
     }
   }

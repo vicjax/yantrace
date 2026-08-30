@@ -1,0 +1,82 @@
+[
+  {
+    "id": "en-news-001",
+    "title": "I Have a Dream (Excerpt)",
+    "content": "I say to you today, my friends, so even though we face the difficulties of today and tomorrow, I still have a dream. It is a dream deeply rooted in the American dream. I have a dream that one day this nation will rise up and live out the true meaning of its creed: We hold these truths to be self-evident, that all men are created equal. I have a dream that one day on the red hills of Georgia, the sons of former slaves and the sons of former slave owners will be able to sit down together at the table of brotherhood. I have a dream that one day even the state of Mississippi, a state sweltering with the heat of injustice, sweltering with the heat of oppression, will be transformed into an oasis of freedom and justice. I have a dream that my four little children will one day live in a nation where they will not be judged by the color of their skin but by the content of their character. I have a dream today! I have a dream that one day, down in Alabama, with its vicious racists, with its governor having his lips dripping with the words of interposition and nullification, one day right there in Alabama little black boys and black girls will be able to join hands with little white boys and white girls as sisters and brothers. I have a dream today! I have a dream that one day every valley shall be exalted, every hill and mountain shall be made low, the rough places will be made plain, and the crooked places will be made straight, and the glory of the Lord shall be revealed, and all flesh shall see it together.",
+    "type": "english",
+    "category": "news",
+    "isSystem": true
+  },
+  {
+    "id": "en-news-002",
+    "title": "Gettysburg Address",
+    "content": "Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal. Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived and so dedicated, can long endure. We are met on a great battle-field of that war. We have come to dedicate a portion of that field, as a final resting place for those who here gave their lives that that nation might live. It is altogether fitting and proper that we should do this. But, in a larger sense, we can not dedicate—we can not consecrate—we can not hallow—this ground. The brave men, living and dead, who struggled here, have consecrated it, far above our poor power to add or detract. The world will little note, nor long remember what we say here, but it can never forget what they did here. It is for us the living, rather, to be dedicated here to the unfinished work which they who fought here have thus far so nobly advanced. It is rather for us to be here dedicated to the great task remaining before us—that from these honored dead we take increased devotion to that cause for which they gave the last full measure of devotion—that we here highly resolve that these dead shall not have died in vain—that this nation, under God, shall have a new birth of freedom—and that government of the people, by the people, for the people, shall not perish from the earth.",
+    "type": "english",
+    "category": "news",
+    "isSystem": true
+  },
+  {
+    "id": "en-news-003",
+    "title": "We Shall Fight on the Beaches (Excerpt)",
+    "content": "We shall go on to the end. We shall fight in France, we shall fight on the seas and oceans, we shall fight with growing confidence and growing strength in the air, we shall defend our island, whatever the cost may be. We shall fight on the beaches, we shall fight on the landing grounds, we shall fight in the fields and in the streets, we shall fight in the hills; we shall never surrender. And even if, which I do not for a moment believe, this island or a large part of it were subjugated and starving, then our Empire beyond the seas, armed and guarded by the British Fleet, would carry on the struggle, until, in God's good time, the New World, with all its power and might, steps forth to the rescue and the liberation of the old. Let us therefore brace ourselves to our duties, and so bear ourselves that, if the British Empire and its Commonwealth last for a thousand years, men will still say, This was their finest hour.",
+    "type": "english",
+    "category": "news",
+    "isSystem": true
+  },
+  {
+    "id": "en-news-004",
+    "title": "The Only Thing We Have to Fear Is Fear Itself",
+    "content": "This is a day of national consecration. I am certain that my fellow Americans expect that on my induction into the Presidency I will address them with a candor and a decision which the present situation of our Nation impels. This is preeminently the time to speak the truth, the whole truth, frankly and boldly. Nor need we shrink from honestly facing conditions in our country today. This great Nation will endure as it has endured, will revive and will prosper. So, first of all, let me assert my firm belief that the only thing we have to fear is fear itself—nameless, unreasoning, unjustified terror which paralyzes needed efforts to convert retreat into advance. In every dark hour of our national life a leadership of frankness and vigor has met with that understanding and support of the people themselves which is essential to victory. I am convinced that you will again give that support to leadership in these critical days. In such a spirit on my part and on yours we face our common difficulties. They concern, thank God, only material things. Values have shrunken to fantastic levels; taxes have risen; our ability to pay has fallen; government of all kinds is faced by serious curtailment of income; the means of exchange are frozen in the currents of trade; the withered leaves of industrial enterprise lie on every side; farmers find no markets for their produce; the savings of many years in thousands of families are gone.",
+    "type": "english",
+    "category": "news",
+    "isSystem": true
+  },
+  {
+    "id": "en-news-005",
+    "title": "Ask What You Can Do for Your Country",
+    "content": "We observe today not a victory of party but a celebration of freedom, symbolizing an end as well as a beginning, signifying renewal as well as change. For I have sworn before you and Almighty God the same solemn oath our forebears prescribed nearly a century and three quarters ago. The world is very different now. For man holds in his mortal hands the power to abolish all forms of human poverty and all forms of human life. And yet the same revolutionary beliefs for which our forebears fought are still at issue around the globe, the belief that the rights of man come not from the generosity of the state but from the hand of God. Let every nation know, whether it wishes us well or ill, that we shall pay any price, bear any burden, meet any hardship, support any friend, oppose any foe, in order to assure the survival and the success of liberty. And so, my fellow Americans, ask not what your country can do for you; ask what you can do for your country. My fellow citizens of the world, ask not what America will do for you, but what together we can do for the freedom of man. Whether you are citizens of America or citizens of the world, ask of us here the same high standards of strength and sacrifice which we ask of you. With a good conscience our only sure reward, with history the final judge of our deeds, let us go forth to lead the land we love, asking His blessing and His help, but knowing that here on earth God's work must truly be our own.",
+    "type": "english",
+    "category": "news",
+    "isSystem": true
+  },
+  {
+    "id": "en-news-006",
+    "title": "Order of the Day (D-Day)",
+    "content": "Soldiers, Sailors, and Airmen of the Allied Expeditionary Force! You are about to embark upon the Great Crusade, toward which we have striven these many months. The eyes of the world are upon you. The hopes and prayers of liberty-loving people everywhere march with you. In company with our brave Allies and brothers-in-arms on other Fronts, you will bring about the destruction of the German war machine, the elimination of Nazi tyranny over the oppressed peoples of Europe, and security for ourselves in a free world. Your task will not be an easy one. Your enemy is well trained, well equipped and battle hardened. He will fight savagely. But this is the year 1944! Much has happened since the Nazi triumphs of 1940-41. The United Nations have inflicted upon the Germans great defeats, in open battle, man-to-man. Our air offensive has seriously reduced their strength in the air and their capacity to wage war on the ground. Our Home Fronts have given us an overwhelming superiority in weapons and munitions of war, and placed at our disposal great reserves of trained fighting men. The tide has turned! The free men of the world are marching together to Victory! I have full confidence in your courage, devotion to duty and skill in battle. We will accept nothing less than full Victory! Good luck! And let us all beseech the blessing of Almighty God upon this great and noble undertaking.",
+    "type": "english",
+    "category": "news",
+    "isSystem": true
+  },
+  {
+    "id": "en-news-007",
+    "title": "Ich bin ein Berliner",
+    "content": "I am proud to come to this city as the guest of your distinguished Mayor, who has symbolized throughout the world the fighting spirit of West Berlin. I know of no town, no city, that has been besieged for eighteen years, that still lives with the vitality and the force, and the hope and the determination of the city of West Berlin. There are many people in the world who really don't understand, or say they don't, what is the great issue between the free world and the Communist world. Let them come to Berlin! There are some who say that communism is the wave of the future. Let them come to Berlin! And there are some who say in Europe and elsewhere we can work with the Communists. Let them come to Berlin! And there are even a few who say that it is true that communism is an evil system, but it permits us to make economic progress. Lass sie nach Berlin kommen. Let them come to Berlin! Freedom has many difficulties and democracy is not perfect, but we have never had to put a wall up to keep our people in, to prevent them from leaving us. I want to say, on behalf of my countrymen, who have lived through eight years of war and have a deep respect for the courage of the people of Berlin, and of the people of all Germany, that I am proud to be here today. I am proud that I can say to you, Ich bin ein Berliner.",
+    "type": "english",
+    "category": "news",
+    "isSystem": true
+  },
+  {
+    "id": "en-news-008",
+    "title": "Address to the Nation on 9/11",
+    "content": "Good evening. Today, our fellow citizens, our way of life, our very freedom came under attack in a series of deliberate and deadly terrorist acts. The victims were in airplanes or in their offices: secretaries, businessmen and women, military and federal workers, moms and dads, friends and neighbors. Thousands of lives were suddenly ended by evil, despicable acts of terror. The pictures of airplanes flying into buildings, fires burning, huge structures collapsing, have filled us with disbelief, terrible sadness, and a quiet, unyielding anger. These acts of mass murder were intended to frighten our nation into chaos and retreat. But they have failed. Our country is strong. A great people has been moved to defend a great nation. Terrorist attacks can shake the foundations of our biggest buildings, but they cannot touch the foundation of America. These acts shatter steel, but they cannot dent the steel of American resolve. America was targeted for attack because we're the brightest beacon for freedom and opportunity in the world. And no one will keep that light from shining. Today, our nation saw evil, the very worst of human nature, and we responded with the best of America, with the daring of our rescue workers, with the caring for strangers and neighbors who came to give blood and help in any way they could.",
+    "type": "english",
+    "category": "news",
+    "isSystem": true
+  },
+  {
+    "id": "en-news-009",
+    "title": "First Inaugural Address (Excerpt)",
+    "content": "My fellow citizens, I stand here today humbled by the task before us, grateful for the trust you have bestowed, mindful of the sacrifices borne by our ancestors. I thank President Bush for his service to our nation, as well as the generosity and cooperation he has shown throughout this transition. Forty-four Americans have now taken the presidential oath. The words have been spoken during rising tides of prosperity and the still waters of peace. Yet, every so often, the oath is taken amidst gathering clouds and raging storms. At these moments, America has carried on not simply because of the skill or vision of those in high office, but because we, the people, have remained faithful to the ideals of our forebears and true to our founding documents. So it has been. So it must be with this generation of Americans. That we are in the midst of crisis is now well understood. Our nation is at war, against a far-reaching network of violence and hatred. Our economy is badly weakened, a consequence of greed and irresponsibility on the part of some, but also our collective failure to make hard choices and prepare the nation for a new age. Homes have been lost, jobs shed, businesses shuttered. Our health care is too costly, our schools fail too many, and each day brings further evidence that the ways we use energy strengthen our adversaries and threaten our planet.",
+    "type": "english",
+    "category": "news",
+    "isSystem": true
+  },
+  {
+    "id": "en-news-010",
+    "title": "2004 Tsunami Relief PSA (Excerpt)",
+    "content": "We stand today in the presence of a disaster of almost unimaginable proportions. More than one hundred thousand people have lost their lives in the terrible tsunami that struck the shores of the Indian Ocean. Millions more have been displaced, left without homes, without food, without clean water, without hope. The world has responded with generosity and compassion, but the need is still immense. We ask every American to do what they can to help. Every dollar counts. Every act of kindness matters. The American people have always risen to meet the challenges of our time, and we know that you will do so again. The people of the affected countries are our neighbors, our friends, our fellow human beings. They are mothers and fathers, sons and daughters, brothers and sisters. They are fishermen and farmers, teachers and nurses, shopkeepers and street vendors. They are people just like us, who have lost everything they had. They need our help. They need it now. Let us not turn away from them. Let us open our hearts and our wallets to support the relief efforts. Let us show the world that Americans care. That is who we are. That is what we do. We help those in need. And we will help them rebuild their lives and their communities. This is our duty, and we will fulfill it.",
+    "type": "english",
+    "category": "news",
+    "isSystem": true
+  }
+]

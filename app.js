@@ -71,20 +71,17 @@ class App {
     console.log("🖊️ 砚迹（YanTrace）启动中...");
 
     this._initStorage();
-    this._initServices();
+    await this._initServices();
     this._initModules();
     this._initDefaultData();
     this._bindEvents();
-
     this._bindBackButtons();
-
     this._applyUserSettings();
     this._renderPage("home");
 
     this.isInitialized = true;
     console.log("✅ 砚迹（YanTrace）启动完成");
   }
-
   // ============================================
   // 存储与数据
   // ============================================
@@ -97,13 +94,16 @@ class App {
     console.log("📦 存储初始化完成");
   }
 
-  _initServices() {
+  async _initServices() {
     this.userService = new UserModel();
     this.historyService = new RecordsModel();
     this.settingsService = new SettingsModel();
     this.contentModel = new ContentModel();
 
-    // 兼容 PracticeEngine
+    // 等待 ContentModel 首次加载完成
+    await this.contentModel.ready();
+
+    // 兼容层
     this.articleService = {
       getByType: (lang) => this.contentModel.getItems("article", lang),
       getById: (id) => this.contentModel.getItem("article", id),
@@ -117,25 +117,13 @@ class App {
 
     console.log("📚 服务层初始化完成");
   }
-
   _initDefaultData() {
     const users = this.userService.getAll();
     if (users.length === 0) {
       this.userService.create("砚客");
-      console.log("👤 创建默认用户：砚客");
-    }
-
-    // 检查是否有文章数据，没有则创建示例
-    const articles = this.contentModel.getItems("article", "chinese");
-    if (articles.length === 0) {
-      // 创建一篇示例文章
-      this.contentModel.create("article", {
-        title: "示例文章",
-        content:
-          "欢迎使用砚迹！这是你的第一篇示例文章。你可以在这里开始打字练习。",
-        type: "chinese",
-      });
-      console.log("📄 创建示例文章");
+      console.log("👤 首次使用，创建默认用户：砚客");
+    } else {
+      console.log("👤 用户已存在，跳过内容初始化");
     }
 
     this.currentUser = this.userService.getCurrent();
@@ -145,7 +133,6 @@ class App {
 
     console.log("📦 默认数据初始化完成");
   }
-
   // ============================================
   // 功能模块
   // ============================================
