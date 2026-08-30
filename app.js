@@ -23,15 +23,13 @@ import {
 } from "./modules/PageTemplates.js";
 
 // Model 层
-import { ArticleModel } from "./features/article/index.js";
 import { UserModel } from "./features/user/index.js";
 import { SettingsModel } from "./features/settings/index.js";
 import { RecordsModel } from "./features/records/index.js";
-import { PhraseModel } from "./features/phrase/index.js";
+import { ContentModel, ContentPresenter } from "./features/content/index.js";
 
 // Presenter 层
 import UserPresenter from "./features/user/index.js";
-import ArticlePresenter from "./features/article/index.js";
 import SettingsPresenter from "./features/settings/index.js";
 import RecordsPresenter from "./features/records/index.js";
 
@@ -42,10 +40,10 @@ import RecordsPresenter from "./features/records/index.js";
 class App {
   constructor() {
     // 服务实例
-    this.articleService = null;
     this.userService = null;
     this.historyService = null;
     this.settingsService = null;
+    this.contentModel = null;
 
     // 功能模块实例
     this.navigator = null;
@@ -53,7 +51,7 @@ class App {
 
     // Presenter 实例
     this.userPresenter = null;
-    this.articlePresenter = null;
+    this.contentPresenter = null;
     this.settingsPresenter = null;
     this.recordsPresenter = null;
 
@@ -100,11 +98,23 @@ class App {
   }
 
   _initServices() {
-    this.articleService = new ArticleModel();
     this.userService = new UserModel();
     this.historyService = new RecordsModel();
     this.settingsService = new SettingsModel();
-    this.phraseService = new PhraseModel();
+    this.contentModel = new ContentModel();
+
+    // 兼容 PracticeEngine
+    this.articleService = {
+      getByType: (lang) => this.contentModel.getItems("article", lang),
+      getById: (id) => this.contentModel.getItem("article", id),
+      getAll: () => this.contentModel.getAll("article"),
+    };
+    this.phraseService = {
+      getByType: (lang) => this.contentModel.getItems("phrase", lang),
+      getById: (id) => this.contentModel.getItem("phrase", id),
+      getAll: () => this.contentModel.getAll("phrase"),
+    };
+
     console.log("📚 服务层初始化完成");
   }
 
@@ -115,10 +125,17 @@ class App {
       console.log("👤 创建默认用户：砚客");
     }
 
-    const articles = this.articleService.getAll();
+    // 检查是否有文章数据，没有则创建示例
+    const articles = this.contentModel.getItems("article", "chinese");
     if (articles.length === 0) {
-      this.articleService.loadAll();
-      console.log("📄 加载内置文章");
+      // 创建一篇示例文章
+      this.contentModel.create("article", {
+        title: "示例文章",
+        content:
+          "欢迎使用砚迹！这是你的第一篇示例文章。你可以在这里开始打字练习。",
+        type: "chinese",
+      });
+      console.log("📄 创建示例文章");
     }
 
     this.currentUser = this.userService.getCurrent();
@@ -210,15 +227,15 @@ class App {
     return this.userPresenter;
   }
 
-  _getArticlePresenter() {
-    if (!this.articlePresenter) {
-      this.articlePresenter = new ArticlePresenter({
-        articleService: this.articleService,
+  _getContentPresenter() {
+    if (!this.contentPresenter) {
+      this.contentPresenter = new ContentPresenter({
+        contentModel: this.contentModel,
         historyService: this.historyService,
         userService: this.userService,
       });
     }
-    return this.articlePresenter;
+    return this.contentPresenter;
   }
 
   _getSettingsPresenter() {
@@ -440,7 +457,7 @@ class App {
       this.practiceEngine?.leave(pageId);
     }
     if (pageId === "article-management") {
-      this._getArticlePresenter()?.destroy();
+      this._getContentPresenter()?.destroy();
     }
     if (pageId === "history") {
       this.recordsPresenter?.destroy();
@@ -476,7 +493,7 @@ class App {
     } else if (pageId === "settings") {
       this._getSettingsPresenter()?.render(container);
     } else if (pageId === "article-management") {
-      this._getArticlePresenter()?.render(container);
+      this._getContentPresenter()?.render(container);
     } else if (pageId === "history") {
       this.recordsPresenter?.render(container);
     }
