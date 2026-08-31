@@ -182,6 +182,26 @@
   border-color: var(--color-accent);
 }
 
+/* ----- 诗词行样式：统一缩进，首行不缩进 ----- */
+.poem-line {
+  padding-left: 2em;
+  text-indent: 0;
+  line-height: 1.8;
+  margin-bottom: 0.2em;
+}
+
+/* ----- 词组样式：词间距 ----- */
+.content-phrase {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8em;
+  align-items: center;
+}
+
+.phrase-word {
+  display: inline-block;
+}
+
 /* ----- 底部操作栏 ----- */
 .am-actions {
   display: flex;
