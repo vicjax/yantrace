@@ -1,7 +1,5 @@
 /**
  * 砚迹（YanTrace）- 输入控制器
- * 职责：处理字符输入（主输入、退格、峰值采样）
- * 位置：modules/practice/controller/InputController.js
  */
 
 import { calcStats } from "./StatsEngine.js";
@@ -24,10 +22,6 @@ export default class InputController {
     this._peakWpm = 0;
   }
 
-  /**
-   * 处理字符输入
-   * @param {string} char - 输入的字符
-   */
   handleCharInput(char) {
     if (this._state.isFinished) return;
     if (this._state.totalChars === 0) return;
@@ -85,11 +79,9 @@ export default class InputController {
     item.status = newStatus;
 
     this._state.currentCharIndex++;
-    this._view.renderChars(
-      this._state.chars,
-      this._state.currentCharIndex,
-      this._state.isFinished,
-    );
+    
+    // ⭐ 打字后只更新单个字符状态，不重新渲染全部
+    this._view.updateCharStatus(idx, newStatus);
     this._view.updateCurrentChar(this._state.currentCharIndex);
 
     this._updateProgress();
@@ -108,20 +100,19 @@ export default class InputController {
     }
   }
 
-  /**
-   * 处理退格
-   */
   handleBackspace() {
     if (this._state.isFinished) return;
     if (this._state.currentCharIndex === 0) return;
 
     this._state.currentCharIndex--;
-    this._view.updateCurrentChar(this._state.currentCharIndex);
-
+    
     const item = this._state.chars[this._state.currentCharIndex];
     const currentStatus = item.status;
 
-    if (currentStatus === STATUS.PENDING) return;
+    if (currentStatus === STATUS.PENDING) {
+      this._view.updateCurrentChar(this._state.currentCharIndex);
+      return;
+    }
 
     if (currentStatus === STATUS.CORRECT) {
       this._state.correct--;
@@ -134,18 +125,14 @@ export default class InputController {
     item.keepColor = currentStatus;
     item.status = STATUS.PENDING;
 
-    this._view.renderChars(
-      this._state.chars,
-      this._state.currentCharIndex,
-      this._state.isFinished,
-    );
+    // ⭐ 退格后只更新单个字符状态，不重新渲染全部
+    this._view.updateCharStatus(this._state.currentCharIndex, STATUS.PENDING);
+    this._view.updateCurrentChar(this._state.currentCharIndex);
+
     this._updateProgress();
     this._view.scrollToChar(this._state.currentCharIndex);
   }
 
-  /**
-   * 记录击键（由策略调用）
-   */
   recordKeypress() {
     this._state.keystrokes++;
     this._timer.start();
@@ -153,9 +140,6 @@ export default class InputController {
     this._playSound();
   }
 
-  /**
-   * 记录退格（由策略调用）
-   */
   recordBackspace() {
     this._state.backspaces++;
     this._state.keystrokes++;
@@ -163,26 +147,16 @@ export default class InputController {
     this._playSound();
   }
 
-  /**
-   * 获取峰值速度
-   */
   getPeakSpeed() {
     return this._state.currentMode === "chinese"
       ? this._peakCpm
       : this._peakWpm;
   }
 
-  /**
-   * 重置峰值
-   */
   resetPeak() {
     this._peakCpm = 0;
     this._peakWpm = 0;
   }
-
-  // ============================================
-  // 私有方法
-  // ============================================
 
   _updateProgress() {
     const stats = this._getStats();
@@ -217,6 +191,7 @@ export default class InputController {
     const elapsed = this._timer.getEffectiveElapsed();
     return calcStats(this._state, elapsed, this._peakCpm, this._peakWpm);
   }
+
   _playSound() {
     const sound = window.__soundSetting || "off";
     if (sound === "off") return;

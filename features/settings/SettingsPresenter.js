@@ -63,6 +63,14 @@ export default class SettingsPresenter extends BasePresenter {
     this.modalEl.style.display = "none";
     // 清理视图事件
     this.view.cleanup();
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (window.app?.practiceEngine?._presenter?.strategy?.updatePosition) {
+          window.app.practiceEngine._presenter.strategy.updatePosition();
+        }
+      });
+    });
   }
 
   /**
@@ -208,10 +216,6 @@ export default class SettingsPresenter extends BasePresenter {
     window.__soundSetting = settings.sound || "off";
 
     // 6. 浮动输入框
-    if (window.app?.practiceEngine?.strategy?.updatePosition) {
-      setTimeout(() => {
-        window.app.practiceEngine.strategy.updatePosition();
-      }, 50);
-    }
+    // 关闭时延迟更新
   }
 }

@@ -62,6 +62,7 @@ export default class PracticePresenter {
     this.selector = null;
     this.resetBtn = null;
     this.stopBtn = null;
+    this.categorySelect = null; // 新增：分类下拉
     this.timeLimit = 0;
 
     this._bindResizeEvent();
@@ -95,7 +96,7 @@ export default class PracticePresenter {
   // 公共方法
   // ============================================
 
-  enter(pageId) {
+  async enter(pageId) {
     let type = "chinese";
     let contentType = "article";
 
@@ -109,20 +110,41 @@ export default class PracticePresenter {
 
     this.currentContentType = contentType;
     this._setPageDom(pageId);
-    this.loadFirstContent(type, contentType);
+    if (this.categorySelect && !this.categorySelect.value) {
+      this.categorySelect.value = "prose";
+    }
+
+    await this.loadFirstContent(type, contentType);
   }
   leave() {
     this._clearStrategy();
   }
 
-  loadFirstContent(type, contentType) {
-    this.loadContentList(type, contentType);
+  async loadFirstContent(type, contentType) {
+    await this.loadContentList(type, contentType);
   }
 
-  loadContentList(type, contentType) {
-    // 创建内容策略
+  /**
+   * 加载内容列表（支持分类过滤）
+   */
+
+  async loadContentList(type, contentType, category) {
+    // 如果 category 未传，从下拉框读取
+    if (!category && this.categorySelect) {
+      category = this.categorySelect.value;
+    }
+
+    // 默认值
+    if (!category) {
+      category = "prose";
+    }
+
     this.contentStrategy = this.contentFactory.create(type, contentType);
-    const list = this.contentStrategy.getList();
+
+    // 确保数据加载完成
+    await this.contentStrategy.loadList();
+
+    const list = this.contentStrategy.getList(category);
     const currentValue = this.selector?.value || "";
 
     this.selector.innerHTML = list
@@ -136,7 +158,7 @@ export default class PracticePresenter {
     }
 
     if (list.length > 0) {
-      this.loadContent(type, contentType, this.selector.value);
+      await this.loadContent(type, contentType, this.selector.value);
     }
   }
 
@@ -172,7 +194,13 @@ export default class PracticePresenter {
     this.state.currentArticleId = contentId;
     this.state.currentArticleTitle = this.contentStrategy.getTitle();
 
+    // 获取原始内容（用于渲染）
+    const rawContent = this.contentStrategy.getRawContent?.() || "";
+
+    // 获取字符流（用于匹配，已过滤 \n）
     const chars = this.contentStrategy.getChars();
+
+    // 设置状态（匹配用）
     this.state.setChars(
       chars.map((char) => ({
         char: char,
@@ -181,22 +209,15 @@ export default class PracticePresenter {
       })),
     );
 
-    // 重置计时器（归零，保留监听器）
+    // 重置计时器
     this.timer.reinit();
 
-    // ============================================
-    // 4. 统一刷新视图
-    // ============================================
-    // 渲染字符
-    this.view.renderChars(this.state.chars, 0, false);
+    // 渲染原始内容（按 \n 和 \n\n 分段，叠加字符状态）
+    this.view.renderRawContent(rawContent, this.state.chars, 0, false, contentType);
 
-    // 更新进度（归零）
+    // 更新进度
     this.view.updateProgress(0);
-
-    // 更新计时器（归零）
     this.view.updateTimer(0, this.timeLimit);
-
-    // ⭐ 最后统一刷新统计（归零状态）
     this._refreshStatsDisplay();
 
     // ============================================
@@ -393,6 +414,9 @@ export default class PracticePresenter {
   // 私有方法
   // ============================================
 
+  /**
+   * 设置 DOM 引用（新增 categorySelect）
+   */
   _setPageDom(pageId) {
     // 判断语言
     // 第 399 行
@@ -405,6 +429,18 @@ export default class PracticePresenter {
       document.getElementById(`${prefix}Select`);
     this.resetBtn = document.getElementById(`${prefix}ResetBtn`);
     this.stopBtn = document.getElementById(`${prefix}StopBtn`);
+    this.categorySelect = document.getElementById(`${prefix}CategorySelect`); // 新增
+
+    // 设置分类下拉默认值
+    if (this.categorySelect && !this.categorySelect.value) {
+      const isPhrase = this.currentContentType === "phrase";
+      const isChinese = this.state.currentMode === "chinese";
+      if (isPhrase) {
+        this.categorySelect.value = isChinese ? "two-char" : "words";
+      } else {
+        this.categorySelect.value = "prose";
+      }
+    }
 
     const elements = {
       textBox: textBox,
@@ -432,7 +468,12 @@ export default class PracticePresenter {
     this.view.bind(pageId, elements);
     this._bindUIEvents();
   }
+
+  /**
+   * 绑定 UI 事件（新增分类切换）
+   */
   _bindUIEvents() {
+    // 移除旧监听器
     if (this.selector && this._selectorHandler) {
       this.selector.removeEventListener("change", this._selectorHandler);
     }
@@ -442,26 +483,30 @@ export default class PracticePresenter {
     if (this.stopBtn && this._stopHandler) {
       this.stopBtn.removeEventListener("click", this._stopHandler);
     }
+    if (this.categorySelect && this._categoryHandler) {
+      this.categorySelect.removeEventListener("change", this._categoryHandler);
+    }
 
+    // 文章选择
     if (!this._selectorHandler) {
-      this._selectorHandler = () => {
+      this._selectorHandler = async () => {
         if (this.selector?.value) {
           const type = this.state.currentMode;
           const contentType = this.currentContentType || "article";
-          this.loadContent(type, contentType, this.selector.value);
+          const category = this.categorySelect?.value || "prose";
+          await this.loadContent(type, contentType, this.selector.value);
         }
       };
     }
 
+    // 重置按钮
     if (!this._resetHandler) {
       this._resetHandler = async () => {
         const type = this.state.currentMode;
-
         if (this.state.isFinished || !this.state.startTime) {
           this.reset(type);
           return;
         }
-
         if (
           await Modal.confirm(
             "确定要重新开始吗？当前进度将丢失。",
@@ -475,10 +520,10 @@ export default class PracticePresenter {
       };
     }
 
+    // 停止按钮
     if (!this._stopHandler) {
       this._stopHandler = async () => {
         if (this.state.isFinished || !this.state.startTime) return;
-
         if (
           await Modal.confirm(
             "确定要停止当前练习吗？当前进度将保存为记录。",
@@ -493,6 +538,16 @@ export default class PracticePresenter {
       };
     }
 
+    // 分类切换（新增）
+    if (!this._categoryHandler) {
+      this._categoryHandler = async () => {
+        const category = this.categorySelect?.value || "prose";
+        const type = this.state.currentMode;
+        const contentType = this.currentContentType || "article";
+        await this.loadContentList(type, contentType, category);
+      };
+    }
+    // 绑定事件
     if (this.selector) {
       this.selector.addEventListener("change", this._selectorHandler);
     }
@@ -501,6 +556,9 @@ export default class PracticePresenter {
     }
     if (this.stopBtn) {
       this.stopBtn.addEventListener("click", this._stopHandler);
+    }
+    if (this.categorySelect) {
+      this.categorySelect.addEventListener("change", this._categoryHandler);
     }
   }
 
@@ -535,5 +593,46 @@ export default class PracticePresenter {
       audio.volume = 0.3;
       audio.play().catch(() => {});
     } catch (e) {}
+  }
+
+  /**
+   * 解析内容结构（与 ContentView 相同的逻辑）
+   */
+  _parseContentStructure(content, contentType) {
+    // 词组：独立处理
+    if (contentType === "phrase") {
+      const words = content.split(" ");
+      return { type: "phrase", words };
+    }
+
+    // 文章/诗词：按 \n\n 和 \n 解析
+    const blocks = [];
+    const blockStrs = content.split(/\n\n/);
+
+    blockStrs.forEach((block) => {
+      if (!block.trim()) return;
+      if (block.includes("\n")) {
+        const lines = block.split("\n").filter((l) => l.trim());
+        if (lines.length > 0) {
+          blocks.push({ type: "line", lines });
+        }
+      } else {
+        blocks.push({ type: "paragraph", content: block.trim() });
+      }
+    });
+
+    if (blocks.length === 0) {
+      return { type: "empty", blocks: [] };
+    }
+
+    const allLine = blocks.every((b) => b.type === "line");
+    const allParagraph = blocks.every((b) => b.type === "paragraph");
+
+    let type = "mixed";
+    if (allLine) type = "poem";
+    else if (allParagraph) type = "article";
+    else type = "mixed";
+
+    return { type, blocks };
   }
 }
