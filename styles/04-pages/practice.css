@@ -19,13 +19,13 @@
   background: var(--bg-surface-strong);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-default);
-  padding: 22px 28px;
+  padding:22px 28px;
   overflow-y: auto; /* 内容超出滚动 */
   user-select: none;
   white-space: pre-wrap;
   word-break: break-word;
   font-size: var(--font-size-base, 22px);
-  line-height: 2;
+  line-height: 1; 
   letter-spacing: 0.5px;
   flex: 1; /* 自动填满剩余空间 */
   display: block;
@@ -36,11 +36,13 @@
   display: inline-block;
   min-width: 0.5em;
   text-align: center;
-  border-radius: 3px;
   padding: 0 1px;
   transition: 0.1s;
   position: relative;
   vertical-align: top;
+  line-height: 1.1;
+  letter-spacing: 0 !important;
+  text-indent: 0 !important;
 }
 
 .text-box .char.correct {
@@ -49,25 +51,21 @@
 
 .text-box .char.error {
   color: var(--color-danger);
-  /* background: rgba(248, 113, 113, 0.15); */
+  text-decoration: underline wavy var(--color-danger) 1.2px;
+  text-underline-offset: 2.5px;
 }
 
 .text-box .char.fixed {
   color: var(--color-warning);
-  /* background: rgba(251, 191, 36, 0.12); */
 }
 
 .text-box .char.current {
   background: var(--color-accent);
   color: #ffffff;
-  padding: 1px 0px;
-  border-radius: 4px;
-  /* animation: pulse 1s ease-in-out infinite alternate;  */
+  border-radius: 6px;
   box-shadow: 0 0 16px var(--glow-accent, rgba(79, 70, 229, 0.4));
   position: relative;
   z-index: 2;
-  line-height: 1;
-  vertical-align: baseline;
 }
 
 @keyframes pulse {
@@ -89,12 +87,7 @@
   outline: none !important;
   color: var(--text-primary);
   font-family: "Segoe UI", "PingFang SC", monospace;
-  font-size: var(--pinyin-size, 18px);
-  line-height: var(--pinyin-size, 18px);
-  height: var(--pinyin-size, 18px);
   text-align: left;
-  padding: 0;
-  margin: 0;
   caret-color: var(--color-accent);
   z-index: 100;
   pointer-events: auto;
@@ -103,10 +96,18 @@
   -webkit-appearance: none;
   appearance: none;
   border-radius: 0;
-  box-sizing: content-box;
   letter-spacing: 0;
   text-indent: 0;
-  overflow: visible;
+  overflow: visible !important;
+
+  /* 新增：内容靠上对齐 */
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  line-height: 1;
+  padding: 0;
+  margin: 0;
+  box-sizing: content-box;
 }
 
 .floating-input:focus {
@@ -138,3 +139,33 @@
 .article-select:focus {
   border-color: var(--color-accent);
 }
+
+.practice-para {
+  margin-bottom: 0.1em;
+  text-indent: 2em;
+  line-height: 2;
+}
+
+.text-box .poem-line {
+  padding-left: 2em;
+  text-indent: 0;
+  line-height: 2;
+  margin-bottom: 0.1em;
+}
+
+.text-box .phrase-word {
+  display: inline-block;
+}
+
+/* 词组样式：词间距 */
+/* 词组容器：flex 换行，词间距 */
+.phrase-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em 1.5em; /* 垂直 0.4em，水平 0.8em */
+  align-items: center;
+}
+
+/* .phrase-word:last-child {
+  margin-right: 0;
+} */

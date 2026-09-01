@@ -20,14 +20,16 @@ export default class ChineseStrategy {
    * 初始化策略（绑定事件）
    */
   init() {
-    if (this._isActive) return;
+    if (this._isActive) {
+      console.warn("ChineseStrategy 已激活，跳过初始化");
+      return;
+    }
     this._isActive = true;
 
     const container = this.engine.textBox;
     container.addEventListener("click", this._handleContainerClick.bind(this));
     container.addEventListener("scroll", this._handleScroll.bind(this));
 
-    this._setupPageObserver();
     document.addEventListener(
       "visibilitychange",
       this._handleVisibilityChange.bind(this),
@@ -104,7 +106,6 @@ export default class ChineseStrategy {
       this.inputEl.focus();
     });
 
-    this._highlightCurrentChar(true);
     this._isCreating = false;
   }
 
@@ -113,8 +114,6 @@ export default class ChineseStrategy {
    */
   _destroyInput() {
     if (!this.inputEl) return;
-
-    this._highlightCurrentChar(false);
 
     const h = this._handlers;
     this.inputEl.removeEventListener("compositionstart", h.compositionStart);
@@ -128,28 +127,6 @@ export default class ChineseStrategy {
     this._handlers = {};
     this._isComposing = false;
     this._compositionProcessed = false;
-  }
-
-  /**
-   * 当前字符高亮效果（加深阴影）
-   */
-  _highlightCurrentChar(show) {
-    const container = this.engine.textBox;
-    const charEl = container?.querySelector(".char.current");
-    if (!charEl) return;
-
-    if (show) {
-      charEl.style.boxShadow =
-        "0 0 20px " +
-          getComputedStyle(document.documentElement)
-            .getPropertyValue("--glow-accent-strong")
-            .trim() || "rgba(79, 70, 229, 0.5)";
-      charEl.style.transform = "scale(1.05)";
-      charEl.style.transition = "box-shadow 0.2s, transform 0.2s";
-    } else {
-      charEl.style.boxShadow = "";
-      charEl.style.transform = "";
-    }
   }
 
   /**
@@ -264,7 +241,7 @@ export default class ChineseStrategy {
 
         if (this.inputEl) {
           this.inputEl.style.opacity = "0.3";
-          this.inputEl.placeholder = "点击文章区继续...";
+          this.inputEl.placeholder = "已暂停，点击此处继续...";
         }
       },
     };
@@ -291,34 +268,50 @@ export default class ChineseStrategy {
     if (!this.engine.textBox) return;
 
     requestAnimationFrame(() => {
-      const pos = this._getCharPosition();
-      if (!pos) return;
+      try {
+        const pos = this._getCharPosition();
+        if (!pos || typeof pos.x !== "number" || typeof pos.y !== "number")
+          return;
 
-      const containerRect = this.engine.getContainerRect();
-      if (!containerRect) return;
+        const containerRect = this.engine.getContainerRect();
+        if (
+          !containerRect ||
+          containerRect.width === 0 ||
+          containerRect.height === 0
+        )
+          return;
 
-      const containerWidth = containerRect.width;
-      const remainingWidth = containerWidth - pos.x - 4;
+        const computedStyle = getComputedStyle(this.engine.textBox);
+        const fontSize = parseFloat(computedStyle.fontSize) || 22;
+        if (fontSize < 8) return;
 
-      const computedStyle = getComputedStyle(this.engine.textBox);
-      const fontSize = parseFloat(computedStyle.fontSize) || 22;
-      const pinyinSize = Math.round(fontSize * 0.8);
+        const lineHeight = parseFloat(computedStyle.lineHeight);
+        const effectiveLineHeight =
+          lineHeight && lineHeight > 0 ? lineHeight : fontSize * 1.8;
 
-      const lineHeight = parseFloat(computedStyle.lineHeight) || fontSize * 2;
-      const lineSpacing = lineHeight - pos.height;
-      const pinyinTop = pos.y + lineSpacing / 2 - pinyinSize / 2;
+        const inputHeight = Math.max(
+          Math.round(effectiveLineHeight * 0.55),
+          20,
+        );
+        const pinyinSize = Math.max(Math.round(inputHeight * 0.75), 12);
 
-      this.inputEl.style.left = containerRect.left + pos.x + "px";
-      this.inputEl.style.top = containerRect.top + pinyinTop + "px";
-      this.inputEl.style.width = Math.max(remainingWidth, 20) + "px";
-      this.inputEl.style.height = pinyinSize + "px";
-      this.inputEl.style.fontSize = pinyinSize + "px";
-      this.inputEl.style.lineHeight = pinyinSize + "px";
-      this.inputEl.style.padding = "0";
-      this.inputEl.style.margin = "0";
+        const left = containerRect.left + pos.x;
+        const top = containerRect.top + pos.y;
+
+        const containerWidth = containerRect.width;
+        const remainingWidth = Math.max(containerWidth - pos.x - 8, 20);
+
+        this.inputEl.style.left = Math.max(0, left) + "px";
+        this.inputEl.style.top = Math.max(0, top) + "px";
+        this.inputEl.style.width =
+          Math.min(remainingWidth, containerWidth - 20) + "px";
+        this.inputEl.style.height = inputHeight + "px";
+        this.inputEl.style.fontSize = pinyinSize + "px";
+      } catch (e) {
+        console.debug("更新输入框位置失败:", e);
+      }
     });
   }
-
   /**
    * 获取当前字符位置（增强容错）
    */
@@ -368,15 +361,14 @@ export default class ChineseStrategy {
   }
 
   /**
-   * 页面可见性变化时销毁输入框
+   * 页面可见性变化时
    */
   _handleVisibilityChange() {
-    const page = document.getElementById("page-practice-cn");
-    if (page && !page.classList.contains("active")) {
-      this._destroyInput();
+    // 只做一件事：防止浏览器自动恢复焦点
+    if (this.inputEl) {
+      this.inputEl.blur();
     }
   }
-
   /**
    * 完全销毁策略
    */

@@ -194,7 +194,13 @@ export default class PracticePresenter {
     this.state.currentArticleId = contentId;
     this.state.currentArticleTitle = this.contentStrategy.getTitle();
 
+    // 获取原始内容（用于渲染）
+    const rawContent = this.contentStrategy.getRawContent?.() || "";
+
+    // 获取字符流（用于匹配，已过滤 \n）
     const chars = this.contentStrategy.getChars();
+
+    // 设置状态（匹配用）
     this.state.setChars(
       chars.map((char) => ({
         char: char,
@@ -203,22 +209,15 @@ export default class PracticePresenter {
       })),
     );
 
-    // 重置计时器（归零，保留监听器）
+    // 重置计时器
     this.timer.reinit();
 
-    // ============================================
-    // 4. 统一刷新视图
-    // ============================================
-    // 渲染字符
-    this.view.renderChars(this.state.chars, 0, false);
+    // 渲染原始内容（按 \n 和 \n\n 分段，叠加字符状态）
+    this.view.renderRawContent(rawContent, this.state.chars, 0, false, contentType);
 
-    // 更新进度（归零）
+    // 更新进度
     this.view.updateProgress(0);
-
-    // 更新计时器（归零）
     this.view.updateTimer(0, this.timeLimit);
-
-    // ⭐ 最后统一刷新统计（归零状态）
     this._refreshStatsDisplay();
 
     // ============================================
@@ -594,5 +593,46 @@ export default class PracticePresenter {
       audio.volume = 0.3;
       audio.play().catch(() => {});
     } catch (e) {}
+  }
+
+  /**
+   * 解析内容结构（与 ContentView 相同的逻辑）
+   */
+  _parseContentStructure(content, contentType) {
+    // 词组：独立处理
+    if (contentType === "phrase") {
+      const words = content.split(" ");
+      return { type: "phrase", words };
+    }
+
+    // 文章/诗词：按 \n\n 和 \n 解析
+    const blocks = [];
+    const blockStrs = content.split(/\n\n/);
+
+    blockStrs.forEach((block) => {
+      if (!block.trim()) return;
+      if (block.includes("\n")) {
+        const lines = block.split("\n").filter((l) => l.trim());
+        if (lines.length > 0) {
+          blocks.push({ type: "line", lines });
+        }
+      } else {
+        blocks.push({ type: "paragraph", content: block.trim() });
+      }
+    });
+
+    if (blocks.length === 0) {
+      return { type: "empty", blocks: [] };
+    }
+
+    const allLine = blocks.every((b) => b.type === "line");
+    const allParagraph = blocks.every((b) => b.type === "paragraph");
+
+    let type = "mixed";
+    if (allLine) type = "poem";
+    else if (allParagraph) type = "article";
+    else type = "mixed";
+
+    return { type, blocks };
   }
 }

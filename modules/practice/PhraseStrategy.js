@@ -1,9 +1,8 @@
 /**
  * 砚迹（YanTrace）- 词组内容策略
- * 位置：modules/practice/strategies/PhraseStrategy.js
  */
 
-import ContentStrategy from "./ContentStrategy.js";
+import ContentStrategy from './ContentStrategy.js';
 
 export default class PhraseStrategy extends ContentStrategy {
   constructor(phraseService, language) {
@@ -14,7 +13,7 @@ export default class PhraseStrategy extends ContentStrategy {
     this._phraseSets = [];
     this._loaded = false;
     this._cachedChars = [];
-    this._loadPromise = null; // ✅ 添加
+    this._loadPromise = null;
   }
 
   loadList() {
@@ -43,7 +42,7 @@ export default class PhraseStrategy extends ContentStrategy {
     const chars = [];
     const words = phraseSet.words || [];
     words.forEach((word) => {
-      word.split("").forEach((char) => {
+      word.split('').forEach((char) => {
         chars.push(char);
       });
     });
@@ -56,12 +55,17 @@ export default class PhraseStrategy extends ContentStrategy {
     return this._cachedChars;
   }
 
+  getRawContent() {
+    if (!this._currentPhraseSet) return '';
+    return (this._currentPhraseSet.words || []).join(' ');
+  }
+
   getTitle() {
-    return this._currentPhraseSet?.name || "未选择词组";
+    return this._currentPhraseSet?.name || '未选择词组';
   }
 
   getType() {
-    return "phrase";
+    return 'phrase';
   }
 
   getLanguage() {
@@ -70,7 +74,7 @@ export default class PhraseStrategy extends ContentStrategy {
 
   getList(category) {
     if (!this._loaded) {
-      console.warn("[PhraseStrategy] getList called before loadList");
+      console.warn('[PhraseStrategy] getList called before loadList');
       return [];
     }
 
@@ -82,7 +86,7 @@ export default class PhraseStrategy extends ContentStrategy {
     return phraseSets.map((item) => ({
       id: item.id,
       title: item.name,
-      type: "phrase",
+      type: 'phrase',
       difficulty: item.difficulty || 1,
       wordCount: item.words?.length || 0,
     }));
@@ -96,7 +100,7 @@ export default class PhraseStrategy extends ContentStrategy {
       wordCount: words.length,
       difficulty: this._currentPhraseSet.difficulty || 1,
       totalChars: totalChars,
-      tags: ["词组", this._language === "chinese" ? "中文" : "英文"],
+      tags: ['词组', this._language === 'chinese' ? '中文' : '英文'],
     };
   }
 

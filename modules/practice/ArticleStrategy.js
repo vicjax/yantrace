@@ -2,7 +2,7 @@
  * 砚迹（YanTrace）- 文章内容策略
  */
 
-import ContentStrategy from "./ContentStrategy.js";
+import ContentStrategy from './ContentStrategy.js';
 
 export default class ArticleStrategy extends ContentStrategy {
   constructor(articleService, language) {
@@ -15,9 +15,6 @@ export default class ArticleStrategy extends ContentStrategy {
     this._loadPromise = null;
   }
 
-  /**
-   * 加载列表
-   */
   loadList() {
     if (this._loaded) return Promise.resolve(this._articles);
     if (this._loadPromise) return this._loadPromise;
@@ -32,9 +29,6 @@ export default class ArticleStrategy extends ContentStrategy {
     return this._loadPromise;
   }
 
-  /**
-   * 加载具体文章
-   */
   async load(id) {
     await this.loadList();
     const article = await this._articleService.getById(id);
@@ -49,28 +43,29 @@ export default class ArticleStrategy extends ContentStrategy {
   getChars() {
     if (!this._currentArticle) return [];
     return this._currentArticle.content
-      .split("")
-      .filter((char) => char !== "\n");
+      .split('')
+      .filter(char => char !== '\n');
+  }
+
+  getRawContent() {
+    return this._currentArticle?.content || '';
   }
 
   getTitle() {
-    return this._currentArticle?.title || "未选择文章";
+    return this._currentArticle?.title || '未选择文章';
   }
 
   getType() {
-    return "article";
+    return 'article';
   }
 
   getLanguage() {
     return this._language;
   }
 
-  /**
-   * 获取文章列表（需先调用 loadList）
-   */
   getList(category) {
     if (!this._loaded) {
-      console.warn("[ArticleStrategy] getList called before loadList");
+      console.warn('[ArticleStrategy] getList called before loadList');
       return [];
     }
 
@@ -82,7 +77,7 @@ export default class ArticleStrategy extends ContentStrategy {
     return articles.map((article) => ({
       id: article.id,
       title: article.title,
-      type: "article",
+      type: 'article',
     }));
   }
 
@@ -90,7 +85,7 @@ export default class ArticleStrategy extends ContentStrategy {
     if (!this._currentArticle) return {};
     return {
       wordCount: this._currentArticle.content?.length || 0,
-      tags: ["文章", this._language === "chinese" ? "中文" : "英文"],
+      tags: ['文章', this._language === 'chinese' ? '中文' : '英文'],
     };
   }
 }

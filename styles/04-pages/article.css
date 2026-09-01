@@ -183,11 +183,15 @@
 }
 
 /* 诗词行：统一缩进，首行不额外缩进 */
-.poem-line {
+.am-content .poem-line {
   padding-left: 2em;
   text-indent: 0;
   line-height: 1.8;
-  margin-bottom: 0.1em;
+  margin-bottom: 0.4em;
+}
+
+.am-content .phrase-word {
+  display: inline-block;
 }
 
 /* 诗节容器：段落间距 */
@@ -201,10 +205,6 @@
   flex-wrap: wrap;
   gap: 0.8em;
   align-items: center;
-}
-
-.phrase-word {
-  display: inline-block;
 }
 
 /* ----- 底部操作栏 ----- */
