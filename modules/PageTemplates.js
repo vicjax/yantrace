@@ -225,29 +225,41 @@ export function getHomeHtml(sloganData) {
  * @param {string} config.speedLabel - 速度标签 (CPM/WPM)
  * @param {string} config.placeholder - 占位文字
  */
+
 export function getPracticeHtml(config) {
   const { id, title, prefix, speedLabel, placeholder } = config;
 
-  // 判断是否是文章页面
-  const isArticlePage = id === "practice-cn" || id === "practice-en";
-  const isChinese = id === "practice-cn";
+  const isPhrase = id === "practice-phrase-cn" || id === "practice-phrase-en";
+  const isChinese = id === "practice-cn" || id === "practice-phrase-cn";
 
-  // 文章分类选项
-  const categoryOptions = isChinese
-    ? [
-        { value: "prose", label: "散文" },
-        { value: "news", label: "新闻" },
-        { value: "ancient", label: "古文" },
-        { value: "fable", label: "寓言" },
-        { value: "modern-poetry", label: "现代诗" },
-      ]
-    : [
-        { value: "prose", label: "散文" },
-        { value: "news", label: "新闻" },
-        { value: "fable", label: "寓言" },
-      ];
+  let categoryOptions = [];
+  if (isPhrase) {
+    categoryOptions = isChinese
+      ? [
+          { value: "two-char", label: "二字词" },
+          { value: "three-char", label: "三字词" },
+          { value: "four-char", label: "四字词" },
+        ]
+      : [{ value: "words", label: "单词" }];
+  } else {
+    categoryOptions = isChinese
+      ? [
+          { value: "prose", label: "散文" },
+          { value: "news", label: "新闻" },
+          { value: "ancient", label: "古文" },
+          { value: "fable", label: "寓言" },
+          { value: "modern-poetry", label: "现代诗" },
+        ]
+      : [
+          { value: "prose", label: "散文" },
+          { value: "news", label: "新闻" },
+          { value: "fable", label: "寓言" },
+        ];
+  }
 
-  const categoryHtml = isArticlePage
+  const hasCategory = true; // 所有练习页面都有分类下拉
+
+  const categoryHtml = hasCategory
     ? `<select id="${prefix}CategorySelect" class="article-select">
         ${categoryOptions
           .map((opt) => `<option value="${opt.value}">${opt.label}</option>`)

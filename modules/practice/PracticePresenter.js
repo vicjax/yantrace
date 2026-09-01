@@ -432,6 +432,17 @@ export default class PracticePresenter {
     this.stopBtn = document.getElementById(`${prefix}StopBtn`);
     this.categorySelect = document.getElementById(`${prefix}CategorySelect`); // 新增
 
+    // 设置分类下拉默认值
+    if (this.categorySelect && !this.categorySelect.value) {
+      const isPhrase = this.currentContentType === "phrase";
+      const isChinese = this.state.currentMode === "chinese";
+      if (isPhrase) {
+        this.categorySelect.value = isChinese ? "two-char" : "words";
+      } else {
+        this.categorySelect.value = "prose";
+      }
+    }
+
     const elements = {
       textBox: textBox,
       [`${prefix}Speed`]:

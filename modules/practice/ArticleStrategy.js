@@ -2,7 +2,7 @@
  * 砚迹（YanTrace）- 文章内容策略
  */
 
-import ContentStrategy from './ContentStrategy.js';
+import ContentStrategy from "./ContentStrategy.js";
 
 export default class ArticleStrategy extends ContentStrategy {
   constructor(articleService, language) {
@@ -48,15 +48,17 @@ export default class ArticleStrategy extends ContentStrategy {
 
   getChars() {
     if (!this._currentArticle) return [];
-    return this._currentArticle.content.split('');
+    return this._currentArticle.content
+      .split("")
+      .filter((char) => char !== "\n");
   }
 
   getTitle() {
-    return this._currentArticle?.title || '未选择文章';
+    return this._currentArticle?.title || "未选择文章";
   }
 
   getType() {
-    return 'article';
+    return "article";
   }
 
   getLanguage() {
@@ -68,7 +70,7 @@ export default class ArticleStrategy extends ContentStrategy {
    */
   getList(category) {
     if (!this._loaded) {
-      console.warn('[ArticleStrategy] getList called before loadList');
+      console.warn("[ArticleStrategy] getList called before loadList");
       return [];
     }
 
@@ -80,7 +82,7 @@ export default class ArticleStrategy extends ContentStrategy {
     return articles.map((article) => ({
       id: article.id,
       title: article.title,
-      type: 'article',
+      type: "article",
     }));
   }
 
@@ -88,7 +90,7 @@ export default class ArticleStrategy extends ContentStrategy {
     if (!this._currentArticle) return {};
     return {
       wordCount: this._currentArticle.content?.length || 0,
-      tags: ['文章', this._language === 'chinese' ? '中文' : '英文'],
+      tags: ["文章", this._language === "chinese" ? "中文" : "英文"],
     };
   }
 }
