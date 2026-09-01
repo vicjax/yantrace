@@ -139,13 +139,6 @@
   font-size: var(--font-size-base);
 }
 
-/* 内容管理 - 文章内容段落缩进 */
-.am-content p {
-  text-indent: 2em;
-  margin: 0 0 0.5em 0;
-  line-height: 1.8;
-}
-
 .am-content.editing {
   border: 1px solid var(--color-accent);
   border-radius: var(--radius-sm);
@@ -181,16 +174,28 @@
 .am-title-edit input:focus {
   border-color: var(--color-accent);
 }
+/* 内容管理 - 文章内容段落缩进 */
+/* 段落：首行缩进 */
+.am-content p {
+  text-indent: 2em;
+  margin: 0 0 0.5em 0;
+  line-height: 1.8;
+}
 
-/* ----- 诗词行样式：统一缩进，首行不缩进 ----- */
+/* 诗词行：统一缩进，首行不额外缩进 */
 .poem-line {
   padding-left: 2em;
   text-indent: 0;
   line-height: 1.8;
-  margin-bottom: 0.2em;
+  margin-bottom: 0.1em;
 }
 
-/* ----- 词组样式：词间距 ----- */
+/* 诗节容器：段落间距 */
+.stanza {
+  margin-bottom: 0.5em;
+}
+
+/* 词组样式 */
 .content-phrase {
   display: flex;
   flex-wrap: wrap;

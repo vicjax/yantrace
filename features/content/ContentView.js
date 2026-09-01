@@ -6,10 +6,10 @@
  *   第一级：中文文章 / 英文文章 / 中文词组 / 英文单词
  *   第二级：根据第一级动态变化
  *
- * 渲染模式：
- *   - article: 段落首行缩进（散文、新闻、寓言）
- *   - poem: 每行统一缩进（古文、现代诗）
- *   - phrase: 词列表，词间距（词组）
+ * 渲染方式：根据内容格式自动判断
+ *   - 包含 \n\n：段落式（首行缩进）
+ *   - 包含 \n：行式（每行统一缩进）
+ *   - 词组：词列表，词间距
  */
 
 export default class ContentView {
@@ -34,9 +34,6 @@ export default class ContentView {
     ],
     "english-phrase": [{ value: "words", label: "单词" }],
   };
-
-  // 诗词分类列表
-  static POEM_CATEGORIES = ["ancient", "modern-poetry"];
 
   constructor(options = {}) {
     this.onSwitch = options.onSwitch || null;
@@ -73,22 +70,6 @@ export default class ContentView {
   }
 
   // ============================================
-  // 内容类型判断
-  // ============================================
-
-  _getContentType(item) {
-    // 词组
-    if (this.currentType === "phrase") return "phrase";
-
-    // 文章：根据 category 判断
-    if (ContentView.POEM_CATEGORIES.includes(item?.category)) {
-      return "poem";
-    }
-
-    return "article";
-  }
-
-  // ============================================
   // 展示方法
   // ============================================
 
@@ -96,7 +77,7 @@ export default class ContentView {
     this.mode = "view";
     if (!item) {
       this._setTitle("");
-      this._setContent("", "article");
+      this._setContent("");
       this._setContentEditable(false);
       this._setStatus("请选择", "#8888aa");
       this._hideTitleInput();
@@ -106,7 +87,6 @@ export default class ContentView {
 
     const isArticle = this.currentType === "article";
     const title = isArticle ? item.title : item.name;
-    const contentType = this._getContentType(item);
 
     let content = "";
     if (isArticle) {
@@ -116,7 +96,7 @@ export default class ContentView {
     }
 
     this._setTitle(title);
-    this._setContent(content, contentType);
+    this._setContent(content);
     this._setContentEditable(false);
     this._setStatus("查看中", "#8888aa");
     this._hideTitleInput();
@@ -129,7 +109,6 @@ export default class ContentView {
 
     const isArticle = this.currentType === "article";
     const title = isArticle ? item.title : item.name;
-    const contentType = this._getContentType(item);
 
     let content = "";
     if (isArticle) {
@@ -139,7 +118,7 @@ export default class ContentView {
     }
 
     this._setTitle(title);
-    this._setContent(content, contentType);
+    this._setContent(content);
     this._setContentEditable(true);
     this._setStatus("编辑中", "#f59e0b");
     this._showTitleInput();
@@ -153,7 +132,7 @@ export default class ContentView {
   showNew() {
     this.mode = "new";
     this._setTitle("");
-    this._setContent("", "article");
+    this._setContent("");
     this._setContentEditable(true);
     this._setStatus("新建中", "#f59e0b");
     this._showTitleInput();
@@ -166,7 +145,7 @@ export default class ContentView {
 
   clear() {
     this._setTitle("");
-    this._setContent("", "article");
+    this._setContent("");
     this.mode = "view";
     this._setContentEditable(false);
     this._hideTitleInput();
@@ -436,11 +415,9 @@ export default class ContentView {
   // ============================================
 
   /**
-   * 设置内容 - 根据内容类型选择渲染方式
-   * @param {string} content - 内容
-   * @param {string} contentType - 'article' | 'poem' | 'phrase'
+   * 设置内容 - 根据内容格式自动判断渲染方式
    */
-  _setContent(content, contentType = "article") {
+  _setContent(content) {
     if (!this.contentEl) return;
 
     const placeholder = this.contentEl.querySelector(".placeholder");
@@ -458,50 +435,39 @@ export default class ContentView {
     // 清除之前的类
     this.contentEl.classList.remove("content-phrase");
 
-    switch (contentType) {
-      case "phrase":
-        this._renderPhrase(content);
-        break;
-      case "poem":
-        this._renderPoem(content);
-        break;
-      default:
-        this._renderArticle(content);
-    }
-  }
-
-  /**
-   * 渲染文章：段落首行缩进
-   */
-  _renderArticle(content) {
-    const paragraphs = content.split(/\n\n/);
-    const html = paragraphs
-      .map((p) => {
-        if (!p.trim()) return '<p>&nbsp;</p>';
-        const lines = p.split("\n").filter((line) => line.trim() !== "");
-        if (lines.length === 0) return '<p>&nbsp;</p>';
-        return `<p>${lines.map((line) => this._escapeHtml(line)).join("<br>")}</p>`;
-      })
-      .join("");
-
-    this.contentEl.innerHTML = html || '<span class="placeholder">暂无内容</span>';
-    this.contentEl.style.textIndent = "";
-  }
-
-  /**
-   * 渲染诗词：每行独立，统一缩进
-   */
-  _renderPoem(content) {
-    const lines = content.split("\n").filter((line) => line.trim() !== "");
-    if (lines.length === 0) {
-      this.contentEl.textContent = content;
+    // 如果是词组类型，直接渲染
+    if (this.currentType === "phrase") {
+      this._renderPhrase(content);
       return;
     }
 
-    this.contentEl.innerHTML = lines
-      .map((line) => `<div class="line poem-line">${this._escapeHtml(line)}</div>`)
+    // 按 \n\n 分割段落块
+    const blocks = content.split(/\n\n/);
+
+    const html = blocks
+      .map((block) => {
+        if (!block.trim()) return "";
+
+        // 如果块内包含 \n，按行式渲染
+        if (block.includes("\n")) {
+          const lines = block.split("\n").filter((line) => line.trim() !== "");
+          if (lines.length === 0) return "";
+          return `<div class="stanza">${lines
+            .map(
+              (line) =>
+                `<div class="line poem-line">${this._escapeHtml(line)}</div>`,
+            )
+            .join("")}</div>`;
+        } else {
+          // 否则按段落渲染
+          return `<p>${this._escapeHtml(block)}</p>`;
+        }
+      })
       .join("");
-    this.contentEl.style.textIndent = "0";
+
+    this.contentEl.innerHTML =
+      html || '<span class="placeholder">暂无内容</span>';
+    this.contentEl.style.textIndent = "";
   }
 
   /**
@@ -510,7 +476,9 @@ export default class ContentView {
   _renderPhrase(content) {
     const words = content.split(" ");
     this.contentEl.innerHTML = words
-      .map((word) => `<span class="phrase-word">${this._escapeHtml(word)}</span>`)
+      .map(
+        (word) => `<span class="phrase-word">${this._escapeHtml(word)}</span>`,
+      )
       .join(" ");
     this.contentEl.classList.add("content-phrase");
     this.contentEl.style.textIndent = "0";
